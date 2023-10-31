@@ -1,0 +1,184 @@
+﻿<UserControl x:Class="NeoWatch.NeoWatchWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:drawing="clr-namespace:NeoWatch.Drawing;assembly=NeoWatch.Drawing"
+             xmlns:local="clr-namespace:NeoWatch"
+             xmlns:converters="clr-namespace:NeoWatch.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="500">
+    <UserControl.Resources>
+        <converters:ArcToPathConverter x:Key="ArcToPathConverter"/>
+        <converters:PointToPathConverter x:Key="PointToPathConverter"/>
+        <converters:SegmentToPathConverter x:Key="SegmentToPathConverter"/>
+        <converters:PointToTextConverter x:Key="PointToTextConverter"/>
+        <converters:AxesToPathConverter x:Key="AxesToPathConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:RulerToTextConverter x:Key="RulerToTextConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="0.5*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="White" Cursor="Cross">
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Autofit" Command="{Binding AutoFitCommand}"/>
+                    <MenuItem Header="Toggle Sense" Command="{Binding ToggleSenseCommand}"/>
+                </ContextMenu>
+            </Grid.ContextMenu>
+            <b:Interaction.Triggers>
+                <b:EventTrigger EventName="Loaded">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnLoaded" x:Name="loaded"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="SizeChanged">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnSizeChanged" x:Name="sizeChanged"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseDown">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnMouseDown" x:Name="mouseDown"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseUp">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnMouseUp" x:Name="mouseUp"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseMove">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnMouseMove" x:Name="mouseMove"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseLeave">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnMouseLeave" x:Name="mouseLeave"/>
+                </b:EventTrigger>
+                <b:EventTrigger EventName="MouseWheel">
+                    <b:CallMethodAction
+                        TargetObject="{Binding}"
+                        MethodName="OnMouseWheel" x:Name="mouseWheel"/>
+                </b:EventTrigger>
+            </b:Interaction.Triggers>
+            <TextBlock Foreground="HotPink" FontWeight="Bold" Text="{Binding Ruler, Converter={StaticResource RulerToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 15"/>
+            <TextBlock Text="{Binding CurrentCursorPoint, Converter={StaticResource PointToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 3"/>
+            <Canvas ClipToBounds="True">
+                <Path Opacity="0.11" Stroke="Black" StrokeThickness="1" Data="{Binding Axes, Converter={StaticResource AxesToPathConverter}, Mode=OneWay}"/>
+            </Canvas>
+            <ItemsControl ItemsSource="{Binding WatchItems}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Grid ClipToBounds="True"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ItemsControl ItemsSource="{Binding Drawables}" Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas ClipToBounds="True"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.Resources>
+                                <DataTemplate DataType="{x:Type drawing:Drawable}">
+                                </DataTemplate>
+                                <DataTemplate DataType="{x:Type drawing:DrawableLineSegment}">
+                                    <Grid>
+                                        <Path ToolTip="{Binding Description}" Opacity="0.8" StrokeMiterLimit="1" StrokeDashArray="{Binding Dash}" StrokeThickness="{Binding Thickness}" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Data="{Binding TransformedGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
+                                        <Path Visibility="{Binding Path=DataContext.IsSenseShown, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" Opacity="0.8" StrokeEndLineCap="Triangle" StrokeThickness="7" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Data="{Binding TransformedCapGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
+                                    </Grid>
+                                </DataTemplate>
+                                <DataTemplate DataType="{x:Type drawing:DrawableArcSegment}">
+                                    <Path ToolTip="{Binding Description}" Opacity="0.7" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" StrokeDashArray="{Binding Dash}" StrokeThickness="{Binding Thickness}" Data="{Binding TransformedGeometry, Converter={StaticResource ArcToPathConverter}, Mode=OneWay}"/>
+                                </DataTemplate>
+                                <DataTemplate DataType="{x:Type drawing:DrawablePoint}">
+                                    <Path ToolTip="{Binding Description}" Opacity="0.9" StrokeThickness="{Binding Thickness}" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Fill="Black" Data="{Binding TransformedGeometry, Converter={StaticResource PointToPathConverter}, Mode=OneWay}"/>
+                                </DataTemplate>
+                            </ItemsControl.Resources>
+                        </ItemsControl>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Canvas ClipToBounds="True">
+                <Path Opacity="1" Stroke="HotPink" StrokeThickness="2" Data="{Binding Ruler.TransformedGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
+            </Canvas>
+        </Grid>
+        <GridSplitter Grid.Row="1"
+                      HorizontalAlignment="Stretch"
+                      ResizeDirection="Rows"
+                      Height="5" Width="auto"/>
+        <DockPanel Grid.Row="2">
+            <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" ItemsSource="{Binding WatchItems}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style>
+                                <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTemplateColumn Header="Color">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Background="{Binding Color}" Command="{Binding ElementName=dataGrid,  Path=DataContext.PickColorCommand}" CommandParameter="{Binding}" Focusable="False"></Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Description" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.Count}" />
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="DarkRed" Text="{Binding Drawables.Error}" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Items" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding Drawables}" SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Description" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="auto" CanUserResize="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    IsChecked="{Binding Path=IsVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                </CheckBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <Image Source="pack://application:,,,/NeoWatch;component/Resources/eye.png" Width="15" Height="15"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="auto" CanUserResize="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    IsChecked="{Binding Path=IsLoading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                </CheckBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <Image Source="pack://application:,,,/NeoWatch;component/Resources/loop.png" Width="15" Height="15"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Grid>
+</UserControl>
