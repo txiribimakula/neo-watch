@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Windows;
 using System;
 using NeoWatch.Loading;
-using System.Linq;
 using System.Windows.Input;
 using NeoWatch.Drawing;
 
@@ -35,7 +34,7 @@ namespace NeoWatch
         {
             foreach (var watchItem in WatchItems)
             {
-                OnWatchItemLoader(watchItem);
+                OnWatchItemReloadAsync(watchItem);
             }
         }
 
@@ -117,8 +116,6 @@ namespace NeoWatch
 
         private void AutoFit(float windowRatio)
         {
-            // Modify zoom according to the new window ratio.
-
             IBox box = GetBox(WatchItems);
 
             if (box != null)
@@ -296,8 +293,8 @@ namespace NeoWatch
                 {
                     if (item != null)
                     {
-                        item.NameChanged += OnWatchItemNameChanged;
-                        item.IsLoadingActivated += OnWatchItemLoader;
+                        item.NameChanged += OnWatchItemReloadAsync;
+                        item.IsLoadingActivated += OnWatchItemReloadAsync;
                     }
                 }
             }
@@ -307,8 +304,8 @@ namespace NeoWatch
                 {
                     if (item != null)
                     {
-                        item.NameChanged -= OnWatchItemNameChanged;
-                        item.IsLoadingActivated -= OnWatchItemLoader;
+                        item.NameChanged -= OnWatchItemReloadAsync;
+                        item.IsLoadingActivated -= OnWatchItemReloadAsync;
                     }
                 }
             }
@@ -350,12 +347,7 @@ namespace NeoWatch
             }
         }
 
-        private void OnWatchItemNameChanged(WatchItem sender)
-        {
-            OnWatchItemLoader(sender);
-        }
-
-        private async void OnWatchItemLoader(WatchItem watchItem)
+        private async void OnWatchItemReloadAsync(WatchItem watchItem)
         {
             watchItem.Drawables.Error = null;
             Stopwatch stopwatch = new Stopwatch();
@@ -366,19 +358,6 @@ namespace NeoWatch
                 watchItem.Drawables.ResetAndNotify();
                 try
                 {
-                    /*Loader.Interpreter.Progress = new Progress<List<IDrawable>>(value =>
-                    {
-                        if (value != null)
-                        {
-                            watchItem.Drawables.Progress += value.Count;
-                            foreach (var drawable in value)
-                            {
-                                geoDrawer.TransformGeometry(drawable);
-                            }
-                            watchItem.Drawables.AddAndNotify(value);
-                            AutoFitCommand.Execute(null);
-                        }
-                    });*/
                     var drawables = await Loader.Load(watchItem);
                     if (drawables != null)
                     {
@@ -414,7 +393,6 @@ namespace NeoWatch
                 }
             }
 
-
             stopwatch.Stop();
 
             watchItem.Drawables.Error = watchItem.Drawables.Error + " (" + stopwatch.Elapsed.TotalMilliseconds.ToString("F0") + "ms)";
@@ -422,12 +400,6 @@ namespace NeoWatch
             if (watchItem.Drawables.Count > 0)
             {
                 watchItem.SelectedItem = watchItem.Drawables[0];
-            }
-
-            if (WatchItems.Count(wi => wi.Drawables.Any()) == 1)
-            {
-                // Disable auto-Autofit
-                //AutoFitCommand.Execute(null);
             }
         }
     }

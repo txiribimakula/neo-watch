@@ -46,30 +46,32 @@ namespace NeoWatch.Loading
         }
 
         public Task<Drawables> Load(WatchItem item) {
+            item.Drawables.Progress = 0;
+
+            Expression expression = null;
             try
             {
-                Expression expression = debugger.GetExpression(item.Name, true);
-
-                item.Drawables.Progress = 0;
-
-                if (expression != null && !string.IsNullOrEmpty(expression.Type)) {
-                    item.Description = expression.Type;
-                    if(item.Color == null)
-                    {
-                        item.Color = nextColor();
-                    }
-
-                    return GetDrawablesAsync(expression);
-                } else {
-                    item.Drawables.Progress = 0;
-                    item.Drawables.Error = "Variable could not be found.";
-                    return Task.FromResult<Drawables>(null);
-                    }
-                }
-            catch (COMException ex)
+                expression = debugger.GetExpression(item.Name, true);
+            }
+            catch (COMException)
             {
                 return Task.FromResult<Drawables>(null);
             }
+
+            if (expression == null || string.IsNullOrEmpty(expression.Type))
+            {
+                item.Drawables.Progress = 0;
+                item.Drawables.Error = "Variable could not be found.";
+                return Task.FromResult<Drawables>(null);
+            }
+
+            item.Description = expression.Type;
+            if(item.Color == null)
+            {
+                item.Color = nextColor();
+            }
+
+            return GetDrawablesAsync(expression);
         }
 
         public Task<Drawables> GetDrawablesAsync(Expression expression)
@@ -88,12 +90,6 @@ namespace NeoWatch.Loading
             var currentIndex = 0;
             foreach (Expression expression in expressions)
             {
-                currentIndex++;
-                if (currentIndex >= MAX_SEGMENTS)
-                {
-                    drawables.Error = "Maximum elements per item is currently capped to: " + MAX_SEGMENTS;
-                    return drawables;
-                }
                 var expressionValue = expression.Value;
                 var newDrawable = GetDrawable(expressionValue);
 
@@ -111,6 +107,13 @@ namespace NeoWatch.Loading
 
                 newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;
                 drawables.Add(newDrawable);
+
+                currentIndex++;
+                if (currentIndex >= MAX_SEGMENTS)
+                {
+                    drawables.Error = "Maximum elements per item is currently capped to: " + MAX_SEGMENTS;
+                    return drawables;
+                }
             }
 
             return drawables;
