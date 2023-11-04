@@ -165,7 +165,15 @@ namespace NeoWatch.Loading
 
             // TODO: differentiate between one point or the other failing.
             var initialPoint = GetDrawablePoint(initialPointParse);
+            if (initialPoint == null)
+            {
+                return null;
+            }
             var finalPoint = GetDrawablePoint(finalPointParse);
+            if (finalPoint == null)
+            {
+                return null;
+            }
 
             return new DrawableLineSegment(initialPoint, finalPoint);
         }
