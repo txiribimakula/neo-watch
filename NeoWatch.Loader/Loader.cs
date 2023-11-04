@@ -91,13 +91,13 @@ namespace NeoWatch.Loading
             foreach (Expression expression in expressions)
             {
                 var expressionValue = expression.Value;
-                var newDrawable = GetDrawable(expressionValue);
+                var newDrawable = Interpreter.GetDrawable(expressionValue);
 
                 if(newDrawable == null)
                 {
                     try
                     {
-                        newDrawable = GetDrawable(expression.DataMembers.Item("Parse").Value);
+                        newDrawable = Interpreter.GetDrawable(expression.DataMembers.Item("Parse").Value);
                     }
                     catch (COMException)
                     {
@@ -117,11 +117,6 @@ namespace NeoWatch.Loading
             }
 
             return drawables;
-        }
-
-        private IDrawable GetDrawable(string expressionValue)
-        {
-            return Interpreter.Get(expressionValue);
         }
 
         private IEnumerable<Expression> GetInterpreters(Expression expression)
