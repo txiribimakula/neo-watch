@@ -18,14 +18,19 @@ namespace NeoWatch.Loading
             KnownColor.Brown,
         };
 
-        public static string NextColor()
+        public static Color NextColor()
         {
             currentColorIndex++;
             if (currentColorIndex == colors.Length)
             {
                 currentColorIndex = 0;
             }
-            return "#" + (System.Drawing.Color.FromKnownColor(colors[currentColorIndex]).ToArgb() & 0x00FFFFFF).ToString("X6");
+            return Color.FromKnownColor(colors[currentColorIndex]);
+        }
+
+        public static string AsHex(this Color color)
+        {
+            return "#" + (color.ToArgb() & 0x00FFFFFF).ToString("X6");
         }
     }
 }

@@ -43,7 +43,7 @@ namespace NeoWatch.Loading
             item.Description = expression.Type;
             if(item.Color == null)
             {
-                item.Color = Colours.NextColor();
+                item.Color = Colours.NextColor().AsHex();
             }
 
             return GetDrawablesAsync(expression);
