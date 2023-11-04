@@ -60,7 +60,7 @@ namespace NeoWatch.Loading
         {
             var drawables = new Drawables();
 
-            var expressions = GetInterpreters(itemExpression);
+            var expressions = new Expressions(itemExpression);
 
             var currentIndex = 0;
             foreach (Expression expression in expressions)
@@ -92,27 +92,6 @@ namespace NeoWatch.Loading
             }
 
             return drawables;
-        }
-
-        private IEnumerable<Expression> GetInterpreters(Expression expression)
-        {
-            var expressionType = expression.Type;
-            
-            if (expressionType.StartsWith("std::vector") || expressionType.StartsWith("System.Collections.Generic.List"))
-            {
-                return new Expressions(expression);
-            }
-
-            var expressionValue = expression.Value;
-            if (expressionValue.Contains("List"))
-            {
-                return new Expressions(expression);
-            }
-
-            return new List<Expression>()
-            {
-                expression
-            };
         }
     }
 }
