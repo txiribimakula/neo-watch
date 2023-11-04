@@ -1,24 +1,27 @@
 ﻿using EnvDTE;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NeoWatch.Loading
 {
     public class Expressions : IEnumerable<Expression>
     {
-        public Expressions(Expression expression)
+        public Expressions(Expression expression, string[] listTypes)
         {
             _expression = expression;
+            _listTypes = listTypes;
         }
 
         private Expression _expression;
+        private string[] _listTypes;
 
         private bool _isList
         {
             get
             {
                 var expressionType = _expression.Type;
-                if (expressionType.StartsWith("std::vector") || expressionType.StartsWith("System.Collections.Generic.List"))
+                if (_listTypes.Any(listType => expressionType.StartsWith(listType)))
                 {
                     return true;
                 }
