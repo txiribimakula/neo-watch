@@ -18,12 +18,12 @@ namespace NeoWatch.Loading
 
         public Dictionary<string, PatternKind> TypeKindPairs { get; set; }
 
-        public IDrawable Get(string value)
+        public IDrawable GetDrawable(string value)
         {
-            return Get(value, PatternKind.Type);
+            return GetDrawable(value, PatternKind.Type);
         }
 
-        private IDrawable Get(string value, PatternKind patternKind)
+        private IDrawable GetDrawable(string value, PatternKind patternKind)
         {
             if (value == null)
             {
