@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Colours.cs" />
     <Compile Include="ExpressionLoader.cs" />
     <Compile Include="Expressions.cs" />
     <Compile Include="IInterpreter.cs" />

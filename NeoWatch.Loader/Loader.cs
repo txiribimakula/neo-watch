@@ -1,6 +1,5 @@
 ﻿using EnvDTE;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NeoWatch.Drawing;
@@ -10,30 +9,6 @@ namespace NeoWatch.Loading
     public class Loader
     {
         private readonly int MAX_SEGMENTS = 400;
-
-        private KnownColor[] colors = {
-            KnownColor.Black,
-            KnownColor.DarkRed,
-            KnownColor.DarkGreen,
-            KnownColor.Yellow,
-            KnownColor.DarkOrange,
-            KnownColor.DarkBlue,
-            KnownColor.DeepPink,
-            KnownColor.HotPink,
-            KnownColor.Brown,
-        };
-
-        private int currentColorIndex = -1;
-
-        private string nextColor()
-        {
-            currentColorIndex++;
-            if(currentColorIndex == colors.Length)
-            {
-                currentColorIndex = 0;
-            }
-            return "#" + (System.Drawing.Color.FromKnownColor(colors[currentColorIndex]).ToArgb() & 0x00FFFFFF).ToString("X6");
-        }
 
         private Debugger debugger;
 
@@ -68,7 +43,7 @@ namespace NeoWatch.Loading
             item.Description = expression.Type;
             if(item.Color == null)
             {
-                item.Color = nextColor();
+                item.Color = Colours.NextColor();
             }
 
             return GetDrawablesAsync(expression);
