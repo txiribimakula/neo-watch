@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 	<Metadata>
-		<Identity Id="NeoWatch.14CC144A-635B-4883-9BA4-7CF300D20712" Version="0.3.12" Language="en-US" Publisher="Pablo Tobalina Pulido" />
+		<Identity Id="NeoWatch.14CC144A-635B-4883-9BA4-7CF300D20712" Version="0.3.13" Language="en-US" Publisher="Pablo Tobalina Pulido" />
 		<DisplayName>Neo Watch</DisplayName>
 		<Description xml:space="preserve">Neo Watch.</Description>
-		<ReleaseNotes>
-			Fix:
-			Limit zoom capabilities due to perf issues.
-
-			New:
-			Toggle sense indicator on line segments (right click).
-		</ReleaseNotes>
+		<ReleaseNotes>https://github.com/txiribimakula/neo-watch/releases</ReleaseNotes>
 		<Preview>true</Preview>
 	</Metadata>
 	<Installation>
