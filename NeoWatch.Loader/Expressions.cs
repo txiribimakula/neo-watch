@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace NeoWatch.Loading
 {
@@ -26,6 +27,12 @@ namespace NeoWatch.Loading
                     return true;
                 }
 
+                Match match = Regex.Match(expressionType, @"\w\[\d+\]");
+                if (match.Success)
+                {
+                    return true;
+                }
+                    
                 var expressionValue = _expression.Value;
                 if (expressionValue.Contains("List"))
                 {
