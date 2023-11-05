@@ -13,8 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeoWatch.Geometries", "NeoW
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AFF9BEE3-0FA3-4574-A3E2-4145D017D71B}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
 		.github\workflows\build_test.yaml = .github\workflows\build_test.yaml
+		README.md = README.md
+		.github\workflows\release.yaml = .github\workflows\release.yaml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{25BCFF03-672E-4C9B-BFDC-2AF31B2180DE}"
