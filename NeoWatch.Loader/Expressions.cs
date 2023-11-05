@@ -22,17 +22,11 @@ namespace NeoWatch.Loading
             get
             {
                 var expressionType = _expression.Type;
-                if (_listTypes.Any(listType => expressionType.StartsWith(listType)))
+                if (isInListTypes(expressionType) || isMatchingListPattern(expressionType))
                 {
                     return true;
                 }
 
-                Match match = Regex.Match(expressionType, @"\w\[\d+\]");
-                if (match.Success)
-                {
-                    return true;
-                }
-                    
                 var expressionValue = _expression.Value;
                 if (expressionValue.Contains("List"))
                 {
@@ -41,6 +35,27 @@ namespace NeoWatch.Loading
 
                 return false;
             }
+        }
+
+        private bool isInListTypes(string expressionType)
+        {
+            if (_listTypes.Any(listType => expressionType.StartsWith(listType)))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool isMatchingListPattern(string expressionType)
+        {
+            Match match = Regex.Match(expressionType, @"\w\[\d+\]");
+            if (match.Success)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public IEnumerator<Expression> GetEnumerator()
