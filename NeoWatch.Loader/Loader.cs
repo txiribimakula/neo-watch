@@ -65,29 +65,34 @@ namespace NeoWatch.Loading
             var currentIndex = 0;
             foreach (Expression expression in expressions)
             {
-                var expressionValue = expression.Value;
-                var newDrawable = Interpreter.GetDrawable(expressionValue);
+                var innerExpressions = GetInterpreters(expression);
 
-                if(newDrawable == null)
+                foreach (Expression innerExpression in innerExpressions)
                 {
-                    try
+                    var expressionValue = innerExpression.Value;
+                    var newDrawable = Interpreter.GetDrawable(expressionValue);
+
+                    if (newDrawable == null)
                     {
-                        newDrawable = Interpreter.GetDrawable(expression.DataMembers.Item("Parse").Value);
+                        try
+                        {
+                            newDrawable = Interpreter.GetDrawable(innerExpression.DataMembers.Item("Parse").Value);
+                        }
+                        catch (COMException)
+                        {
+                            return drawables;
+                        }
                     }
-                    catch (COMException)
+
+                    newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;
+                    drawables.Add(newDrawable);
+
+                    currentIndex++;
+                    if (currentIndex >= MAX_SEGMENTS)
                     {
+                        drawables.Error = "Maximum elements per item is currently capped to: " + MAX_SEGMENTS;
                         return drawables;
                     }
-                }
-
-                newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;
-                drawables.Add(newDrawable);
-
-                currentIndex++;
-                if (currentIndex >= MAX_SEGMENTS)
-                {
-                    drawables.Error = "Maximum elements per item is currently capped to: " + MAX_SEGMENTS;
-                    return drawables;
                 }
             }
 
