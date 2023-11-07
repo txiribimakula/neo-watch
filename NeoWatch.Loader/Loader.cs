@@ -60,17 +60,19 @@ namespace NeoWatch.Loading
         {
             var drawables = new Drawables();
 
-            var expressions = new Expressions(itemExpression, new string[]
+            var listTypes = new string[]
             {
                 "std::vector",
                 "std::array",
                 "System.Collections.Generic.List"
-            });
+            };
+
+            var expressions = new Expressions(itemExpression, listTypes);
 
             var currentIndex = 0;
             foreach (Expression expression in expressions)
             {
-                var innerExpressions = GetInterpreters(expression);
+                var innerExpressions = new Expressions(expression, listTypes);
 
                 foreach (Expression innerExpression in innerExpressions)
                 {
