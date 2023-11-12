@@ -55,6 +55,10 @@
     <Compile Include="WatchItem.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NeoWatch.Common\NeoWatch.Common.csproj">
+      <Project>{249e4004-4df0-4c78-8b06-1fad0fcf4dca}</Project>
+      <Name>NeoWatch.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NeoWatch.Drawer\NeoWatch.Drawing.csproj">
       <Project>{23280851-f8f3-4f61-ad61-ef7526021518}</Project>
       <Name>NeoWatch.Drawing</Name>

@@ -98,6 +98,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NeoWatch.Common\NeoWatch.Common.csproj">
+      <Project>{249E4004-4DF0-4C78-8B06-1FAD0FCF4DCA}</Project>
+      <Name>NeoWatch.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NeoWatch.Drawer\NeoWatch.Drawing.csproj">
       <Project>{23280851-f8f3-4f61-ad61-ef7526021518}</Project>
       <Name>NeoWatch.Drawing</Name>

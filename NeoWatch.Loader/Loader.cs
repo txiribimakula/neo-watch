@@ -1,8 +1,8 @@
 ﻿using EnvDTE;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NeoWatch.Drawing;
+using NeoWatch.Common;
 
 namespace NeoWatch.Loading
 {
@@ -20,33 +20,28 @@ namespace NeoWatch.Loading
             Interpreter = interpreter;
         }
 
-        public Task<Drawables> Load(WatchItem item) {
-            item.Drawables.Progress = 0;
+        public async Task<Result<Drawables>> Load(WatchItem item) {
 
             Expression expression = null;
+
             try
             {
                 expression = debugger.GetExpression(item.Name, true);
             }
             catch (COMException)
             {
-                return Task.FromResult<Drawables>(null);
+                return new Result<Drawables>(null, "Variable could not be loaded");
             }
 
             if (expression == null || string.IsNullOrEmpty(expression.Type))
             {
-                item.Drawables.Progress = 0;
-                item.Drawables.Error = "Variable could not be found.";
-                return Task.FromResult<Drawables>(null);
+                return new Result<Drawables>(null, "Variable could not be found");
             }
 
-            item.Description = expression.Type;
-            if(item.Color == null)
-            {
-                item.Color = Colours.NextColor().AsHex();
-            }
+            var drawables = await GetDrawablesAsync(expression);
+            drawables.Type = expression.Type;
 
-            return GetDrawablesAsync(expression);
+            return new Result<Drawables>(drawables);
         }
 
         public Task<Drawables> GetDrawablesAsync(Expression expression)
