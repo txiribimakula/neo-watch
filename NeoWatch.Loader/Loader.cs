@@ -62,12 +62,12 @@ namespace NeoWatch.Loading
                 "System.Collections.Generic.List"
             };
 
-            var expressions = new Expressions(itemExpression, listTypes);
+            var expressions = new ExpressionLoader(itemExpression, listTypes);
 
             var currentIndex = 0;
             foreach (Expression expression in expressions)
             {
-                var innerExpressions = new Expressions(expression, listTypes);
+                var innerExpressions = new ExpressionLoader(expression, listTypes);
 
                 foreach (Expression innerExpression in innerExpressions)
                 {
