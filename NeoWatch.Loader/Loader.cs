@@ -71,19 +71,11 @@ namespace NeoWatch.Loading
 
                 foreach (Expression innerExpression in innerExpressions)
                 {
-                    var expressionValue = innerExpression.Value;
-                    var newDrawable = Interpreter.GetDrawable(expressionValue);
+                    var newDrawable = Interpreter.GetDrawable(innerExpression);
 
                     if (newDrawable == null)
                     {
-                        try
-                        {
-                            newDrawable = Interpreter.GetDrawable(innerExpression.DataMembers.Item("Parse").Value);
-                        }
-                        catch (COMException)
-                        {
-                            return drawables;
-                        }
+                        return drawables;
                     }
 
                     newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;
