@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using System;
 using NeoWatch.Drawing;
 using System.Runtime.InteropServices;
-using EnvDTE;
+using NeoWatch.Loading;
 
 namespace NeoWatch.Loading
 {
@@ -20,7 +20,7 @@ namespace NeoWatch.Loading
 
         public Dictionary<string, PatternKind> TypeKindPairs { get; set; }
 
-        public IDrawable GetDrawable(Expression expression)
+        public IDrawable GetDrawable(IExpression expression)
         {
             var expressionValue = expression.Value;
             var newDrawable = GetDrawable(expressionValue, PatternKind.Type);
@@ -29,7 +29,7 @@ namespace NeoWatch.Loading
             {
                 try
                 {
-                    newDrawable = GetDrawable(expression.DataMembers.Item("Parse").Value, PatternKind.Type);
+                    newDrawable = GetDrawable(expression.Parse, PatternKind.Type);
                 }
                 catch (COMException)
                 {
