@@ -358,27 +358,33 @@ namespace NeoWatch
                 watchItem.Drawables.ResetAndNotify();
                 try
                 {
-                    var drawables = await Loader.Load(watchItem);
-                    if (drawables != null)
+                    watchItem.Drawables.Progress = 0;
+                    if (watchItem.Color == null)
                     {
-                        foreach (var drawable in drawables)
-                        {
-                            geoDrawer.TransformGeometry(drawable);
-                        }
-                        watchItem.Drawables.AddAndNotify(drawables);
-                        watchItem.Drawables.Error = drawables.Error;
-                        if (string.IsNullOrEmpty(watchItem.Drawables.Error))
-                        {
-                            watchItem.Drawables.Progress = watchItem.Drawables.Count;
-                        }
+                        watchItem.Color = Colours.NextColor().AsHex();
                     }
-                    else
+
+                    var result = await Loader.Load(watchItem);
+
+                    var feedback = result.Feedback;
+
+                    if (feedback.Description != "OK")
                     {
-                        watchItem.Drawables.Progress = 0;
-                        if (string.IsNullOrEmpty(watchItem.Drawables.Error))
-                        {
-                            watchItem.Drawables.Error = "No valid elements were found.";
-                        }
+                        watchItem.Drawables.Error = feedback.Description;
+                        return;
+                    }
+
+                    var drawables = result.Data;
+                    watchItem.Description = drawables.Type;
+                    foreach (var drawable in drawables)
+                    {
+                        geoDrawer.TransformGeometry(drawable);
+                    }
+                    watchItem.Drawables.AddAndNotify(drawables);
+                    watchItem.Drawables.Error = drawables.Error;
+                    if (string.IsNullOrEmpty(watchItem.Drawables.Error))
+                    {
+                        watchItem.Drawables.Progress = watchItem.Drawables.Count;
                     }
                 }
                 catch (LoadingException ex)
