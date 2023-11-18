@@ -1,8 +1,7 @@
-﻿using EnvDTE;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NeoWatch.Geometries;
 
-namespace Txiribimakula.ExpertWatch.Loading
+namespace NeoWatch.Loading
 {
     public interface ILoading
     {

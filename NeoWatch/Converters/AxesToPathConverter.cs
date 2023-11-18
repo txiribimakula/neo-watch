@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
-using Txiribimakula.ExpertWatch;
 using NeoWatch.Drawing;
 using NeoWatch.Geometries;
 

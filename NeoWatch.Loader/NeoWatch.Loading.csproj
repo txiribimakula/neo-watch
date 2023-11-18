@@ -44,8 +44,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Colours.cs" />
-    <Compile Include="ExpressionLoader.cs" />
-    <Compile Include="Expressions.cs" />
+    <Compile Include="Debugger\Debugger.cs" />
+    <Compile Include="Debugger\Expression.cs" />
+    <Compile Include="Debugger\ExpressionLoader.cs" />
+    <Compile Include="Debugger\Expressions.cs" />
+    <Compile Include="Debugger\IDebugger.cs" />
+    <Compile Include="Debugger\IExpression.cs" />
+    <Compile Include="Debugger\IExpressions.cs" />
     <Compile Include="IInterpreter.cs" />
     <Compile Include="ILoader.cs" />
     <Compile Include="Interpreter.cs" />

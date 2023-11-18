@@ -1,5 +1,4 @@
-﻿using EnvDTE;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NeoWatch.Drawing;
 using NeoWatch.Common;
@@ -10,11 +9,11 @@ namespace NeoWatch.Loading
     {
         private readonly int MAX_SEGMENTS = 400;
 
-        private Debugger debugger;
+        private IDebugger debugger;
 
         public Interpreter Interpreter { get; set; }
 
-        public Loader(Debugger debugger, Interpreter interpreter)
+        public Loader(IDebugger debugger, Interpreter interpreter)
         {
             this.debugger = debugger;
             Interpreter = interpreter;
@@ -22,11 +21,11 @@ namespace NeoWatch.Loading
 
         public async Task<Result<Drawables>> Load(WatchItem item) {
 
-            Expression expression = null;
+            IExpression expression = null;
 
             try
             {
-                expression = debugger.GetExpression(item.Name, true);
+                expression = debugger.GetExpression(item.Name);
             }
             catch (COMException)
             {
@@ -44,14 +43,14 @@ namespace NeoWatch.Loading
             return new Result<Drawables>(drawables);
         }
 
-        public Task<Drawables> GetDrawablesAsync(Expression expression)
+        public Task<Drawables> GetDrawablesAsync(IExpression expression)
         {
             return Task.Run(() => {
                 return GetDrawables(expression);
             });
         }
 
-        private Drawables GetDrawables(Expression itemExpression)
+        private Drawables GetDrawables(IExpression itemExpression)
         {
             var drawables = new Drawables();
 
@@ -62,28 +61,20 @@ namespace NeoWatch.Loading
                 "System.Collections.Generic.List"
             };
 
-            var expressions = new Expressions(itemExpression, listTypes);
+            var expressions = new ExpressionLoader(itemExpression, listTypes);
 
             var currentIndex = 0;
             foreach (Expression expression in expressions)
             {
-                var innerExpressions = new Expressions(expression, listTypes);
+                var innerExpressions = new ExpressionLoader(expression, listTypes);
 
                 foreach (Expression innerExpression in innerExpressions)
                 {
-                    var expressionValue = innerExpression.Value;
-                    var newDrawable = Interpreter.GetDrawable(expressionValue);
+                    var newDrawable = Interpreter.GetDrawable(innerExpression);
 
                     if (newDrawable == null)
                     {
-                        try
-                        {
-                            newDrawable = Interpreter.GetDrawable(innerExpression.DataMembers.Item("Parse").Value);
-                        }
-                        catch (COMException)
-                        {
-                            return drawables;
-                        }
+                        return drawables;
                     }
 
                     newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;

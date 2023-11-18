@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System;
 using NeoWatch.Drawing;
+using System.Runtime.InteropServices;
+using NeoWatch.Loading;
 
 namespace NeoWatch.Loading
 {
@@ -18,9 +20,24 @@ namespace NeoWatch.Loading
 
         public Dictionary<string, PatternKind> TypeKindPairs { get; set; }
 
-        public IDrawable GetDrawable(string value)
+        public IDrawable GetDrawable(IExpression expression)
         {
-            return GetDrawable(value, PatternKind.Type);
+            var expressionValue = expression.Value;
+            var newDrawable = GetDrawable(expressionValue, PatternKind.Type);
+
+            if (newDrawable == null)
+            {
+                try
+                {
+                    newDrawable = GetDrawable(expression.Parse, PatternKind.Type);
+                }
+                catch (COMException)
+                {
+                    return null;
+                }
+            }
+
+            return newDrawable;
         }
 
         private IDrawable GetDrawable(string value, PatternKind patternKind)

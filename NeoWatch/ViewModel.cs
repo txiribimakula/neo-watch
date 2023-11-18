@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using EnvDTE;
-using Debugger = EnvDTE.Debugger;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System;
-using NeoWatch.Loading;
 using System.Windows.Input;
 using NeoWatch.Drawing;
+using NeoWatch.Loading;
 
 namespace NeoWatch
 {
@@ -16,7 +15,7 @@ namespace NeoWatch
     {
         public bool IsSenseShown { get; set; } = false;
 
-        public ViewModel(Debugger debugger, Dictionary<PatternKind, string> patterns, Dictionary<string, PatternKind> typeKindPairs)
+        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string> patterns, Dictionary<string, PatternKind> typeKindPairs)
         {
             WatchItems = new ObservableCollection<WatchItem>();
             WatchItems.CollectionChanged += OnWatchItemsCollectionChanged;

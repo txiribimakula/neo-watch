@@ -1,20 +1,19 @@
-﻿using EnvDTE;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NeoWatch.Loading
 {
-    public class Expressions : IEnumerable<Expression>
+    public class ExpressionLoader : IEnumerable<IExpression>
     {
-        public Expressions(Expression expression, string[] listTypes)
+        public ExpressionLoader(IExpression expression, string[] listTypes)
         {
             _expression = expression;
             _listTypes = listTypes;
         }
 
-        private Expression _expression;
+        private IExpression _expression;
         private string[] _listTypes;
 
         private bool _isList
@@ -58,7 +57,7 @@ namespace NeoWatch.Loading
             return false;
         }
 
-        public IEnumerator<Expression> GetEnumerator()
+        public IEnumerator<IExpression> GetEnumerator()
         {
             if (!_isList)
             {
@@ -66,15 +65,9 @@ namespace NeoWatch.Loading
                 yield break;
             }
 
-            var currentIndex = 0;
-            foreach (Expression currentExpression in _expression.DataMembers)
+            foreach (IExpression currentExpression in _expression.DataMembers)
             {
-                var currentExpressionName = currentExpression.Name;
-                if (currentExpressionName.Equals("[" + currentIndex + "]"))
-                {
-                    currentIndex++;
-                    yield return currentExpression;
-                }
+                yield return currentExpression;
             }
         }
 
