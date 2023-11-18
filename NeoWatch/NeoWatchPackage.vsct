@@ -7,10 +7,14 @@
 	<Extern href="VsDebugGuids.h"/>
 
 	<Commands package="guidPackage">
+		<Bitmaps>
+			<Bitmap guid="neoIcon" href="Resources\morpheus.bmp" usedList="neoIcon1"/>
+		</Bitmaps>
 		<Buttons>
 			<Button guid="guidPackageCmdSet" id="idCommand" priority="0x0600" type="Button">
 				<Parent guid="guidVSDebugGroup" id="IDG_DEBUG_WINDOWS_INSPECT"/>
 				<CommandFlag>DynamicVisibility</CommandFlag>
+				<Icon guid="neoIcon" id="neoIcon1" />
 				<Strings>
 					<ButtonText>Neo Watch</ButtonText>
 				</Strings>
@@ -28,7 +32,9 @@
 		<GuidSymbol name="guidPackageCmdSet" value="{AB6200EA-5C89-4F3C-AEEB-1374F1F578FB}">
 			<IDSymbol value="256" name="idCommand" />
 		</GuidSymbol>
-
+		<GuidSymbol name="neoIcon" value="{153861FB-E433-49C8-BE51-5289844FC485}">
+			<IDSymbol name="neoIcon1" value="1" />
+		</GuidSymbol>
 	</Symbols>
-
+	
 </CommandTable>
