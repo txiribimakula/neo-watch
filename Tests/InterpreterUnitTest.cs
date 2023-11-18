@@ -13,7 +13,7 @@ namespace Tests
             { PatternKind.Segment, @"(?<initialPoint>.*) - (?<finalPoint>.*)" },
             { PatternKind.Arc, @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" },
             { PatternKind.Circle, @"C: (?<centerPoint>.*) R: (?<radius>.*)" },
-            { PatternKind.Point, @"\((?<x>.*),(?<y>.*)\)" }
+            { PatternKind.Point, @"^\((?<x>\d*\.?\d+),(?<y>\d*\.?\d+)\)$" }
         };
 
         private static Dictionary<string, PatternKind> typeKindPairs = new Dictionary<string, PatternKind>()
@@ -34,10 +34,10 @@ namespace Tests
             }
 
             [Theory]
-            [InlineData("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
-            [InlineData("Arc: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
-            [InlineData(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
-            [InlineData(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
+            [InlineData("Seg: (0.00,0.00) - (100.00,0.00)")]
+            [InlineData("Arc: C: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
+            [InlineData(null, "Seg: (0.00,0.00) - (100.00,0.00)")]
+            [InlineData(null, "Arc: C: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
             public void returns_valid_drawable_when_expression_value_and_or_parse_are_valid(string value, string parse = "COMException")
             {
                 // Arrange
@@ -112,6 +112,52 @@ namespace Tests
             }
         }
 
+        public class Get_Drawable_Point
+        {
+            Interpreter interpreter;
+
+            public Get_Drawable_Point()
+            {
+                interpreter = new Interpreter(patterns, typeKindPairs);
+            }
+
+            [Theory]
+            [InlineData("Pnt: (5.00,15.00)")]
+            public void returns_expected_point(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value);
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.NotNull(drawable);
+                Assert.True(drawable.Box.IsValid);
+                var expectedDrawablePoint = new DrawablePoint(5, 15);
+                Assert.Equivalent(expectedDrawablePoint, drawable);
+            }
+
+            [Theory]
+            [InlineData("Pnt: (5,00,15.00)")]
+            [InlineData("Pnt: (5.00,15,00)")]
+            [InlineData("Pnt: ((5.00,15.00)")]
+            [InlineData("Pnt: 5.00,15.00)")]
+            [InlineData("Pnt: (,)")]
+            [InlineData("(5.00,15.00)")]
+            public void returns_null(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value);
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.Null(drawable);
+            }
+        }
+
         public class Get_Drawable_Segment
         {
             Interpreter interpreter;
@@ -125,7 +171,7 @@ namespace Tests
             public void returns_expected_segment()
             {
                 // Arrange
-                var expressionMock = new ExpressionMock("Seg: Pnt: (5.00,15.00) - Pnt: (100.00,10.00)");
+                var expressionMock = new ExpressionMock("Seg: (5.00,15.00) - (100.00,10.00)");
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -139,15 +185,9 @@ namespace Tests
 
 
             [Theory]
-            [InlineData("Seg: Pnt: (,) - Pnt: (,)")]
-            [InlineData("Seg: Pnt: (5,00,15.00) - Pnt: (100.00,10.00)")]
-            [InlineData("Seg: Pnt: (5.00,15,00) - Pnt: (100.00,10.00)")]
-            [InlineData("Seg: Pnt: ((5.00,15.00) - Pnt: (100.00,10.00)")]
-            [InlineData("Segment: Point: (5.00,15.00) - Point: (100.00,10.00)")]
-            [InlineData("Seg: Pnt: 5.00,15.00) - Pnt: (100.00,10.00)")]
-            [InlineData("Seg: Pnt: (5.00,15.00) Pnt: (100.00,10.00)")]
+            [InlineData("Seg: (5.00,15.00) (100.00,10.00)")]
             [InlineData("Pnt: (5.00,15.00) - Pnt: (100.00,10.00)")]
-            public void returns_invalid_segment(string value)
+            public void returns_null(string value)
             {
                 // Arrange
                 var expressionMock = new ExpressionMock(value);
@@ -157,6 +197,21 @@ namespace Tests
 
                 // Assert
                 Assert.Null(drawable);
+            }
+
+
+            [Theory]
+            [InlineData("Segment: Pnt: (5.00,15.00) - Pnt: (100.00,10.00)")]
+            public void returns_invalid_type_error(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value);
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.Equal("Type is not interpretable.", drawable.Description);
             }
         }
     }
