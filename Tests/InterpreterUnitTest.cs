@@ -13,7 +13,7 @@ namespace Tests
             { PatternKind.Segment, @"(?<initialPoint>.*) - (?<finalPoint>.*)" },
             { PatternKind.Arc, @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" },
             { PatternKind.Circle, @"C: (?<centerPoint>.*) R: (?<radius>.*)" },
-            { PatternKind.Point, @"^\((?<x>\d*\.?\d+),(?<y>\d*\.?\d+)\)$" }
+            { PatternKind.Point, @"^\((?<x>-?\d*\.?\d+),(?<y>-?\d*\.?\d+)\)$" }
         };
 
         private static Dictionary<string, PatternKind> typeKindPairs = new Dictionary<string, PatternKind>()
@@ -121,12 +121,11 @@ namespace Tests
                 interpreter = new Interpreter(patterns, typeKindPairs);
             }
 
-            [Theory]
-            [InlineData("Pnt: (5.00,15.00)")]
-            public void returns_expected_point(string value)
+            [Fact]
+            public void returns_expected_point()
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock("Pnt: (5.00,15.00)");
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -135,6 +134,22 @@ namespace Tests
                 Assert.NotNull(drawable);
                 Assert.True(drawable.Box.IsValid);
                 var expectedDrawablePoint = new DrawablePoint(5, 15);
+                Assert.Equivalent(expectedDrawablePoint, drawable);
+            }
+
+            [Fact]
+            public void returns_expected_point_with_negative_numbers()
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock("Pnt: (-5.00,-15.00)");
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.NotNull(drawable);
+                Assert.True(drawable.Box.IsValid);
+                var expectedDrawablePoint = new DrawablePoint(-5, -15);
                 Assert.Equivalent(expectedDrawablePoint, drawable);
             }
 

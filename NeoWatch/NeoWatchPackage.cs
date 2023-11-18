@@ -87,7 +87,7 @@ namespace NeoWatch
                 { PatternKind.Segment, @"(?<initialPoint>.*) - (?<finalPoint>.*)" },
                 { PatternKind.Arc, @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" },
                 { PatternKind.Circle, @"C: (?<centerPoint>.*) R: (?<radius>.*)" },
-                { PatternKind.Point, @"\((?<x>.*),(?<y>.*)\)" }
+                { PatternKind.Point, @"^\((?<x>\d*\.?\d+),(?<y>\d*\.?\d+)\)$" }
             };
 
         // TODO: set this from configuration window.
