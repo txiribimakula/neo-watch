@@ -1,5 +1,5 @@
 using NeoWatch.Loading;
-using Newtonsoft.Json.Linq;
+using Tests.Mocks;
 
 namespace Tests
 {
@@ -35,9 +35,10 @@ namespace Tests
         public void GetDrawable_WhenValueIsValid_ReturnsValidDrawable(string value)
         {
             // Arrange
+            var expressionMock = new ExpressionMock(value);
 
             // Act
-            var drawable = interpreter.GetDrawable(value);
+            var drawable = interpreter.GetDrawable(expressionMock);
 
             // Assert
             Assert.NotNull(drawable);
@@ -50,9 +51,10 @@ namespace Tests
         public void GetDrawable_WhenValueIsEmptyOrNull_ReturnsNull(string value)
         {
             // Arrange
+            var expressionMock = new ExpressionMock(value);
 
             // Act
-            var drawable = interpreter.GetDrawable(value);
+            var drawable = interpreter.GetDrawable(expressionMock);
 
             // Assert
             Assert.Null(drawable);
@@ -65,9 +67,10 @@ namespace Tests
         public void GetDrawable_WhenValueHasInvalidType_ReturnsInvalidDrawable(string value)
         {
             // Arrange
+            var expressionMock = new ExpressionMock(value);
 
             // Act
-            var drawable = interpreter.GetDrawable(value);
+            var drawable = interpreter.GetDrawable(expressionMock);
 
             // Assert
             Assert.Equal("Type is not interpretable.", drawable.Description);
@@ -83,9 +86,10 @@ namespace Tests
         public void GetDrawable_WhenValueHasInvalidFields_ReturnsNull(string value)
         {
             // Arrange
+            var expressionMock = new ExpressionMock(value);
 
             // Act
-            var drawable = interpreter.GetDrawable(value);
+            var drawable = interpreter.GetDrawable(expressionMock);
 
             // Assert
             Assert.Null(drawable);
