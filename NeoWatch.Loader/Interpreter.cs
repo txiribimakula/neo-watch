@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System;
 using NeoWatch.Drawing;
 using System.Runtime.InteropServices;
-using NeoWatch.Loading;
 
 namespace NeoWatch.Loading
 {

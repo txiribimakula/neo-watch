@@ -6,10 +6,12 @@ namespace Tests.Mocks
     public class ExpressionMock : IExpression
     {
         private string _value;
+        private string _parse;
 
-        public ExpressionMock(string value)
+        public ExpressionMock(string value, string parse = "COMException")
         {
             _value = value;
+            _parse = parse;
         }
 
         public string Type => throw new NotImplementedException();
@@ -18,7 +20,18 @@ namespace Tests.Mocks
 
         public string Name => throw new NotImplementedException();
 
-        public string Parse => throw new COMException();
+        public string Parse
+        {
+            get {
+                switch (_parse)
+                {
+                    case "COMException":
+                        throw new COMException();
+                    default:
+                        return _parse;
+                }
+            }
+        }
 
         public IExpressions DataMembers => throw new NotImplementedException();
     }
