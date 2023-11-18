@@ -34,10 +34,12 @@ namespace Tests
             [Theory]
             [InlineData("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
             [InlineData("Arc: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
-            public void returns_valid_drawable_when_expression_value_is_valid(string value)
+            [InlineData(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
+            [InlineData(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
+            public void returns_valid_drawable_when_expression_value_and_or_parse_are_valid(string value, string parse = "COMException")
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, parse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -50,10 +52,12 @@ namespace Tests
             [Theory]
             [InlineData("")]
             [InlineData(null)]
-            public void returns_null_when_expression_value_is_empty(string value)
+            [InlineData(null, "")]
+            [InlineData(null, null)]
+            public void returns_null_when_expression_has_no_value_and_no_parse(string value, string parse = "COMException")
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, parse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -66,10 +70,13 @@ namespace Tests
             [InlineData("eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
             [InlineData("Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
             [InlineData("A: ")]
-            public void returns_invalid_drawable_when_value_has_invalid_type(string value)
+            [InlineData(null, "eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
+            [InlineData(null, "Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
+            [InlineData(null, "A: ")]
+            public void returns_invalid_drawable_when_value_and_or_parse_have_invalid_type(string value, string parse = "COMException")
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, parse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -85,10 +92,15 @@ namespace Tests
             [InlineData("Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
             [InlineData("A")]
             [InlineData("A:")]
-            public void returns_null_when_value_has_invalid_fields(string value)
+            [InlineData(null, "Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
+            [InlineData(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
+            [InlineData(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
+            [InlineData(null, "A")]
+            [InlineData(null, "A:")]
+            public void returns_null_when_value_and_parse_have_invalid_fields(string value, string parse = "COMException")
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, parse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
