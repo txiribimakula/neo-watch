@@ -11,9 +11,9 @@ namespace NeoWatch.Loading
 
         private IDebugger debugger;
 
-        public Interpreter Interpreter { get; set; }
+        public IInterpreter Interpreter { get; set; }
 
-        public Loader(IDebugger debugger, Interpreter interpreter)
+        public Loader(IDebugger debugger, IInterpreter interpreter)
         {
             this.debugger = debugger;
             Interpreter = interpreter;
