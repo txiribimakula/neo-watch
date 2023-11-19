@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace NeoWatch.Loading
 {
-    public class Interpreter
+    public class Interpreter : IInterpreter
     {
         public Interpreter(Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
         {
