@@ -9,13 +9,13 @@ namespace NeoWatch.Loading
 {
     public class Interpreter
     {
-        public Interpreter(Dictionary<PatternKind, string> patterns, Dictionary<string, PatternKind> typeKindPairs)
+        public Interpreter(Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
         {
             Patterns = patterns;
             TypeKindPairs = typeKindPairs;
         }
 
-        public Dictionary<PatternKind, string> Patterns { get; set; }
+        public Dictionary<PatternKind, string[]> Patterns { get; set; }
 
         public Dictionary<string, PatternKind> TypeKindPairs { get; set; }
 
@@ -46,7 +46,7 @@ namespace NeoWatch.Loading
                 return null;
             }
 
-            Match match = Regex.Match(value, Patterns[patternKind]);
+            var match = GetMatch(value, Patterns[patternKind]);
 
             if (match.Success)
             {
@@ -94,10 +94,26 @@ namespace NeoWatch.Loading
             return null;
         }
 
+        private Match GetMatch(string value, string[] patterns)
+        {
+            Match match = Match.Empty;
+
+            foreach (var pattern in patterns)
+            {
+                match = Regex.Match(value, pattern);
+                if (match.Success)
+                {
+                    return match;
+                }
+            }
+
+            return match;
+        }
+
         private DrawableArcSegment GetDrawableCircle(string parse)
         {
             // TODO: handle exceptions for additional feedback when regex is wrong (too many ")"...).
-            var match = Regex.Match(parse, Patterns[PatternKind.Circle]);
+            var match = GetMatch(parse, Patterns[PatternKind.Circle]);
 
             if (!match.Success)
             {
@@ -123,7 +139,7 @@ namespace NeoWatch.Loading
 
         private DrawableArcSegment GetDrawableArc(string parse)
         {
-            var match = Regex.Match(parse, Patterns[PatternKind.Arc]);
+            var match = GetMatch(parse, Patterns[PatternKind.Arc]);
 
             if (!match.Success)
             {
@@ -161,7 +177,7 @@ namespace NeoWatch.Loading
 
         private DrawableLineSegment GetDrawableSegment(string parse)
         {
-            var match = Regex.Match(parse, Patterns[PatternKind.Segment]);
+            var match = GetMatch(parse, Patterns[PatternKind.Segment]);
 
             if (!match.Success)
             {
@@ -196,7 +212,7 @@ namespace NeoWatch.Loading
 
         private DrawablePoint GetDrawablePoint(string parse)
         {
-            var match = Regex.Match(parse, Patterns[PatternKind.Point]);
+            var match = GetMatch(parse, Patterns[PatternKind.Point]);
 
             if (!match.Success)
             {

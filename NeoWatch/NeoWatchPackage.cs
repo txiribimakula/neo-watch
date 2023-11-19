@@ -81,13 +81,14 @@ namespace NeoWatch
 
 
         // TODO: set this from configuration window.
-        public Dictionary<PatternKind, string> Patterns { get; set; } = new Dictionary<PatternKind, string>()
+        public Dictionary<PatternKind, string[]> Patterns { get; set; } = new Dictionary<PatternKind, string[]>()
             {
-                { PatternKind.Type, @"(?<type>\w+): (?<parse>.*)" },
-                { PatternKind.Segment, @"(?<initialPoint>.*) - (?<finalPoint>.*)" },
-                { PatternKind.Arc, @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" },
-                { PatternKind.Circle, @"C: (?<centerPoint>.*) R: (?<radius>.*)" },
-                { PatternKind.Point, @"\((?<x>.*),(?<y>.*)\)" }
+                { PatternKind.Type, new string[] { @"(?<type>\w+): (?<parse>.*)" } },
+                { PatternKind.Segment, new string[] { @"(?<initialPoint>.*) - (?<finalPoint>.*)" } },
+                { PatternKind.Arc, new string[] { @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" } },
+                { PatternKind.Circle, new string[] { @"C: (?<centerPoint>.*) R: (?<radius>.*)" } },
+                // TODO: possibility to raise warning if the second pattern had to be used.
+                { PatternKind.Point, new string[] { @"^\((?<x>\d*\.?\d+),(?<y>\d*\.?\d+)\)$", @"\((?<x>.*),(?<y>.*)\)" } }
             };
 
         // TODO: set this from configuration window.
@@ -115,6 +116,6 @@ namespace NeoWatch
         {
             OptionChangedEvent?.Invoke(Patterns, TypeKindPairs);
         }
-        public delegate void OptionChanged(Dictionary<PatternKind, string> patterns, Dictionary<string, PatternKind> typeKindPairs);
+        public delegate void OptionChanged(Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs);
     }
 }

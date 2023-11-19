@@ -15,7 +15,7 @@ namespace NeoWatch
     {
         public bool IsSenseShown { get; set; } = false;
 
-        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string> patterns, Dictionary<string, PatternKind> typeKindPairs)
+        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
         {
             WatchItems = new ObservableCollection<WatchItem>();
             WatchItems.CollectionChanged += OnWatchItemsCollectionChanged;
@@ -23,7 +23,7 @@ namespace NeoWatch
             Loader = new Loader(debugger, new Interpreter(patterns, typeKindPairs));
         }
 
-        public void OnToolsOptionsBlueprintsChanged(Dictionary<PatternKind, string> patterns, Dictionary<string, PatternKind> typeKindPairs)
+        public void OnToolsOptionsBlueprintsChanged(Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
         {
             Loader.Interpreter.Patterns = patterns;
             Loader.Interpreter.TypeKindPairs = typeKindPairs;
