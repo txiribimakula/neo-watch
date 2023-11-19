@@ -7,13 +7,13 @@ namespace Tests
 {
     public class InterpreterUnitTest
     {
-        private static Dictionary<PatternKind, string> patterns = new Dictionary<PatternKind, string>()
+        private static Dictionary<PatternKind, string[]> patterns = new Dictionary<PatternKind, string[]>()
         {
-            { PatternKind.Type, @"(?<type>\w+): (?<parse>.*)" },
-            { PatternKind.Segment, @"(?<initialPoint>.*) - (?<finalPoint>.*)" },
-            { PatternKind.Arc, @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" },
-            { PatternKind.Circle, @"C: (?<centerPoint>.*) R: (?<radius>.*)" },
-            { PatternKind.Point, @"^\((?<x>-?\d*\.?\d+),(?<y>-?\d*\.?\d+)\)$" }
+            { PatternKind.Type, new string[] { @"(?<type>\w+): (?<parse>.*)" } },
+            { PatternKind.Segment, new string[] { @"(?<initialPoint>.*) - (?<finalPoint>.*)" } },
+            { PatternKind.Arc, new string[] { @"C: (?<centerPoint>.*) R: (?<radius>.*) AngIni: (?<initialAngle>.*) AngPaso: (?<sweepAngle>.*)" } },
+            { PatternKind.Circle, new string[] { @"C: (?<centerPoint>.*) R: (?<radius>.*)" } },
+            { PatternKind.Point, new string[] { @"^\((?<x>-?\d*\.?\d+),(?<y>-?\d*\.?\d+)\)$" } }
         };
 
         private static Dictionary<string, PatternKind> typeKindPairs = new Dictionary<string, PatternKind>()
@@ -109,6 +109,42 @@ namespace Tests
 
                 // Assert
                 Assert.Null(drawable);
+            }
+        }
+
+        public class Get_Drawable_With_Retrocompatible_Pattern
+        {
+            Interpreter interpreter;
+
+            public Get_Drawable_With_Retrocompatible_Pattern()
+            {
+                var patternsClone = patterns.ToDictionary(entry => entry.Key, entry => {
+                    if (entry.Key == PatternKind.Point)
+                    {
+                        return new string[]
+                        {
+                            entry.Value[0],
+                            @"\((?<x>.*),(?<y>.*)\)"
+                        };
+                    }
+                    return entry.Value;
+                });
+                interpreter = new Interpreter(patternsClone, typeKindPairs);
+            }
+
+            [Fact]
+            public void returns_same_drawables()
+            {
+                // Arrange
+                var expressionMockWithLegacyPattern = new ExpressionMock("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)");
+                var expressionMock = new ExpressionMock("Seg: (0.00,0.00) - (100.00,0.00)");
+
+                // Act
+                var drawableWithLegacyPattern = interpreter.GetDrawable(expressionMockWithLegacyPattern);
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.Equivalent(drawable, drawableWithLegacyPattern);
             }
         }
 
