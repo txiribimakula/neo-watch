@@ -62,6 +62,7 @@ namespace NeoWatch.Loading
             };
 
             var expressions = new ExpressionLoader(itemExpression, listTypes);
+            drawables.Parse = expressions.Parse;
 
             var currentIndex = 0;
             foreach (Expression expression in expressions)

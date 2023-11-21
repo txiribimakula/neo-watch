@@ -5,6 +5,7 @@ namespace NeoWatch.Drawing
 {
     public interface IDrawable : INotifyPropertyChanged, IBoxable
     {
+        string Parse { get; set; }
         string Description { get; set; }
         IColor Color { set; get; }
         // TODO: define default thickness for all drawables (force getter implementation for DefaultThickness).

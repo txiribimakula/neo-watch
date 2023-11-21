@@ -17,6 +17,8 @@ namespace NeoWatch.Drawing
             set { progress = value; NotifyPropertyChanged(nameof(Progress)); }
         }
 
+        public string Parse { get; set; }
+
         private string error;
         public string Error {
             get { return error; }

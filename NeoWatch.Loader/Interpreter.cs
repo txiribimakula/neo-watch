@@ -21,14 +21,15 @@ namespace NeoWatch.Loading
 
         public IDrawable GetDrawable(IExpression expression)
         {
-            var expressionValue = expression.Value;
-            var newDrawable = GetDrawable(expressionValue, PatternKind.Type);
+            var parse = expression.Value;
+            var newDrawable = GetDrawable(parse, PatternKind.Type);
 
             if (newDrawable == null)
             {
+                parse = expression.Parse;
                 try
                 {
-                    newDrawable = GetDrawable(expression.Parse, PatternKind.Type);
+                    newDrawable = GetDrawable(parse, PatternKind.Type);
                 }
                 catch (COMException)
                 {
@@ -36,6 +37,7 @@ namespace NeoWatch.Loading
                 }
             }
 
+            newDrawable.Parse = parse;
             return newDrawable;
         }
 

@@ -11,29 +11,33 @@ namespace NeoWatch.Loading
         {
             _expression = expression;
             _listTypes = listTypes;
+            _isList = GetIsList();
         }
+
+        public string Parse { get; set; }
 
         private IExpression _expression;
         private string[] _listTypes;
+        private bool _isList;
 
-        private bool _isList
+        private bool GetIsList()
         {
-            get
+            var expressionType = _expression.Type;
+            if (isInListTypes(expressionType) || isMatchingListPattern(expressionType))
             {
-                var expressionType = _expression.Type;
-                if (isInListTypes(expressionType) || isMatchingListPattern(expressionType))
-                {
-                    return true;
-                }
-
-                var expressionValue = _expression.Value;
-                if (expressionValue.Contains("List"))
-                {
-                    return true;
-                }
-
-                return false;
+                Parse = expressionType;
+                return true;
             }
+
+            var expressionValue = _expression.Value;
+            if (expressionValue.Contains("List"))
+            {
+                Parse = expressionValue;
+                return true;
+            }
+
+            Parse = $"Single (type: {expressionType} - value: {expressionValue})";
+            return false;
         }
 
         private bool isInListTypes(string expressionType)
