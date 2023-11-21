@@ -2,21 +2,41 @@
 {
     public class Feedback
     {
-        private bool hasError = false;
-
         public Feedback()
         {
-            Description = "OK";
+            Type = FeedbackType.OK;
         }
 
-        public Feedback(string description)
+        public Feedback(FeedbackType type)
         {
-            Description = description;
-            hasError = true;
+            Type = type;
         }
 
-        public bool HasError => hasError;
+        public FeedbackType Type { get; private set; }
 
-        public string Description { get; private set; }
+        public string Detail
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case FeedbackType.OK:
+                        return "OK.";
+                    case FeedbackType.CoordinatesInitError:
+                        return "Coordinates init error.";
+                    case FeedbackType.VariableCouldNotBeLoadedError:
+                        return "Variable could not be loaded.";
+                    default:
+                        return null;
+                }
+            }
+        }
+    }
+
+    public enum FeedbackType
+    {
+        OK,
+        CoordinatesInitError,
+        VariableCouldNotBeLoadedError
     }
 }

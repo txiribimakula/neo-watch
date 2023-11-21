@@ -2,13 +2,12 @@
 {
     public class Result<T>
     {
-        public Result(T data)
+        public Result(FeedbackType feedback)
         {
-            Data = data;
-            Feedback = new Feedback();
+            Feedback = new Feedback(feedback);
         }
 
-        public Result(T data, string feedback)
+        public Result(T data, FeedbackType feedback = FeedbackType.OK)
         {
             Data = data;
             Feedback = new Feedback(feedback);

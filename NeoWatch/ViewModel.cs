@@ -8,6 +8,7 @@ using System;
 using System.Windows.Input;
 using NeoWatch.Drawing;
 using NeoWatch.Loading;
+using NeoWatch.Common;
 
 namespace NeoWatch
 {
@@ -367,9 +368,9 @@ namespace NeoWatch
 
                     var feedback = result.Feedback;
 
-                    if (feedback.Description != "OK")
+                    if (feedback.Type != FeedbackType.OK)
                     {
-                        watchItem.Drawables.Error = feedback.Description;
+                        watchItem.Drawables.Error = feedback.Detail;
                         return;
                     }
 
@@ -401,6 +402,7 @@ namespace NeoWatch
             stopwatch.Stop();
 
             watchItem.Drawables.Error = watchItem.Drawables.Error + " (" + stopwatch.Elapsed.TotalMilliseconds.ToString("F0") + "ms)";
+            watchItem.Drawables.Error = "";
 
             if (watchItem.Drawables.Count > 0)
             {
