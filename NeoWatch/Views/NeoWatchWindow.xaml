@@ -196,6 +196,13 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding ElementName=dataGrid,  Path=DataContext.GetDebugInfoCommand}" CommandParameter="{Binding}" Focusable="False"></Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Items" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

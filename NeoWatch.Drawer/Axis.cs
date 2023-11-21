@@ -10,6 +10,7 @@ namespace NeoWatch.Drawing
             Box = box;
         }
 
+        public string Parse { get; set; }
         public string Description { get; set; }
         public string Error { get; set; }
         public IColor Color { get; set; }

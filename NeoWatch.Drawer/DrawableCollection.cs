@@ -22,6 +22,8 @@ namespace NeoWatch.Drawing
             get => Count == 0 ? 1 : Count;
         }
 
+        public string Parse { get; set; }
+
         private string error;
         public string Error {
             get { return error; }

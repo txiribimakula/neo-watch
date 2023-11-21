@@ -10,6 +10,8 @@ namespace NeoWatch.Drawing
             Color = Colors.Black;
             Box = new Box(x - 1, x + 1, y - 1, y + 1);
         }
+
+        public string Parse { get; set; }
         public string Description { get; set; }
         public IColor Color { get; set; }
         private int thickness { get; set; } = 1;

@@ -12,6 +12,7 @@ namespace NeoWatch.Drawing
             SetBox();
         }
 
+        public string Parse { get; set; }
         public string Description { get; set; }
         public IColor Color { get; set; }
         private int thickness { get; set; } = 1;

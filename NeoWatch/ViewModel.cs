@@ -76,6 +76,7 @@ namespace NeoWatch
         public RelayCommand AutoFitCommand { get; set; }
         public RelayCommand ToggleSenseCommand { get; set; }
         public RelayCommand PickColorCommand { get; set; }
+        public RelayCommand GetDebugInfoCommand { get; set; }
 
 
         public void OnLoaded(object sender, RoutedEventArgs e)
@@ -97,6 +98,7 @@ namespace NeoWatch
             AutoFitCommand = new RelayCommand(parameter => AutoFit((float)frameworkElement.ActualWidth / (float)frameworkElement.ActualHeight));
             ToggleSenseCommand = new RelayCommand(_ => ToggleSense());
             PickColorCommand = new RelayCommand(watchItem => PickColor((WatchItem)watchItem));
+            GetDebugInfoCommand = new RelayCommand(watchItem => GetDebugInfo((WatchItem)watchItem));
         }
 
         private void ToggleSense()
@@ -112,6 +114,18 @@ namespace NeoWatch
             {
                 watchItem.Color = "#" + (colorDialog.Color.ToArgb() & 0x00FFFFFF).ToString("X6");
             }
+        }
+
+        private void GetDebugInfo(WatchItem watchItem)
+        {
+            var clipboardText = watchItem.Drawables.Parse;
+            clipboardText += Environment.NewLine;
+            foreach (var drawable in watchItem.Drawables)
+            {
+                clipboardText += drawable.Parse;
+                clipboardText += Environment.NewLine;
+            }
+            Clipboard.SetText(clipboardText);
         }
 
         private void AutoFit(float windowRatio)
@@ -385,6 +399,7 @@ namespace NeoWatch
                         geoDrawer.TransformGeometry(drawable);
                     }
                     watchItem.Drawables.AddAndNotify(drawables);
+                    watchItem.Drawables.Parse = drawables.Parse;
                     if(drawables.Error != null)
                     {
                         watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;

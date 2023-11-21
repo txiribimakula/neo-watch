@@ -10,6 +10,7 @@ namespace NeoWatch.Drawing
             Description = description;
         }
 
+        public string Parse { get; set; }
         public string Description { get; set; }
         public IColor Color { get; set; }
         public int Thickness { get; set; }
