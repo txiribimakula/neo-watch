@@ -16,7 +16,6 @@ namespace NeoWatch.Drawing
         public string Dash { get; set; }
         public IGeometry TransformedGeometry { get; set; }
         public IGeometry TransformedCapGeometry { get; set; }
-        public string Error { get; set; }
         public IBox Box { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;

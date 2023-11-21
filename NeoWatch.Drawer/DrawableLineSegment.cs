@@ -12,7 +12,6 @@ namespace NeoWatch.Drawing
         }
 
         public string Description { get; set; }
-        public string Error { get; set; }
         public IColor Color { set; get; }
         private int thickness { get; set; } = 1;
         public int Thickness

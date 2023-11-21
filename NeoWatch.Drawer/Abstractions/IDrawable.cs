@@ -14,6 +14,5 @@ namespace NeoWatch.Drawing
         IGeometry TransformedGeometry { set; get; }
         IGeometry TransformedCapGeometry { set; get; }
         void TransformGeometry(IDrawableVisitor visitor);
-        string Error { get; set; }
     }
 }
