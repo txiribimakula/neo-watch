@@ -10,7 +10,6 @@ namespace NeoWatch.Drawing
             Box = new Box(x - 1, x + 1, y - 1, y + 1);
         }
         public string Description { get; set; }
-        public string Error { get; set; }
         public IColor Color { get; set; }
         private int thickness { get; set; } = 1;
         public int Thickness
