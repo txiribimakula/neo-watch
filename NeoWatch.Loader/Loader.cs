@@ -64,11 +64,11 @@ namespace NeoWatch.Loading
             var expressions = new ExpressionLoader(itemExpression, listTypes);
 
             var currentIndex = 0;
-            foreach (Expression expression in expressions)
+            foreach (IExpression expression in expressions)
             {
                 var innerExpressions = new ExpressionLoader(expression, listTypes);
 
-                foreach (Expression innerExpression in innerExpressions)
+                foreach (IExpression innerExpression in innerExpressions)
                 {
                     var newDrawable = Interpreter.GetDrawable(innerExpression);
 
