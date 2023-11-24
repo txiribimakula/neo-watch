@@ -132,11 +132,11 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Description" Width="*">
+                    <DataGridTemplateColumn Header="Status" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.Count}" />
+                                    <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.MaximumProgress}" />
                                     <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="DarkRed" Text="{Binding Drawables.Error}" />
                                 </Grid>
                             </DataTemplate>

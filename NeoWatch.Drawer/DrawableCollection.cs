@@ -17,6 +17,11 @@ namespace NeoWatch.Drawing
             set { progress = value; NotifyPropertyChanged(nameof(Progress)); }
         }
 
+        public int MaximumProgress
+        {
+            get => Count == 0 ? 1 : Count;
+        }
+
         private string error;
         public string Error {
             get { return error; }

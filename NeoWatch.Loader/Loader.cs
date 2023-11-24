@@ -29,12 +29,12 @@ namespace NeoWatch.Loading
             }
             catch (COMException)
             {
-                return new Result<Drawables>(null, "Variable could not be loaded");
+                return new Result<Drawables>(FeedbackType.VariableCouldNotBeLoadedError);
             }
 
             if (expression == null || string.IsNullOrEmpty(expression.Type))
             {
-                return new Result<Drawables>(null, "Variable could not be found");
+                return new Result<Drawables>(FeedbackType.VariableCouldNotBeLoadedError);
             }
 
             var drawables = await GetDrawablesAsync(expression);
