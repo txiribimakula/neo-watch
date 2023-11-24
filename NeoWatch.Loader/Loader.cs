@@ -43,7 +43,7 @@ namespace NeoWatch.Loading
             return new Result<Drawables>(drawables);
         }
 
-        public Task<Drawables> GetDrawablesAsync(IExpression expression)
+        private Task<Drawables> GetDrawablesAsync(IExpression expression)
         {
             return Task.Run(() => {
                 return GetDrawables(expression);
