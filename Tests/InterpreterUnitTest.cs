@@ -1,7 +1,9 @@
 using NeoWatch.Drawing;
 using NeoWatch.Geometries;
 using NeoWatch.Loading;
+using System.Runtime.InteropServices;
 using Tests.Mocks;
+using static Tests.Mocks.ExpressionMock;
 
 namespace Tests
 {
@@ -38,10 +40,11 @@ namespace Tests
             [InlineData("Arc: C: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
             [InlineData(null, "Seg: (0.00,0.00) - (100.00,0.00)")]
             [InlineData(null, "Arc: C: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
-            public void returns_valid_drawable_when_expression_value_and_or_parse_are_valid(string value, string parse = "COMException")
+            public void returns_valid_drawable_when_expression_value_and_or_parse_are_valid(string value, string parse = nameof(COMException))
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, parse);
+                GetParse getParse = parse == nameof(COMException) ? () => throw new COMException() : () => parse;
+                var expressionMock = new ExpressionMock(value, getParse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -56,10 +59,11 @@ namespace Tests
             [InlineData(null)]
             [InlineData(null, "")]
             [InlineData(null, null)]
-            public void returns_null_when_expression_has_no_value_and_no_parse(string value, string parse = "COMException")
+            public void returns_null_when_expression_has_no_value_and_no_parse(string value, string parse = nameof(COMException))
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, parse);
+                GetParse getParse = parse == nameof(COMException) ? () => throw new COMException() : () => parse;
+                var expressionMock = new ExpressionMock(value, getParse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -75,10 +79,11 @@ namespace Tests
             [InlineData(null, "eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
             [InlineData(null, "Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
             [InlineData(null, "A: ")]
-            public void returns_invalid_drawable_when_value_and_or_parse_have_invalid_type(string value, string parse = "COMException")
+            public void returns_invalid_drawable_when_value_and_or_parse_have_invalid_type(string value, string parse = nameof(COMException))
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, parse);
+                GetParse getParse = parse == nameof(COMException) ? () => throw new COMException() : () => parse;
+                var expressionMock = new ExpressionMock(value, getParse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -99,10 +104,11 @@ namespace Tests
             [InlineData(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
             [InlineData(null, "A")]
             [InlineData(null, "A:")]
-            public void returns_null_when_value_and_parse_have_invalid_fields(string value, string parse = "COMException")
+            public void returns_null_when_value_and_parse_have_invalid_fields(string value, string parse = nameof(COMException))
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, parse);
+                GetParse getParse = parse == nameof(COMException) ? () => throw new COMException() : () => parse;
+                var expressionMock = new ExpressionMock(value, getParse);
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -136,8 +142,8 @@ namespace Tests
             public void returns_same_drawables()
             {
                 // Arrange
-                var expressionMockWithLegacyPattern = new ExpressionMock("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)");
-                var expressionMock = new ExpressionMock("Seg: (0.00,0.00) - (100.00,0.00)");
+                var expressionMockWithLegacyPattern = new ExpressionMock("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)", () => throw new COMException());
+                var expressionMock = new ExpressionMock("Seg: (0.00,0.00) - (100.00,0.00)", () => throw new COMException());
 
                 // Act
                 var drawableWithLegacyPattern = interpreter.GetDrawable(expressionMockWithLegacyPattern);
@@ -161,7 +167,7 @@ namespace Tests
             public void returns_expected_point()
             {
                 // Arrange
-                var expressionMock = new ExpressionMock("Pnt: (5.00,15.00)");
+                var expressionMock = new ExpressionMock("Pnt: (5.00,15.00)", () => throw new COMException());
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -177,7 +183,7 @@ namespace Tests
             public void returns_expected_point_with_negative_numbers()
             {
                 // Arrange
-                var expressionMock = new ExpressionMock("Pnt: (-5.00,-15.00)");
+                var expressionMock = new ExpressionMock("Pnt: (-5.00,-15.00)", () => throw new COMException());
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -199,7 +205,7 @@ namespace Tests
             public void returns_null(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, () => throw new COMException());
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -222,7 +228,7 @@ namespace Tests
             public void returns_expected_segment()
             {
                 // Arrange
-                var expressionMock = new ExpressionMock("Seg: (5.00,15.00) - (100.00,10.00)");
+                var expressionMock = new ExpressionMock("Seg: (5.00,15.00) - (100.00,10.00)", () => throw new COMException());
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -241,7 +247,7 @@ namespace Tests
             public void returns_null(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, () => throw new COMException());
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
@@ -256,7 +262,7 @@ namespace Tests
             public void returns_invalid_type_error(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value);
+                var expressionMock = new ExpressionMock(value, () => throw new COMException());
 
                 // Act
                 var drawable = interpreter.GetDrawable(expressionMock);
