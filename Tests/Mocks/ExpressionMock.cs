@@ -1,17 +1,17 @@
 ﻿using NeoWatch.Loading;
-using System.Runtime.InteropServices;
 
 namespace Tests.Mocks
 {
     public class ExpressionMock : IExpression
     {
         private string _value;
-        private string _parse;
+        public delegate string GetParse();
+        private GetParse getParse;
 
-        public ExpressionMock(string value, string parse = "COMException")
+        public ExpressionMock(string value, GetParse getParse)
         {
             _value = value;
-            _parse = parse;
+            this.getParse = getParse;
         }
 
         public string Type => throw new NotImplementedException();
@@ -20,18 +20,7 @@ namespace Tests.Mocks
 
         public string Name => throw new NotImplementedException();
 
-        public string Parse
-        {
-            get {
-                switch (_parse)
-                {
-                    case "COMException":
-                        throw new COMException();
-                    default:
-                        return _parse;
-                }
-            }
-        }
+        public string Parse => getParse();
 
         public IExpressions DataMembers => throw new NotImplementedException();
     }
