@@ -4,6 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             Background="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"
              xmlns:drawing="clr-namespace:NeoWatch.Drawing;assembly=NeoWatch.Drawing"
              xmlns:local="clr-namespace:NeoWatch"
              xmlns:converters="clr-namespace:NeoWatch.Converters"
@@ -70,7 +73,8 @@
             </b:Interaction.Triggers>
             <TextBlock Foreground="HotPink" FontWeight="Bold" Text="{Binding Ruler, Converter={StaticResource RulerToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 15"/>
             <TextBlock Text="{Binding CurrentCursorPoint, Converter={StaticResource PointToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 3"/>
-            <Canvas ClipToBounds="True">
+            <Canvas ClipToBounds="True"
+                    Background="{DynamicResource {x:Static shell:VsBrushes.GridHeadingBackgroundKey}}">
                 <Path Opacity="0.11" Stroke="Black" StrokeThickness="1" Data="{Binding Axes, Converter={StaticResource AxesToPathConverter}, Mode=OneWay}"/>
             </Canvas>
             <ItemsControl ItemsSource="{Binding WatchItems}">
@@ -114,9 +118,58 @@
         <GridSplitter Grid.Row="1"
                       HorizontalAlignment="Stretch"
                       ResizeDirection="Rows"
-                      Height="5" Width="auto"/>
+                      Height="5" Width="auto"
+                      Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}"/>
         <DockPanel Grid.Row="2">
-            <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" ItemsSource="{Binding WatchItems}">
+            <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" ItemsSource="{Binding WatchItems}"
+                  Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}"
+                  Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"
+                  BorderBrush="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}">
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                        <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.GridHeadingBackgroundKey}}" />
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.GridHeadingTextKey}}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}" />
+                        <Setter Property="BorderThickness" Value="0, 1, 1, 1" />
+                        <Setter Property="Padding" Value="5, 2, 5, 2" />
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+                <DataGrid.RowHeaderStyle>
+                    <Style TargetType="{x:Type DataGridRowHeader}">
+                        <Setter Property="Width" Value="0" />
+                    </Style>
+                </DataGrid.RowHeaderStyle>
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}">
+                        <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}" />
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.CellStyle>
+                    <Style TargetType="{x:Type DataGridCell}">
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.HighlightKey}}" />
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.HighlightTextKey}}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}" />
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
+                            </Trigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsSelected}" Value="True" />
+                                    <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=IsKeyboardFocusWithin}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.Setters>
+                                    <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" />
+                                </MultiDataTrigger.Setters>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name" Binding="{Binding Name}">
                         <DataGridTextColumn.ElementStyle>
@@ -136,7 +189,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.MaximumProgress}" />
+                                    <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.MaximumProgress}" 
+                                                 Style="{DynamicResource {x:Static shell:VsResourceKeys.ProgressBarStyleKey}}"/>
                                     <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="DarkRed" Text="{Binding Drawables.Error}" />
                                 </Grid>
                             </DataTemplate>
@@ -145,7 +199,8 @@
                     <DataGridTemplateColumn Header="Items" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ComboBox ItemsSource="{Binding Drawables}" SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Description" />
+                                <ComboBox ItemsSource="{Binding Drawables}" SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Description"
+                                          Style="{DynamicResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -153,7 +208,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    IsChecked="{Binding Path=IsVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{DynamicResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
                                 </CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -167,7 +223,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsLoading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                    IsChecked="{Binding Path=IsLoading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{DynamicResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
                                 </CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
