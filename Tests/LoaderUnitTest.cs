@@ -27,7 +27,7 @@ namespace Tests
                 var result = await loader.Load(new WatchItem());
 
                 // Assert
-                Assert.Equal("Variable could not be loaded", result.Feedback.Description);
+                Assert.Equal("Variable could not be loaded", result.Feedback.Detail);
             }
         }
     }
