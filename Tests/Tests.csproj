@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NeoWatch.Common\NeoWatch.Common.csproj" />
     <ProjectReference Include="..\NeoWatch.Loader\NeoWatch.Loading.csproj" />
   </ItemGroup>
 
