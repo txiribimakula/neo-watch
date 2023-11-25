@@ -7,7 +7,7 @@ namespace Tests.Mocks
     {
         public delegate IExpression Callback(string name);
 
-        public Callback GetExpressionCallback { get; set; } = (name) => new ExpressionMock(name, () => throw new COMException());
+        public Callback GetExpressionCallback { get; set; } = (name) => new ExpressionMock(name, "any", () => throw new COMException());
 
         public IExpression GetExpression(string name)
         {
