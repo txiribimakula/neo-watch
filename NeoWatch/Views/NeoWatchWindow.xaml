@@ -71,12 +71,12 @@
                         MethodName="OnMouseWheel" x:Name="mouseWheel"/>
                 </b:EventTrigger>
             </b:Interaction.Triggers>
-            <TextBlock Foreground="HotPink" FontWeight="Bold" Text="{Binding Ruler, Converter={StaticResource RulerToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 15"/>
-            <TextBlock Text="{Binding CurrentCursorPoint, Converter={StaticResource PointToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 3"/>
             <Canvas ClipToBounds="True"
                     Background="{DynamicResource {x:Static shell:VsBrushes.GridHeadingBackgroundKey}}">
                 <Path Opacity="0.11" Stroke="Black" StrokeThickness="1" Data="{Binding Axes, Converter={StaticResource AxesToPathConverter}, Mode=OneWay}"/>
             </Canvas>
+            <TextBlock Foreground="HotPink" FontWeight="Bold" Text="{Binding Ruler, Converter={StaticResource RulerToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 15"/>
+            <TextBlock Text="{Binding CurrentCursorPoint, Converter={StaticResource PointToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 3"/>
             <ItemsControl ItemsSource="{Binding WatchItems}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
