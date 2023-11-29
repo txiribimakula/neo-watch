@@ -131,8 +131,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\eye.png" />
-    <Resource Include="Resources\loop.png" />
     <Content Include="Resources\morpheus.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -215,7 +215,14 @@
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.HeaderTemplate>
                             <DataTemplate>
-                                <Image Source="pack://application:,,,/NeoWatch;component/Resources/eye.png" Width="15" Height="15"/>
+                                <Grid HorizontalAlignment="Center" MaxWidth="15">
+                                    <Viewbox Stretch="Fill">
+                                        <Grid>
+                                            <Path Stroke="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" StrokeThickness="2" StrokeLineJoin="Round" StrokeEndLineCap="Round" Data="M15.0007 12C15.0007 13.6569 13.6576 15 12.0007 15C10.3439 15 9.00073 13.6569 9.00073 12C9.00073 10.3431 10.3439 9 12.0007 9C13.6576 9 15.0007 10.3431 15.0007 12Z" />
+                                            <Path Stroke="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" StrokeThickness="2" StrokeLineJoin="Round" StrokeEndLineCap="Round" Data="M12.0012 5C7.52354 5 3.73326 7.94288 2.45898 12C3.73324 16.0571 7.52354 19 12.0012 19C16.4788 19 20.2691 16.0571 21.5434 12C20.2691 7.94291 16.4788 5 12.0012 5Z" />
+                                        </Grid>
+                                    </Viewbox>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.HeaderTemplate>
                     </DataGridTemplateColumn>
@@ -230,7 +237,13 @@
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.HeaderTemplate>
                             <DataTemplate>
-                                <Image Source="pack://application:,,,/NeoWatch;component/Resources/loop.png" Width="15" Height="15"/>
+                                <Grid HorizontalAlignment="Center" MaxWidth="15">
+                                    <Viewbox Stretch="Fill">
+                                        <Grid>
+                                            <Path Stroke="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}" StrokeThickness="2" StrokeLineJoin="Round" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Data="M3 12C3 16.9706 7.02944 21 12 21C14.3051 21 16.4077 20.1334 18 18.7083L21 16M21 12C21 7.02944 16.9706 3 12 3C9.69494 3 7.59227 3.86656 6 5.29168L3 8M21 21V16M21 16H16M3 3V8M3 8H8"/>
+                                        </Grid>
+                                    </Viewbox>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.HeaderTemplate>
                     </DataGridTemplateColumn>
