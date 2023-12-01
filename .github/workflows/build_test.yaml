@@ -3,6 +3,8 @@ name: BuildTest
 on:
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - 'Demos/**'
 
 env:
   SOLUTION_FILE_PATH: .
