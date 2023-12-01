@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	
+	<Type Name="DemoPoint">
+		<DisplayString>Pnt: ({demoX},{demoY})</DisplayString>
+		<Expand>
+			<Synthetic Name="Parse">
+				<DisplayString>Pnt: ({demoX},{demoX})</DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+
+	<Type Name="DemoLineSegment">
+		<DisplayString>Seg: {demoInitialPoint} - {demoFinalPoint}</DisplayString>
+		<Expand>
+			<Synthetic Name="Parse">
+				<DisplayString>Seg: {demoInitialPoint} - {demoFinalPoint}</DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+	
+	<Type Name="DemoArcSegment">
+		<DisplayString>Arc: C: {demoCenterPoint} R: {demoRadius} AngIni: {demoInitialAngle} AngPaso: {demoSweepAngle}</DisplayString>
+		<Expand>
+			<Synthetic Name="Parse">
+				<DisplayString> Arc: C: {demoCenterPoint} R: {demoRadius} AngIni: {demoInitialAngle} AngPaso: {demoSweepAngle} </DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+	
+</AutoVisualizer>
