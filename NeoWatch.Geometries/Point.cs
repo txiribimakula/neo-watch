@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 
 namespace NeoWatch.Geometries
 {
@@ -15,6 +16,16 @@ namespace NeoWatch.Geometries
             Y = y;
         }
 
+        public override bool Equals(object obj)
+        {
+            if(obj is Point objPoint)
+            {
+                return Equals(objPoint);
+            }
+
+            return false;
+        }
+
         public bool Equals(Point other)
         {
             if (ReferenceEquals(this, other)) return true;
@@ -23,6 +34,13 @@ namespace NeoWatch.Geometries
             if (!Y.EqualsWithTolerance(other.Y)) return false;
 
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = X.GetHashCode();
+            hashCode ^= Y.GetHashCode();
+            return hashCode;
         }
     }
 }

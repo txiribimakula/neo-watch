@@ -14,6 +14,16 @@ namespace NeoWatch.Geometries
 
         public GeometryType Type => GeometryType.Line;
 
+        public override bool Equals(object obj)
+        {
+            if(obj is LineSegment objLineSegment)
+            {
+                return Equals(objLineSegment);
+            }
+
+            return false;
+        }
+
         public bool Equals(LineSegment other)
         {
             if (ReferenceEquals(this, other)) return true;
@@ -22,6 +32,13 @@ namespace NeoWatch.Geometries
             if (!FinalPoint.Equals(other.FinalPoint)) return false;
 
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = InitialPoint.GetHashCode();
+            hashCode ^= FinalPoint.GetHashCode();
+            return hashCode;
         }
     }
 }
