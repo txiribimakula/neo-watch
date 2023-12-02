@@ -2,7 +2,7 @@
 
 namespace NeoWatch.Geometries
 {
-    public class ArcSegment : IGeometry
+    public class ArcSegment : IGeometry, IEquatable<ArcSegment>
     {
         public ArcSegment(Point centerPoint, float initialAngle, float sweepAngle, float radius) {
             CenterPoint = centerPoint;
@@ -32,5 +32,19 @@ namespace NeoWatch.Geometries
         public float Diameter => 2 * Radius;
 
         public GeometryType Type => GeometryType.Arc;
+
+        public bool Equals(ArcSegment other)
+        {
+            if (ReferenceEquals(this, other)) return true;
+
+            if (!InitialPoint.Equals(other.InitialPoint)) return false;
+            if (!FinalPoint.Equals(other.FinalPoint)) return false;
+            if (!CenterPoint.Equals(other.CenterPoint)) return false;
+            if (!InitialAngle.EqualsWithTolerance(other.InitialAngle)) return false;
+            if (!SweepAngle.EqualsWithTolerance(other.SweepAngle)) return false;
+            if (!Radius.EqualsWithTolerance(other.Radius)) return false;
+
+            return true;
+        }
     }
 }

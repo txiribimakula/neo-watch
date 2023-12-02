@@ -151,6 +151,7 @@ namespace Tests
 
                 // Assert
                 Assert.Equivalent(drawable, drawableWithLegacyPattern);
+                Assert.Equal(drawable, drawableWithLegacyPattern);
             }
         }
 
@@ -177,6 +178,7 @@ namespace Tests
                 Assert.True(drawable.Box.IsValid);
                 var expectedDrawablePoint = new DrawablePoint(5, 15);
                 Assert.Equivalent(expectedDrawablePoint, drawable);
+                Assert.Equal(expectedDrawablePoint, drawable);
             }
 
             [Fact]
@@ -193,6 +195,7 @@ namespace Tests
                 Assert.True(drawable.Box.IsValid);
                 var expectedDrawablePoint = new DrawablePoint(-5, -15);
                 Assert.Equivalent(expectedDrawablePoint, drawable);
+                Assert.Equal(expectedDrawablePoint, drawable);
             }
 
             [Theory]
@@ -238,6 +241,7 @@ namespace Tests
                 Assert.True(drawable.Box.IsValid);
                 var expectedDrawableLineSegment = new DrawableLineSegment(new Point(5, 15), new Point(100, 10));
                 Assert.Equivalent(expectedDrawableLineSegment, drawable);
+                Assert.Equal(expectedDrawableLineSegment, drawable);
             }
 
 

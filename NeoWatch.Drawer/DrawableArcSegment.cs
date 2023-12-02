@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using NeoWatch.Geometries;
 
 namespace NeoWatch.Drawing
 {
-    public class DrawableArcSegment : ArcSegment, IDrawable {
-
+    public class DrawableArcSegment : ArcSegment, IDrawable, IEquatable<DrawableArcSegment> {
         public DrawableArcSegment(Point centerPoint, float initialAngle, float sweepAngle, float radius)
             : base(centerPoint, initialAngle, sweepAngle, radius) {
             Color = Colors.Black;
@@ -160,6 +160,11 @@ namespace NeoWatch.Drawing
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string prop) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+        }
+
+        public bool Equals(DrawableArcSegment other)
+        {
+            return base.Equals(other);
         }
     }
 }

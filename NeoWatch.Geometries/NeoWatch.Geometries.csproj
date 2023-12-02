@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArcSegment.cs" />
+    <Compile Include="Comparers.cs" />
     <Compile Include="IGeometry.cs" />
     <Compile Include="LineSegment.cs" />
     <Compile Include="Point.cs" />
