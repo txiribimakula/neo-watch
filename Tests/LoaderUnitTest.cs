@@ -1,11 +1,15 @@
-﻿using NeoWatch.Loading;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NeoWatch.Loading;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Tests.Mocks;
 
 namespace Tests
 {
+    [TestClass]
     public class LoaderUnitTest
     {
+        [TestClass]
         public class Load_Item
         {
             private Loader loader;
@@ -17,8 +21,8 @@ namespace Tests
                 loader = new Loader(debuggerMock, new InterpreterMock());
             }
 
-            [Fact]
-            public async void returns_result_with_could_not_load_message_when_getexpression_throws_comexception()
+            [TestMethod]
+            public async Task returns_result_with_could_not_load_message_when_getexpression_throws_comexception()
             {
                 // Arrange
                 debuggerMock.GetExpressionCallback = new DebuggerMock.Callback((string name) => throw new COMException());
@@ -27,7 +31,7 @@ namespace Tests
                 var result = await loader.Load(new WatchItem());
 
                 // Assert
-                Assert.Equal("Variable could not be loaded.", result.Feedback.Detail);
+                Assert.AreEqual("Variable could not be loaded.", result.Feedback.Detail);
             }
         }
     }

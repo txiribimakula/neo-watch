@@ -1,5 +1,7 @@
 ﻿using NeoWatch.Drawing;
 using NeoWatch.Loading;
+using System;
+using System.Collections.Generic;
 
 namespace Tests.Mocks
 {

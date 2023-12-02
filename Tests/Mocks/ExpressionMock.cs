@@ -1,4 +1,5 @@
 ﻿using NeoWatch.Loading;
+using System;
 
 namespace Tests.Mocks
 {
