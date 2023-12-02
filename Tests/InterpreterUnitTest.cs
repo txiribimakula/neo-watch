@@ -367,6 +367,21 @@ namespace Tests
                 // Assert
                 Assert.AreEqual("Type is not interpretable.", drawable.Description);
             }
+
+
+            [TestMethod]
+            [DataRow("Arc: C: (0.00,0.00) R: 999999999999999999999999999999999999999999999999999999999999999999999999 AngIni: 0.00 AngPaso: 90.00")]
+            public void does_not_overflow(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                // implicit if no exception is thrown
+            }
         }
     }
 }
