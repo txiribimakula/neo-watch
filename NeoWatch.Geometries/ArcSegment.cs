@@ -33,6 +33,16 @@ namespace NeoWatch.Geometries
 
         public GeometryType Type => GeometryType.Arc;
 
+        public override bool Equals(object obj)
+        {
+            if(obj is ArcSegment objArcSegment)
+            {
+                return Equals(objArcSegment);
+            }
+
+            return false;
+        }
+
         public bool Equals(ArcSegment other)
         {
             if (ReferenceEquals(this, other)) return true;
@@ -45,6 +55,17 @@ namespace NeoWatch.Geometries
             if (!Radius.EqualsWithTolerance(other.Radius)) return false;
 
             return true;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = InitialPoint.GetHashCode();
+            hashCode ^= FinalPoint.GetHashCode();
+            hashCode ^= CenterPoint.GetHashCode();
+            hashCode ^= InitialAngle.GetHashCode();
+            hashCode ^= SweepAngle.GetHashCode();
+            hashCode ^= Radius.GetHashCode();
+            return hashCode;
         }
     }
 }

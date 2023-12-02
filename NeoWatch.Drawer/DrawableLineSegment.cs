@@ -4,7 +4,7 @@ using NeoWatch.Geometries;
 
 namespace NeoWatch.Drawing
 {
-    public class DrawableLineSegment : LineSegment, IDrawable, IEquatable<DrawableLineSegment>
+    public class DrawableLineSegment : LineSegment, IDrawable
     {
         public DrawableLineSegment(Point initialPoint, Point finalPoint) : base(initialPoint, finalPoint) {
             Color = Colors.Black;
@@ -61,11 +61,6 @@ namespace NeoWatch.Drawing
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string prop) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
-
-        public bool Equals(DrawableLineSegment other)
-        {
-            return base.Equals(other);
         }
     }
 }

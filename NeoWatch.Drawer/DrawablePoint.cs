@@ -4,7 +4,7 @@ using NeoWatch.Geometries;
 
 namespace NeoWatch.Drawing
 {
-    public class DrawablePoint : Point, IDrawable, IEquatable<DrawablePoint>
+    public class DrawablePoint : Point, IDrawable
     {
         public DrawablePoint(float x, float y) : base(x, y) {
             Color = Colors.Black;
@@ -42,11 +42,6 @@ namespace NeoWatch.Drawing
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string prop) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
-
-        public bool Equals(DrawablePoint other)
-        {
-            return base.Equals(other);
         }
     }
 }
