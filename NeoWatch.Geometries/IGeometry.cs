@@ -1,4 +1,6 @@
-﻿namespace NeoWatch.Geometries
+﻿using System;
+
+namespace NeoWatch.Geometries
 {
     public interface IGeometry
     {
