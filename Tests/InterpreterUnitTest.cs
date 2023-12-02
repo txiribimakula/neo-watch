@@ -312,5 +312,61 @@ namespace Tests
                 Assert.AreEqual("Type is not interpretable.", drawable.Description);
             }
         }
+
+        [TestClass]
+        public class Get_Drawable_Arc
+        {
+            IInterpreter interpreter;
+
+            public Get_Drawable_Arc()
+            {
+                interpreter = new Interpreter(patterns, typeKindPairs);
+            }
+
+            [TestMethod]
+            public void returns_expected_arc()
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock("Arc: C: (0.00,0.00) R: 10.00 AngIni: 0.00 AngPaso: 90.00", type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.IsNotNull(drawable);
+                Assert.IsTrue(drawable.Box.IsValid);
+                var expectedDrawableArcSegment = new DrawableArcSegment(new Point(0, 0), 0, 90, 10);
+                Assert.AreEqual(expectedDrawableArcSegment, drawable);
+            }
+
+            [TestMethod]
+            [DataRow("Arc: C: (0.00,0.00) R: AngIni: 0.00 AngPaso: 90.00")]
+            [DataRow("Arc: C: (0.00,0.00) AngIni: 0.00 AngPaso: 90.00")]
+            public void returns_null(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.IsNull(drawable);
+            }
+
+            [TestMethod]
+            [DataRow("NotAnArc: C: (0.00,0.00) R: 10.00 AngIni: 0.00 AngPaso: 90.00")]
+            public void returns_invalid_type_error(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.AreEqual("Type is not interpretable.", drawable.Description);
+            }
+        }
     }
 }
