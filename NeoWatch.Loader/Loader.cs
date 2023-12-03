@@ -29,28 +29,31 @@ namespace NeoWatch.Loading
             }
             catch (COMException)
             {
-                return new Result<Drawables>(FeedbackType.VariableCouldNotBeLoadedError);
+                return new Result<Drawables>(FeedbackType.ExpressionLoadException);
             }
 
             if (expression == null || string.IsNullOrEmpty(expression.Type))
             {
-                return new Result<Drawables>(FeedbackType.VariableCouldNotBeLoadedError);
+                return new Result<Drawables>(FeedbackType.ExpressionLoadException);
             }
 
-            var drawables = await GetDrawablesAsync(expression);
-            drawables.Type = expression.Type;
+            var drawablesResult = await GetDrawablesAsync(expression);
+            if(drawablesResult.Data != null)
+            {
+                drawablesResult.Data.Type = expression.Type;
+            }
 
-            return new Result<Drawables>(drawables);
+            return drawablesResult;
         }
 
-        private Task<Drawables> GetDrawablesAsync(IExpression expression)
+        private Task<Result<Drawables>> GetDrawablesAsync(IExpression expression)
         {
             return Task.Run(() => {
                 return GetDrawables(expression);
             });
         }
 
-        private Drawables GetDrawables(IExpression itemExpression)
+        private Result<Drawables> GetDrawables(IExpression itemExpression)
         {
             var drawables = new Drawables();
 
@@ -70,26 +73,25 @@ namespace NeoWatch.Loading
 
                 foreach (IExpression innerExpression in innerExpressions)
                 {
-                    var newDrawable = Interpreter.GetDrawable(innerExpression);
+                    var newDrawableResult = Interpreter.GetDrawable(innerExpression);
 
-                    if (newDrawable == null)
+                    if (newDrawableResult.Feedback.Type != FeedbackType.OK)
                     {
-                        return drawables;
+                        return new Result<Drawables>(drawables, newDrawableResult.Feedback);
                     }
 
-                    newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;
-                    drawables.Add(newDrawable);
+                    newDrawableResult.Data.Description = "[" + drawables.Count + "]: " + newDrawableResult.Data.Description;
+                    drawables.Add(newDrawableResult.Data);
 
                     currentIndex++;
                     if (currentIndex >= MAX_SEGMENTS)
                     {
-                        drawables.Error = "Maximum elements per item is currently capped to: " + MAX_SEGMENTS;
-                        return drawables;
+                        return new Result<Drawables>(FeedbackType.MaximumElementsCap);
                     }
                 }
             }
 
-            return drawables;
+            return new Result<Drawables>(drawables);
         }
     }
 }

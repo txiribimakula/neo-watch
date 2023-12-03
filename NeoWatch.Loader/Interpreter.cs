@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System;
 using NeoWatch.Drawing;
 using System.Runtime.InteropServices;
+using NeoWatch.Common;
 
 namespace NeoWatch.Loading
 {
@@ -19,79 +20,84 @@ namespace NeoWatch.Loading
 
         public Dictionary<string, PatternKind> TypeKindPairs { get; set; }
 
-        public IDrawable GetDrawable(IExpression expression)
+        public Result<IDrawable> GetDrawable(IExpression expression)
         {
             var expressionValue = expression.Value;
-            var newDrawable = GetDrawable(expressionValue, PatternKind.Type);
+            var newDrawableResult = GetDrawable(expressionValue, PatternKind.Type);
 
-            if (newDrawable == null)
+            if (newDrawableResult.Feedback.Type != FeedbackType.OK)
             {
                 try
                 {
-                    newDrawable = GetDrawable(expression.Parse, PatternKind.Type);
+                    newDrawableResult = GetDrawable(expression.Parse, PatternKind.Type);
                 }
                 catch (COMException)
                 {
-                    return null;
+                    return new Result<IDrawable>(FeedbackType.ExpressionLoadException);
                 }
             }
 
-            return newDrawable;
+            return newDrawableResult;
         }
 
-        private IDrawable GetDrawable(string value, PatternKind patternKind)
+        private Result<IDrawable> GetDrawable(string value, PatternKind patternKind)
         {
             if (value == null)
             {
-                return null;
+                return new Result<IDrawable>(FeedbackType.ExpressionPatternMissmatch);
             }
 
             var match = GetMatch(value, Patterns[patternKind]);
-
-            if (match.Success)
+            if (!match.Success)
             {
+                return new Result<IDrawable>(FeedbackType.ExpressionPatternMissmatch);
+            }
+
+            try
+            {
+                string type = match.Groups["type"].Value;
+                var parse = match.Groups["parse"].Value;
+
+                PatternKind? kind = null;
                 try
                 {
-                    string type = match.Groups["type"].Value;
-                    var parse = match.Groups["parse"].Value;
+                    kind = TypeKindPairs[type];
+                }
+                catch (KeyNotFoundException)
+                {
+                    return new Result<IDrawable>(FeedbackType.TypeNotFound);
+                }
 
-                    PatternKind? kind = null;
-                    try
+                try
+                {
+                    switch (kind)
                     {
-                        kind = TypeKindPairs[type];
-                    }
-                    catch (KeyNotFoundException)
-                    {
-                        return new Drawable("Type is not interpretable.");
-                    }
-
-                    try
-                    {
-                        switch (kind)
-                        {
-                            case PatternKind.Point:
-                                return GetDrawablePoint(parse);
-                            case PatternKind.Segment:
-                                return GetDrawableSegment(parse);
-                            case PatternKind.Arc:
-                                return GetDrawableArc(parse);
-                            case PatternKind.Circle:
-                                return GetDrawableCircle(parse);
-                            default:
-                                return new Drawable("Type is not interpretable.");
-                        }
-                    }
-                    catch (DrawableException ex)
-                    {
-                        return ex.Drawable;
+                        case PatternKind.Point:
+                            var pointResult = GetDrawablePoint(parse);
+                            return new Result<IDrawable>(pointResult.Data, pointResult.Feedback);
+                        case PatternKind.Segment:
+                            var segmentResult = GetDrawableSegment(parse);
+                            return new Result<IDrawable>(segmentResult.Data, segmentResult.Feedback);
+                        case PatternKind.Arc:
+                            var arcResult = GetDrawableArc(parse);
+                            return new Result<IDrawable>(arcResult.Data, arcResult.Feedback);
+                        case PatternKind.Circle:
+                            var circleResult = GetDrawableCircle(parse);
+                            return new Result<IDrawable>(circleResult.Data, circleResult.Feedback);
+                        default:
+                            return new Result<IDrawable>(FeedbackType.TypeNotFound);
                     }
                 }
-                catch (FormatException ex)
+                catch (DrawableException ex)
                 {
-                    return null;
+                    return new Result<IDrawable>(FeedbackType.UnhandledException);
                 }
             }
-            return null;
+            // unit test this situation
+            catch (FormatException ex)
+            {
+                return null;
+            }
         }
 
         private Match GetMatch(string value, string[] patterns)
@@ -110,133 +116,136 @@ namespace NeoWatch.Loading
             return match;
         }
 
-        private DrawableArcSegment GetDrawableCircle(string parse)
+        private Result<DrawableArcSegment> GetDrawableCircle(string parse)
         {
             // TODO: handle exceptions for additional feedback when regex is wrong (too many ")"...).
             var match = GetMatch(parse, Patterns[PatternKind.Circle]);
 
             if (!match.Success)
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
 
             string centerPointParse = match.Groups["centerPoint"].Value;
             if (string.IsNullOrEmpty(centerPointParse))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
             string radiusParse = match.Groups["radius"].Value;
             if (string.IsNullOrEmpty(radiusParse))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
 
-            var centerPoint = GetDrawablePoint(centerPointParse);
+            var centerPointResult = GetDrawablePoint(centerPointParse);
             float radius;
             if (!float.TryParse(radiusParse, NumberStyles.Float, CultureInfo.InvariantCulture, out radius))
             {
-                return null;
+                return new Result<DrawableArcSegment>(centerPointResult.Feedback);
             }
 
-            return new DrawableArcSegment(centerPoint, 0, 360, radius);
+            var drawableCircle = new DrawableArcSegment(centerPointResult.Data, 0, 360, radius);
+            return new Result<DrawableArcSegment>(drawableCircle);
         }
 
-        private DrawableArcSegment GetDrawableArc(string parse)
+        private Result<DrawableArcSegment> GetDrawableArc(string parse)
         {
             var match = GetMatch(parse, Patterns[PatternKind.Arc]);
 
             if (!match.Success)
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
 
             string centerPointParse = match.Groups["centerPoint"].Value;
             if (string.IsNullOrEmpty(centerPointParse))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
             string radiusParse = match.Groups["radius"].Value;
             if (string.IsNullOrEmpty(radiusParse))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
             string initialAngleParse = match.Groups["initialAngle"].Value;
             if (string.IsNullOrEmpty(initialAngleParse))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
             string sweepAngleParse = match.Groups["sweepAngle"].Value;
             if (string.IsNullOrEmpty(sweepAngleParse))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
 
-            var centerPoint = GetDrawablePoint(centerPointParse);
-            if (centerPoint == null)
+            var centerPointResult = GetDrawablePoint(centerPointParse);
+            if (centerPointResult.Feedback.Type != FeedbackType.OK)
             {
-                return null;
+                return new Result<DrawableArcSegment>(centerPointResult.Feedback);
             }
             float radius;
             if (!float.TryParse(radiusParse, NumberStyles.Float, CultureInfo.InvariantCulture, out radius))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionParsingException);
             }
             float initialAngle;
             if (!float.TryParse(initialAngleParse, NumberStyles.Float, CultureInfo.InvariantCulture, out initialAngle))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionParsingException);
             }
             float sweepAngle;
             if (!float.TryParse(sweepAngleParse, NumberStyles.Float, CultureInfo.InvariantCulture, out sweepAngle))
             {
-                return null;
+                return new Result<DrawableArcSegment>(FeedbackType.ExpressionParsingException);
             }
 
-            return new DrawableArcSegment(centerPoint, initialAngle, sweepAngle, radius);
+            var drawableArcSegment = new DrawableArcSegment(centerPointResult.Data, initialAngle, sweepAngle, radius);
+            return new Result<DrawableArcSegment>(drawableArcSegment);
         }
 
-        private DrawableLineSegment GetDrawableSegment(string parse)
+        private Result<DrawableLineSegment> GetDrawableSegment(string parse)
         {
             var match = GetMatch(parse, Patterns[PatternKind.Segment]);
 
             if (!match.Success)
             {
-                return null;
+                return new Result<DrawableLineSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
 
             string initialPointParse = match.Groups["initialPoint"].Value;
             if (string.IsNullOrEmpty(initialPointParse))
             {
-                return null;
+                return new Result<DrawableLineSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
             string finalPointParse = match.Groups["finalPoint"].Value;
             if (string.IsNullOrEmpty(finalPointParse))
             {
-                return null;
+                return new Result<DrawableLineSegment>(FeedbackType.ExpressionPatternMissmatch);
             }
 
             // TODO: differentiate between one point or the other failing.
-            var initialPoint = GetDrawablePoint(initialPointParse);
-            if (initialPoint == null)
+            var initialPointResult = GetDrawablePoint(initialPointParse);
+            if (initialPointResult.Feedback.Type != FeedbackType.OK)
             {
-                return null;
+                return new Result<DrawableLineSegment>(initialPointResult.Feedback);
             }
-            var finalPoint = GetDrawablePoint(finalPointParse);
-            if (finalPoint == null)
+            var finalPointResult = GetDrawablePoint(finalPointParse);
+            if (finalPointResult.Feedback.Type != FeedbackType.OK)
             {
-                return null;
+                return new Result<DrawableLineSegment>(finalPointResult.Feedback);
             }
 
-            return new DrawableLineSegment(initialPoint, finalPoint);
+            var drawableSegment = new DrawableLineSegment(initialPointResult.Data, finalPointResult.Data);
+            return new Result<DrawableLineSegment>(drawableSegment);
         }
 
-        private DrawablePoint GetDrawablePoint(string parse)
+        private Result<DrawablePoint> GetDrawablePoint(string parse)
         {
             var match = GetMatch(parse, Patterns[PatternKind.Point]);
 
             if (!match.Success)
             {
-                return null;
+                return new Result<DrawablePoint>(FeedbackType.ExpressionPatternMissmatch);
             }
 
             string xParse = match.Groups["x"].Value;
@@ -245,15 +254,15 @@ namespace NeoWatch.Loading
             float x;
             if (!float.TryParse(xParse, NumberStyles.Float, CultureInfo.InvariantCulture, out x))
             {
-                return null;
+                return new Result<DrawablePoint>(FeedbackType.ExpressionParsingException);
             }
             float y;
             if (!float.TryParse(yParse, NumberStyles.Float, CultureInfo.InvariantCulture, out y))
             {
-                return null;
+                return new Result<DrawablePoint>(FeedbackType.ExpressionParsingException);
             }
 
-            return new DrawablePoint(x, y);
+            return new Result<DrawablePoint>(new DrawablePoint(x, y));
         }
     }
 

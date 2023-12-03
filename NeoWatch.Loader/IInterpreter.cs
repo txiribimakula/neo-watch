@@ -1,11 +1,12 @@
-﻿using NeoWatch.Drawing;
+﻿using NeoWatch.Common;
+using NeoWatch.Drawing;
 using System.Collections.Generic;
 
 namespace NeoWatch.Loading
 {
     public interface IInterpreter
     {
-        IDrawable GetDrawable(IExpression expression);
+        Result<IDrawable> GetDrawable(IExpression expression);
 
         Dictionary<PatternKind, string[]> Patterns { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NeoWatch.Common;
 using NeoWatch.Drawing;
 using NeoWatch.Geometries;
 using NeoWatch.Loading;
@@ -61,80 +62,22 @@ namespace Tests
                 var expressionMock = new ExpressionMock(value, type: "any", getParse);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNotNull(drawable);
-                Assert.IsTrue(drawable.Box.IsValid);
+                Assert.IsNotNull(drawableResult);
+                Assert.AreEqual(FeedbackType.OK, drawableResult.Feedback.Type);
+                Assert.IsTrue(drawableResult.Data.Box.IsValid);
             }
-
             [TestMethod]
             [DataRow("")]
             [DataRow(null)]
-            [DataRow(null, "")]
-            [DataRow(null, null)]
-            public void returns_null_when_expression_has_no_value_and_no_parse(string value, string parse = nameof(COMException))
-            {
-                // Arrange
-                ExpressionMock.GetParse getParse;
-                if (parse == nameof(COMException))
-                {
-                    getParse = () => throw new COMException();
-                }
-                else
-                {
-                    getParse = () => parse;
-                }
-                var expressionMock = new ExpressionMock(value, type: "any", getParse);
-
-                // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
-
-                // Assert
-                Assert.IsNull(drawable);
-            }
-
-            [TestMethod]
-            [DataRow("eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
-            [DataRow("Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
-            [DataRow("A: ")]
-            [DataRow(null, "eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
-            [DataRow(null, "Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
-            [DataRow(null, "A: ")]
-            public void returns_invalid_drawable_when_value_and_or_parse_have_invalid_type(string value, string parse = nameof(COMException))
-            {
-                // Arrange
-                ExpressionMock.GetParse getParse;
-                if (parse == nameof(COMException))
-                {
-                    getParse = () => throw new COMException();
-                }
-                else
-                {
-                    getParse = () => parse;
-                }
-                var expressionMock = new ExpressionMock(value, type: "any", getParse);
-
-                // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
-
-                // Assert
-                Assert.AreEqual("Type is not interpretable.", drawable.Description);
-                Assert.IsNull(drawable.Box);
-            }
-
-            [TestMethod]
             [DataRow("Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
             [DataRow("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
             [DataRow("Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
             [DataRow("A")]
             [DataRow("A:")]
-            [DataRow(null, "Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
-            [DataRow(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
-            [DataRow(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
-            [DataRow(null, "A")]
-            [DataRow(null, "A:")]
-            public void returns_null_when_value_and_parse_have_invalid_fields(string value, string parse = nameof(COMException))
+            public void returns_expression_load_error_when_parse_ends_throwing_exception(string value, string parse = nameof(COMException))
             {
                 // Arrange
                 ExpressionMock.GetParse getParse;
@@ -149,10 +92,61 @@ namespace Tests
                 var expressionMock = new ExpressionMock(value, type: "any", getParse);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawable);
+                Assert.AreEqual(FeedbackType.ExpressionLoadException, drawableResult.Feedback.Type);
+            }
+
+            [TestMethod]
+            [DataRow(null, "")]
+            [DataRow(null, null)]
+            [DataRow(null, "Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
+            [DataRow(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
+            [DataRow(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
+            [DataRow(null, "A")]
+            [DataRow(null, "A:")]
+            public void returns_expression_pattern_missmatch(string value, string parse = nameof(COMException))
+            {
+                // Arrange
+                ExpressionMock.GetParse getParse;
+                if (parse == nameof(COMException))
+                {
+                    getParse = () => throw new COMException();
+                }
+                else
+                {
+                    getParse = () => parse;
+                }
+                var expressionMock = new ExpressionMock(value, type: "any", getParse);
+
+                // Act
+                var drawableResult = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.IsNull(drawableResult.Data);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
+            }
+
+            [TestMethod]
+            [DataRow("eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)", "eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
+            [DataRow("Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90", "Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
+            [DataRow("A: ", "A: ")]
+            [DataRow(null, "eg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00)")]
+            [DataRow(null, "Arc1: C: Pnt: (0.00,0.00) R: 10 AngIni: 0 AngPaso: 90")]
+            [DataRow(null, "A: ")]
+            public void returns_typenotfound_when_value_failed_and_parse_has_invalid_type(string value, string parse)
+            {
+                // Arrange
+                ExpressionMock.GetParse getParse = () => parse;
+                var expressionMock = new ExpressionMock(value, type: "any", getParse);
+
+                // Act
+                var drawableResult = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.AreEqual(FeedbackType.TypeNotFound, drawableResult.Feedback.Type);
+                Assert.IsNull(drawableResult.Data);
             }
         }
 
@@ -185,11 +179,11 @@ namespace Tests
                 var expressionMock = new ExpressionMock("Seg: (0.00,0.00) - (100.00,0.00)", type: "any", () => throw new COMException());
 
                 // Act
-                var drawableWithLegacyPattern = interpreter.GetDrawable(expressionMockWithLegacyPattern);
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResultWithLegacyPattern = interpreter.GetDrawable(expressionMockWithLegacyPattern);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.AreEqual(drawable, drawableWithLegacyPattern);
+                Assert.AreEqual(drawableResult.Data, drawableResultWithLegacyPattern.Data);
             }
         }
 
@@ -210,13 +204,13 @@ namespace Tests
                 var expressionMock = new ExpressionMock("Pnt: (5.00,15.00)", type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNotNull(drawable);
-                Assert.IsTrue(drawable.Box.IsValid);
+                Assert.IsNotNull(drawableResult);
+                Assert.IsTrue(drawableResult.Data.Box.IsValid);
                 var expectedDrawablePoint = new DrawablePoint(5, 15);
-                Assert.AreEqual(expectedDrawablePoint, drawable);
+                Assert.AreEqual(expectedDrawablePoint, drawableResult.Data);
             }
 
             [TestMethod]
@@ -226,13 +220,13 @@ namespace Tests
                 var expressionMock = new ExpressionMock("Pnt: (-5.00,-15.00)", type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNotNull(drawable);
-                Assert.IsTrue(drawable.Box.IsValid);
+                Assert.IsNotNull(drawableResult);
+                Assert.IsTrue(drawableResult.Data.Box.IsValid);
                 var expectedDrawablePoint = new DrawablePoint(-5, -15);
-                Assert.AreEqual(expectedDrawablePoint, drawable);
+                Assert.AreEqual(expectedDrawablePoint, drawableResult.Data);
             }
 
             [TestMethod]
@@ -242,16 +236,16 @@ namespace Tests
             [DataRow("Pnt: 5.00,15.00)")]
             [DataRow("Pnt: (,)")]
             [DataRow("(5.00,15.00)")]
-            public void returns_null(string value)
+            public void returns_expression_pattern_missmatch(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawable);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
             }
             
             [TestMethod]
@@ -263,7 +257,7 @@ namespace Tests
                 var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
                 // implicit if no exception is thrown
@@ -287,29 +281,29 @@ namespace Tests
                 var expressionMock = new ExpressionMock("Seg: (5.00,15.00) - (100.00,10.00)", type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNotNull(drawable);
-                Assert.IsTrue(drawable.Box.IsValid);
+                Assert.IsNotNull(drawableResult);
+                Assert.IsTrue(drawableResult.Data.Box.IsValid);
                 var expectedDrawableLineSegment = new DrawableLineSegment(new Point(5, 15), new Point(100, 10));
-                Assert.AreEqual(expectedDrawableLineSegment, drawable);
+                Assert.AreEqual(expectedDrawableLineSegment, drawableResult.Data);
             }
 
 
             [TestMethod]
             [DataRow("Seg: (5.00,15.00) (100.00,10.00)")]
             [DataRow("Pnt: (5.00,15.00) - Pnt: (100.00,10.00)")]
-            public void returns_null(string value)
+            public void returns_expression_pattern_missmatch(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawable);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
             }
 
 
@@ -318,13 +312,13 @@ namespace Tests
             public void returns_invalid_type_error(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.AreEqual("Type is not interpretable.", drawable.Description);
+                Assert.AreEqual(FeedbackType.TypeNotFound, drawableResult.Feedback.Type);
             }
 
             [TestMethod]
@@ -338,7 +332,7 @@ namespace Tests
                 var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
                 // implicit if no exception is thrown
@@ -362,28 +356,28 @@ namespace Tests
                 var expressionMock = new ExpressionMock("Arc: C: (0.00,0.00) R: 10.00 AngIni: 0.00 AngPaso: 90.00", type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNotNull(drawable);
-                Assert.IsTrue(drawable.Box.IsValid);
+                Assert.IsNotNull(drawableResult);
+                Assert.IsTrue(drawableResult.Data.Box.IsValid);
                 var expectedDrawableArcSegment = new DrawableArcSegment(new Point(0, 0), 0, 90, 10);
-                Assert.AreEqual(expectedDrawableArcSegment, drawable);
+                Assert.AreEqual(expectedDrawableArcSegment, drawableResult.Data);
             }
 
             [TestMethod]
             [DataRow("Arc: C: (0.00,0.00) R: AngIni: 0.00 AngPaso: 90.00")]
             [DataRow("Arc: C: (0.00,0.00) AngIni: 0.00 AngPaso: 90.00")]
-            public void returns_null(string value)
+            public void returns_expression_pattern_missmatch(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawable);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
             }
 
             [TestMethod]
@@ -391,13 +385,13 @@ namespace Tests
             public void returns_invalid_type_error(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.AreEqual("Type is not interpretable.", drawable.Description);
+                Assert.AreEqual(FeedbackType.TypeNotFound, drawableResult.Feedback.Type);
             }
 
             [TestMethod]
@@ -412,7 +406,7 @@ namespace Tests
                 var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
 
                 // Act
-                var drawable = interpreter.GetDrawable(expressionMock);
+                var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
                 // implicit if no exception is thrown
