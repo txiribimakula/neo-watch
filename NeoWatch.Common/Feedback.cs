@@ -31,9 +31,13 @@
                     case FeedbackType.ExpressionPatternMissmatch:
                         return "Expression does not match any valid patterns.";
                     case FeedbackType.UnhandledException:
+                        // This kind of error should be broken down into known scenarios.
                         return "Unhandled exception.";
                     case FeedbackType.ExpressionLoadException:
                         return "Expression could not be loaded.";
+                    case FeedbackType.MaximumElementsCap:
+                        // Include arguments in Feedback, for instance: number of maximum elements.
+                        return "Maximum elements per item is currently capped because of performance reasons.";
                     default:
                         return null;
                 }
@@ -48,8 +52,8 @@
         ExpressionParsingException,
         TypeNotFound,
         ExpressionPatternMissmatch,
-        // This kind of error should be broken down into known scenarios.
         UnhandledException,
-        ExpressionLoadException
+        ExpressionLoadException,
+        MaximumElementsCap
     }
 }

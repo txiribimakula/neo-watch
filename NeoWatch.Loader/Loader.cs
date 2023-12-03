@@ -37,20 +37,23 @@ namespace NeoWatch.Loading
                 return new Result<Drawables>(FeedbackType.ExpressionLoadException);
             }
 
-            var drawables = await GetDrawablesAsync(expression);
-            drawables.Type = expression.Type;
+            var drawablesResult = await GetDrawablesAsync(expression);
+            if(drawablesResult.Data != null)
+            {
+                drawablesResult.Data.Type = expression.Type;
+            }
 
-            return new Result<Drawables>(drawables);
+            return drawablesResult;
         }
 
-        private Task<Drawables> GetDrawablesAsync(IExpression expression)
+        private Task<Result<Drawables>> GetDrawablesAsync(IExpression expression)
         {
             return Task.Run(() => {
                 return GetDrawables(expression);
             });
         }
 
-        private Drawables GetDrawables(IExpression itemExpression)
+        private Result<Drawables> GetDrawables(IExpression itemExpression)
         {
             var drawables = new Drawables();
 
@@ -74,7 +77,7 @@ namespace NeoWatch.Loading
 
                     if (newDrawableResult.Feedback.Type != FeedbackType.OK)
                     {
-                        return drawables;
+                        return new Result<Drawables>(drawables, newDrawableResult.Feedback);
                     }
 
                     newDrawableResult.Data.Description = "[" + drawables.Count + "]: " + newDrawableResult.Data.Description;
@@ -83,13 +86,12 @@ namespace NeoWatch.Loading
                     currentIndex++;
                     if (currentIndex >= MAX_SEGMENTS)
                     {
-                        drawables.Error = "Maximum elements per item is currently capped to: " + MAX_SEGMENTS;
-                        return drawables;
+                        return new Result<Drawables>(FeedbackType.MaximumElementsCap);
                     }
                 }
             }
 
-            return drawables;
+            return new Result<Drawables>(drawables);
         }
     }
 }

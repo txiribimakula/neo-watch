@@ -69,13 +69,44 @@ namespace Tests
                 Assert.AreEqual(FeedbackType.OK, drawableResult.Feedback.Type);
                 Assert.IsTrue(drawableResult.Data.Box.IsValid);
             }
-
             [TestMethod]
             [DataRow("")]
             [DataRow(null)]
+            [DataRow("Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
+            [DataRow("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
+            [DataRow("Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
+            [DataRow("A")]
+            [DataRow("A:")]
+            public void returns_expression_load_error_when_parse_ends_throwing_exception(string value, string parse = nameof(COMException))
+            {
+                // Arrange
+                ExpressionMock.GetParse getParse;
+                if (parse == nameof(COMException))
+                {
+                    getParse = () => throw new COMException();
+                }
+                else
+                {
+                    getParse = () => parse;
+                }
+                var expressionMock = new ExpressionMock(value, type: "any", getParse);
+
+                // Act
+                var drawableResult = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                Assert.AreEqual(FeedbackType.ExpressionLoadException, drawableResult.Feedback.Type);
+            }
+
+            [TestMethod]
             [DataRow(null, "")]
             [DataRow(null, null)]
-            public void returns_null_when_expression_has_no_value_and_no_parse(string value, string parse = nameof(COMException))
+            [DataRow(null, "Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
+            [DataRow(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
+            [DataRow(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
+            [DataRow(null, "A")]
+            [DataRow(null, "A:")]
+            public void returns_expression_pattern_missmatch(string value, string parse = nameof(COMException))
             {
                 // Arrange
                 ExpressionMock.GetParse getParse;
@@ -117,39 +148,6 @@ namespace Tests
                 Assert.AreEqual(FeedbackType.TypeNotFound, drawableResult.Feedback.Type);
                 Assert.IsNull(drawableResult.Data);
             }
-
-            [TestMethod]
-            [DataRow("Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
-            [DataRow("Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
-            [DataRow("Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
-            [DataRow("A")]
-            [DataRow("A:")]
-            [DataRow(null, "Seg: Pnt: 0.00,0.00) - Pnt: (100.00,0.00)")]
-            [DataRow(null, "Seg: Pnt: (0.00,0.00) - Pnt: (100.00,0.00")]
-            [DataRow(null, "Arc: C: Pnt: (0.00,0.00) R: 10 AngIi: 0 AngPaso: 90")]
-            [DataRow(null, "A")]
-            [DataRow(null, "A:")]
-            public void returns_null_when_value_and_parse_have_invalid_fields(string value, string parse = nameof(COMException))
-            {
-                // Arrange
-                ExpressionMock.GetParse getParse;
-                if (parse == nameof(COMException))
-                {
-                    getParse = () => throw new COMException();
-                }
-                else
-                {
-                    getParse = () => parse;
-                }
-                var expressionMock = new ExpressionMock(value, type: "any", getParse);
-
-                // Act
-                var drawableResult = interpreter.GetDrawable(expressionMock);
-
-                // Assert
-                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
-                Assert.IsNull(drawableResult.Data);
-            }
         }
 
         [TestClass]
@@ -181,11 +179,11 @@ namespace Tests
                 var expressionMock = new ExpressionMock("Seg: (0.00,0.00) - (100.00,0.00)", type: "any", () => throw new COMException());
 
                 // Act
-                var drawableWithLegacyPattern = interpreter.GetDrawable(expressionMockWithLegacyPattern);
+                var drawableResultWithLegacyPattern = interpreter.GetDrawable(expressionMockWithLegacyPattern);
                 var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.AreEqual(drawableResult, drawableWithLegacyPattern);
+                Assert.AreEqual(drawableResult.Data, drawableResultWithLegacyPattern.Data);
             }
         }
 
@@ -238,16 +236,16 @@ namespace Tests
             [DataRow("Pnt: 5.00,15.00)")]
             [DataRow("Pnt: (,)")]
             [DataRow("(5.00,15.00)")]
-            public void returns_null(string value)
+            public void returns_expression_pattern_missmatch(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
                 var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawableResult);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
             }
             
             [TestMethod]
@@ -296,16 +294,16 @@ namespace Tests
             [TestMethod]
             [DataRow("Seg: (5.00,15.00) (100.00,10.00)")]
             [DataRow("Pnt: (5.00,15.00) - Pnt: (100.00,10.00)")]
-            public void returns_null(string value)
+            public void returns_expression_pattern_missmatch(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
                 var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawableResult);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
             }
 
 
@@ -314,7 +312,7 @@ namespace Tests
             public void returns_invalid_type_error(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
                 var drawableResult = interpreter.GetDrawable(expressionMock);
@@ -370,16 +368,16 @@ namespace Tests
             [TestMethod]
             [DataRow("Arc: C: (0.00,0.00) R: AngIni: 0.00 AngPaso: 90.00")]
             [DataRow("Arc: C: (0.00,0.00) AngIni: 0.00 AngPaso: 90.00")]
-            public void returns_null(string value)
+            public void returns_expression_pattern_missmatch(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
                 var drawableResult = interpreter.GetDrawable(expressionMock);
 
                 // Assert
-                Assert.IsNull(drawableResult);
+                Assert.AreEqual(FeedbackType.ExpressionPatternMissmatch, drawableResult.Feedback.Type);
             }
 
             [TestMethod]
@@ -387,7 +385,7 @@ namespace Tests
             public void returns_invalid_type_error(string value)
             {
                 // Arrange
-                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+                var expressionMock = new ExpressionMock(value, type: "any", () => value);
 
                 // Act
                 var drawableResult = interpreter.GetDrawable(expressionMock);
