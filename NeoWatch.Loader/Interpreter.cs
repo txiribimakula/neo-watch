@@ -132,7 +132,11 @@ namespace NeoWatch.Loading
             }
 
             var centerPoint = GetDrawablePoint(centerPointParse);
-            var radius = float.Parse(radiusParse, CultureInfo.InvariantCulture);
+            float radius;
+            if (!float.TryParse(radiusParse, NumberStyles.Float, CultureInfo.InvariantCulture, out radius))
+            {
+                return null;
+            }
 
             return new DrawableArcSegment(centerPoint, 0, 360, radius);
         }
@@ -168,9 +172,25 @@ namespace NeoWatch.Loading
             }
 
             var centerPoint = GetDrawablePoint(centerPointParse);
-            var radius = float.Parse(radiusParse, CultureInfo.InvariantCulture);
-            var initialAngle = float.Parse(initialAngleParse, CultureInfo.InvariantCulture);
-            var sweepAngle = float.Parse(sweepAngleParse, CultureInfo.InvariantCulture);
+            if (centerPoint == null)
+            {
+                return null;
+            }
+            float radius;
+            if (!float.TryParse(radiusParse, NumberStyles.Float, CultureInfo.InvariantCulture, out radius))
+            {
+                return null;
+            }
+            float initialAngle;
+            if (!float.TryParse(initialAngleParse, NumberStyles.Float, CultureInfo.InvariantCulture, out initialAngle))
+            {
+                return null;
+            }
+            float sweepAngle;
+            if (!float.TryParse(sweepAngleParse, NumberStyles.Float, CultureInfo.InvariantCulture, out sweepAngle))
+            {
+                return null;
+            }
 
             return new DrawableArcSegment(centerPoint, initialAngle, sweepAngle, radius);
         }
@@ -222,32 +242,18 @@ namespace NeoWatch.Loading
             string xParse = match.Groups["x"].Value;
             string yParse = match.Groups["y"].Value;
 
-            float x = GetFloat(xParse);
-            float y = GetFloat(yParse);
+            float x;
+            if (!float.TryParse(xParse, NumberStyles.Float, CultureInfo.InvariantCulture, out x))
+            {
+                return null;
+            }
+            float y;
+            if (!float.TryParse(yParse, NumberStyles.Float, CultureInfo.InvariantCulture, out y))
+            {
+                return null;
+            }
 
             return new DrawablePoint(x, y);
-        }
-
-        private float GetFloat(string parse)
-        {
-            float value;
-            try
-            {
-                value = float.Parse(parse, CultureInfo.InvariantCulture);
-
-                if (Math.Abs(value) == 107374176)
-                {
-                    var drawable = new Drawable("Coordinates init error.");
-                    throw new DrawableException(drawable);
-                }
-            }
-            catch (OverflowException)
-            {
-                var drawable = new Drawable("Coordinates init error.");
-                throw new DrawableException(drawable);
-            }
-
-            return value;
         }
     }
 
