@@ -29,12 +29,12 @@ namespace NeoWatch.Loading
             }
             catch (COMException)
             {
-                return new Result<Drawables>(FeedbackType.VariableCouldNotBeLoadedError);
+                return new Result<Drawables>(FeedbackType.ExpressionLoadException);
             }
 
             if (expression == null || string.IsNullOrEmpty(expression.Type))
             {
-                return new Result<Drawables>(FeedbackType.VariableCouldNotBeLoadedError);
+                return new Result<Drawables>(FeedbackType.ExpressionLoadException);
             }
 
             var drawables = await GetDrawablesAsync(expression);
@@ -70,15 +70,15 @@ namespace NeoWatch.Loading
 
                 foreach (IExpression innerExpression in innerExpressions)
                 {
-                    var newDrawable = Interpreter.GetDrawable(innerExpression);
+                    var newDrawableResult = Interpreter.GetDrawable(innerExpression);
 
-                    if (newDrawable == null)
+                    if (newDrawableResult.Feedback.Type != FeedbackType.OK)
                     {
                         return drawables;
                     }
 
-                    newDrawable.Description = "[" + drawables.Count + "]: " + newDrawable.Description;
-                    drawables.Add(newDrawable);
+                    newDrawableResult.Data.Description = "[" + drawables.Count + "]: " + newDrawableResult.Data.Description;
+                    drawables.Add(newDrawableResult.Data);
 
                     currentIndex++;
                     if (currentIndex >= MAX_SEGMENTS)

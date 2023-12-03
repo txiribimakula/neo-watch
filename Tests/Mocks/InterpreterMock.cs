@@ -1,4 +1,5 @@
-﻿using NeoWatch.Drawing;
+﻿using NeoWatch.Common;
+using NeoWatch.Drawing;
 using NeoWatch.Loading;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Tests.Mocks
         public Dictionary<PatternKind, string[]> Patterns { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public Dictionary<string, PatternKind> TypeKindPairs { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public IDrawable GetDrawable(IExpression expression)
+        public Result<IDrawable> GetDrawable(IExpression expression)
         {
             throw new NotImplementedException();
         }
