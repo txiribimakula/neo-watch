@@ -253,6 +253,21 @@ namespace Tests
                 // Assert
                 Assert.IsNull(drawable);
             }
+            
+            [TestMethod]
+            [DataRow("Pnt: (999999999999999999999999999999999999999999999999999999999999999999999999,15.00)")]
+            [DataRow("Pnt: (5.00,999999999999999999999999999999999999999999999999999999999999999999999999)")]
+            public void does_not_overflow(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                // implicit if no exception is thrown
+            }
         }
 
         [TestClass]
@@ -311,6 +326,23 @@ namespace Tests
                 // Assert
                 Assert.AreEqual("Type is not interpretable.", drawable.Description);
             }
+
+            [TestMethod]
+            [DataRow("Seg: (999999999999999999999999999999999999999999999999999999999999999999999999,15.00) - (100.00,10.00)")]
+            [DataRow("Seg: (5.00,999999999999999999999999999999999999999999999999999999999999999999999999) - (100.00,10.00)")]
+            [DataRow("Seg: (5.00,15.00) - (999999999999999999999999999999999999999999999999999999999999999999999999,10.00)")]
+            [DataRow("Seg: (5.00,15.00) - (100.00,999999999999999999999999999999999999999999999999999999999999999999999999)")]
+            public void does_not_overflow(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                // implicit if no exception is thrown
+            }
         }
 
         [TestClass]
@@ -366,6 +398,24 @@ namespace Tests
 
                 // Assert
                 Assert.AreEqual("Type is not interpretable.", drawable.Description);
+            }
+
+            [TestMethod]
+            [DataRow("Arc: C: (999999999999999999999999999999999999999999999999999999999999999999999999,0.00) R: 10.00 AngIni: 0.00 AngPaso: 90.00")]
+            [DataRow("Arc: C: (0.00,999999999999999999999999999999999999999999999999999999999999999999999999) R: 10.00 AngIni: 0.00 AngPaso: 90.00")]
+            [DataRow("Arc: C: (0.00,0.00) R: 999999999999999999999999999999999999999999999999999999999999999999999999 AngIni: 0.00 AngPaso: 90.00")]
+            [DataRow("Arc: C: (0.00,0.00) R: 10.00 AngIni: 999999999999999999999999999999999999999999999999999999999999999999999999 AngPaso: 90.00")]
+            [DataRow("Arc: C: (0.00,0.00) R: 10.00 AngIni: 0.00 AngPaso: 999999999999999999999999999999999999999999999999999999999999999999999999")]
+            public void does_not_overflow(string value)
+            {
+                // Arrange
+                var expressionMock = new ExpressionMock(value, type: "any", () => throw new COMException());
+
+                // Act
+                var drawable = interpreter.GetDrawable(expressionMock);
+
+                // Assert
+                // implicit if no exception is thrown
             }
         }
     }

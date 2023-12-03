@@ -4,7 +4,7 @@ class DemoArcSegment
 {
 public:
     DemoPoint demoCenterPoint;
-    float demoInitialAngle;
-    float demoSweepAngle;
-    float demoRadius;
+    double demoInitialAngle;
+    double demoSweepAngle;
+    double demoRadius;
 };
