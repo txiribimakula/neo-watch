@@ -191,7 +191,7 @@
                                 <Grid>
                                     <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.MaximumProgress}" 
                                                  Style="{DynamicResource {x:Static shell:VsResourceKeys.ProgressBarStyleKey}}"/>
-                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="DarkRed" Text="{Binding Drawables.Error}" />
+                                    <TextBox Background="Transparent" BorderThickness="0" Foreground="DarkRed" Text="{Binding Drawables.Error, Mode=OneWay}" ToolTip="{Binding Drawables.Error}" IsReadOnly="True" TextWrapping="NoWrap" />
                                 </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
