@@ -25,7 +25,7 @@ namespace NeoWatch.Loading
             var expressionValue = expression.Value;
             var newDrawableResult = GetDrawable(expressionValue, PatternKind.Type);
 
-            if (newDrawableResult.Feedback.Type != FeedbackType.OK)
+            if (newDrawableResult.Feedback.HasError)
             {
                 try
                 {
@@ -179,7 +179,7 @@ namespace NeoWatch.Loading
             }
 
             var centerPointResult = GetDrawablePoint(centerPointParse);
-            if (centerPointResult.Feedback.Type != FeedbackType.OK)
+            if (centerPointResult.Feedback.HasError)
             {
                 return new Result<DrawableArcSegment>(centerPointResult.Feedback);
             }
@@ -225,12 +225,12 @@ namespace NeoWatch.Loading
 
             // TODO: differentiate between one point or the other failing.
             var initialPointResult = GetDrawablePoint(initialPointParse);
-            if (initialPointResult.Feedback.Type != FeedbackType.OK)
+            if (initialPointResult.Feedback.HasError)
             {
                 return new Result<DrawableLineSegment>(initialPointResult.Feedback);
             }
             var finalPointResult = GetDrawablePoint(finalPointParse);
-            if (finalPointResult.Feedback.Type != FeedbackType.OK)
+            if (finalPointResult.Feedback.HasError)
             {
                 return new Result<DrawableLineSegment>(finalPointResult.Feedback);
             }

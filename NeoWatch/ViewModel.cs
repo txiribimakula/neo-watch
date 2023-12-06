@@ -368,7 +368,7 @@ namespace NeoWatch
 
                     var feedback = result.Feedback;
 
-                    if (feedback.Type != FeedbackType.OK)
+                    if (feedback.HasError)
                     {
                         watchItem.Drawables.Error = feedback.Detail;
                         return;
