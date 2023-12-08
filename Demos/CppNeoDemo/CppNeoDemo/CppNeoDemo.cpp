@@ -3,6 +3,7 @@
 #include "DemoLineSegment.h"
 #include "demoArcSegment.h"
 #include "DemoRectangle.h"
+#include "DemoListOfItself.h"
 
 int main()
 {
@@ -29,6 +30,15 @@ int main()
     demoRectangle.bottomLeftY = 0;
     demoRectangle.width = 30;
     demoRectangle.height = 10;
+
+    DemoListOfItself demoListOfItself0;
+    demoListOfItself0.Previous = nullptr;
+    demoListOfItself0.x = 0;
+    demoListOfItself0.y = 0;
+    DemoListOfItself demoListOfItself1;
+    demoListOfItself1.x = 10;
+    demoListOfItself1.y = 10;
+    demoListOfItself0.Next = &demoListOfItself1;
 
     std::cout << "Hello World!\n";
 }

@@ -46,4 +46,16 @@
 		</Expand>
 	</Type>
 
+	<Type Name="DemoListOfItself">
+		<DisplayString ExcludeView="item">List of Points</DisplayString>
+		<DisplayString IncludeView="item">Pnt: ({x},{y})</DisplayString>
+		<Expand>
+			<LinkedListItems ExcludeView="item">
+				<HeadPointer>this</HeadPointer>
+				<NextPointer>Next</NextPointer>
+				<ValueNode>*this,view(item)</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
 </AutoVisualizer>

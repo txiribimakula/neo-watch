@@ -130,12 +130,14 @@
     <ClCompile Include="CppNeoDemo.cpp" />
     <ClCompile Include="DemoArcSegment.cpp" />
     <ClCompile Include="DemoLineSegment.cpp" />
+    <ClCompile Include="DemoListOfItself.cpp" />
     <ClCompile Include="DemoPoint.cpp" />
     <ClCompile Include="DemoRectangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DemoArcSegment.h" />
     <ClInclude Include="DemoLineSegment.h" />
+    <ClInclude Include="DemoListOfItself.h" />
     <ClInclude Include="DemoPoint.h" />
     <ClInclude Include="DemoRectangle.h" />
   </ItemGroup>
