@@ -1,7 +1,7 @@
 #include <iostream>
 #include "DemoPoint.h"
 #include "DemoLineSegment.h"
-#include "demoArcSegment.h"
+#include "DemoArcSegment.h"
 #include "DemoRectangle.h"
 #include "DemoListOfItself.h"
 
