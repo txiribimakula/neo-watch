@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-	
+
 	<Type Name="DemoPoint">
 		<DisplayString>Pnt: ({demoX},{demoY})</DisplayString>
 		<Expand>
@@ -18,7 +18,7 @@
 			</Synthetic>
 		</Expand>
 	</Type>
-	
+
 	<Type Name="DemoArcSegment">
 		<DisplayString>Arc: C: {demoCenterPoint} R: {demoRadius} AngIni: {demoInitialAngle} AngPaso: {demoSweepAngle}</DisplayString>
 		<Expand>
@@ -27,5 +27,23 @@
 			</Synthetic>
 		</Expand>
 	</Type>
-	
+
+	<Type Name="DemoRectangle">
+		<DisplayString>List</DisplayString>
+		<Expand>
+			<Synthetic Name="[0]">
+				<DisplayString>Seg: ({bottomLeftX},{bottomLeftY}) - ({bottomLeftX + width},{bottomLeftY})</DisplayString>
+			</Synthetic>
+			<Synthetic Name="[1]">
+				<DisplayString>Seg: ({bottomLeftX + width},{bottomLeftY}) - ({bottomLeftX + width},{bottomLeftY + height})</DisplayString>
+			</Synthetic>
+			<Synthetic Name="[2]">
+				<DisplayString>Seg: ({bottomLeftX + width},{bottomLeftY + height}) - ({bottomLeftX},{bottomLeftY + height})</DisplayString>
+			</Synthetic>
+			<Synthetic Name="[3]">
+				<DisplayString>Seg: ({bottomLeftX},{bottomLeftY + height}) - ({bottomLeftX},{bottomLeftY})</DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+
 </AutoVisualizer>
