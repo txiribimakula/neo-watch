@@ -14,6 +14,8 @@
 
         public FeedbackType Type { get; private set; }
 
+        public bool HasError => Type != FeedbackType.OK;
+
         public string Detail
         {
             get

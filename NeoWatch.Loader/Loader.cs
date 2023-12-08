@@ -75,7 +75,7 @@ namespace NeoWatch.Loading
                 {
                     var newDrawableResult = Interpreter.GetDrawable(innerExpression);
 
-                    if (newDrawableResult.Feedback.Type != FeedbackType.OK)
+                    if (newDrawableResult.Feedback.HasError)
                     {
                         return new Result<Drawables>(drawables, newDrawableResult.Feedback);
                     }
