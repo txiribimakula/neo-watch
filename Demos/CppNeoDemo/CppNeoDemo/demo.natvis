@@ -58,4 +58,15 @@
 		</Expand>
 	</Type>
 
+	<Type Name="DemoSegment">
+		<DisplayString Condition="type == 0">{segment.line}</DisplayString>
+		<DisplayString Condition="type == 1">{segment.arc}</DisplayString>
+		<Expand>
+			<Synthetic Name="Parse">
+				<DisplayString Condition="type == 0">{segment.line}</DisplayString>
+				<DisplayString Condition="type == 1">{segment.arc}</DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+
 </AutoVisualizer>

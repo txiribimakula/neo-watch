@@ -4,6 +4,8 @@
 #include "DemoArcSegment.h"
 #include "DemoRectangle.h"
 #include "DemoListOfItself.h"
+#include "DemoSegment.h"
+#include <vector>
 
 int main()
 {
@@ -39,6 +41,16 @@ int main()
     demoListOfItself1.x = 10;
     demoListOfItself1.y = 10;
     demoListOfItself0.Next = &demoListOfItself1;
+
+    DemoSegment demoSegmentLine;
+    demoSegmentLine.type = DemoSegment::SegmentType::Line;
+    demoSegmentLine.segment.line = demoLineSegment;
+    DemoSegment demoSegmentArc;
+    demoSegmentArc.type = DemoSegment::SegmentType::Arc;
+    demoSegmentArc.segment.arc = demoArcSegment;
+    std::vector<DemoSegment> demoSegments;
+    demoSegments.push_back(demoSegmentLine);
+    demoSegments.push_back(demoSegmentArc);
 
     std::cout << "Hello World!\n";
 }
