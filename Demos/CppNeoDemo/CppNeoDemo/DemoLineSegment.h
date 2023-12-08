@@ -5,7 +5,7 @@
 class DemoLineSegment
 {
 public:
-	DemoPoint demoInitialPoint;
-	DemoPoint demoFinalPoint;
+    DemoPoint demoInitialPoint;
+    DemoPoint demoFinalPoint;
 };
 

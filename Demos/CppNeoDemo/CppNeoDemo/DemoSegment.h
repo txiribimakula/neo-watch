@@ -5,11 +5,11 @@
 class DemoSegment
 {
 public:
-	enum SegmentType { Line, Arc };
-	union Segment {
-		DemoLineSegment line;
-		DemoArcSegment arc;
-	};
-	SegmentType type;
-	Segment segment;
+    enum SegmentType { Line, Arc };
+    union Segment {
+        DemoLineSegment line;
+        DemoArcSegment arc;
+    };
+    SegmentType type;
+    Segment segment;
 };

@@ -2,7 +2,7 @@
 class DemoPoint
 {
 public:
-	double demoX;
-	double demoY;
+    double demoX;
+    double demoY;
 };
 
