@@ -7,7 +7,7 @@
     <ProjectGuid>{F86C3697-41F0-4D78-AC02-2F1DEFF9A43D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NeoWatch.Loader</RootNamespace>
+    <RootNamespace>NeoWatch.Loading</RootNamespace>
     <AssemblyName>NeoWatch.Loader</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interpreter\ArcSegmentInterpreter.cs" />
+    <Compile Include="Interpreter\CircleInterpreter.cs" />
     <Compile Include="Colours.cs" />
     <Compile Include="Debugger\Debugger.cs" />
     <Compile Include="Debugger\Expression.cs" />
@@ -51,11 +53,14 @@
     <Compile Include="Debugger\IDebugger.cs" />
     <Compile Include="Debugger\IExpression.cs" />
     <Compile Include="Debugger\IExpressions.cs" />
-    <Compile Include="IInterpreter.cs" />
+    <Compile Include="Interpreter\IInterpreter.cs" />
     <Compile Include="ILoader.cs" />
-    <Compile Include="Interpreter.cs" />
+    <Compile Include="Interpreter\Interpreter.cs" />
+    <Compile Include="Interpreter\LineSegmentInterpreter.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="LoadingException.cs" />
+    <Compile Include="Interpreter\Matcher.cs" />
+    <Compile Include="Interpreter\PointInterpreter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WatchItem.cs" />
   </ItemGroup>
