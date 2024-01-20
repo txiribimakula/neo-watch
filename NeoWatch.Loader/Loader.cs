@@ -7,14 +7,15 @@ namespace NeoWatch.Loading
 {
     public class Loader
     {
-        private readonly int MAX_SEGMENTS = 400;
+        private readonly int maxDrawables;
 
         private IDebugger debugger;
 
         public IInterpreter Interpreter { get; set; }
 
-        public Loader(IDebugger debugger, IInterpreter interpreter)
+        public Loader(IDebugger debugger, IInterpreter interpreter, int maxDrawables = 400)
         {
+            this.maxDrawables = maxDrawables;
             this.debugger = debugger;
             Interpreter = interpreter;
         }
@@ -84,9 +85,9 @@ namespace NeoWatch.Loading
                     drawables.Add(newDrawableResult.Data);
 
                     currentIndex++;
-                    if (currentIndex >= MAX_SEGMENTS)
+                    if (currentIndex >= maxDrawables)
                     {
-                        return new Result<Drawables>(FeedbackType.MaximumElementsCap);
+                        return new Result<Drawables>(drawables, FeedbackType.MaximumElementsCap);
                     }
                 }
             }

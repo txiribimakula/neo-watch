@@ -53,6 +53,7 @@
     <Compile Include="LoaderUnitTest.cs" />
     <Compile Include="Mocks\DebuggerMock.cs" />
     <Compile Include="Mocks\ExpressionMock.cs" />
+    <Compile Include="Mocks\ExpressionsMock.cs" />
     <Compile Include="Mocks\InterpreterMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
