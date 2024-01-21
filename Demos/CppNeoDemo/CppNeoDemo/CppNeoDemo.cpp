@@ -41,6 +41,26 @@ int main()
     demoListOfItself1.x = 10;
     demoListOfItself1.y = 10;
     demoListOfItself0.Next = &demoListOfItself1;
+    DemoListOfItself demoListOfItself2;
+    demoListOfItself2.x = 10;
+    demoListOfItself2.y = 10;
+    demoListOfItself1.Next = &demoListOfItself2;
+    DemoListOfItself demoListOfItself3;
+    demoListOfItself3.x = 10;
+    demoListOfItself3.y = 10;
+    demoListOfItself2.Next = &demoListOfItself3;
+    DemoListOfItself demoListOfItself4;
+    demoListOfItself4.x = 10;
+    demoListOfItself4.y = 10;
+    demoListOfItself3.Next = &demoListOfItself4;
+    DemoListOfItself demoListOfItself5;
+    demoListOfItself5.x = 10;
+    demoListOfItself5.y = 10;
+    demoListOfItself4.Next = &demoListOfItself5;
+    DemoListOfItself demoListOfItself6;
+    demoListOfItself6.x = 10;
+    demoListOfItself6.y = 10;
+    demoListOfItself5.Next = &demoListOfItself6;
 
     DemoSegment demoSegmentLine;
     demoSegmentLine.type = DemoSegment::SegmentType::Line;

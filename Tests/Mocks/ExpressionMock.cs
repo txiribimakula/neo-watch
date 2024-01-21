@@ -10,11 +10,12 @@ namespace Tests.Mocks
         public delegate string GetParse();
         private GetParse getParse;
 
-        public ExpressionMock(string value, string type, GetParse getParse)
+        public ExpressionMock(string value, string type, GetParse getParse, int dataMembersCount = 0)
         {
             _value = value;
             _type = type;
             this.getParse = getParse;
+            DataMembers = new ExpressionsMock(dataMembersCount);
         }
 
         public string Type => _type;
@@ -25,6 +26,6 @@ namespace Tests.Mocks
 
         public string Parse => getParse();
 
-        public IExpressions DataMembers => throw new NotImplementedException();
+        public IExpressions DataMembers { get; set; }
     }
 }

@@ -371,6 +371,10 @@ namespace NeoWatch
                     if (feedback.HasError)
                     {
                         watchItem.Drawables.Error = feedback.Detail;
+                    }
+
+                    if(result.Data == null || result.Data.Count == 0)
+                    {
                         return;
                     }
 
@@ -381,7 +385,10 @@ namespace NeoWatch
                         geoDrawer.TransformGeometry(drawable);
                     }
                     watchItem.Drawables.AddAndNotify(drawables);
-                    watchItem.Drawables.Error = drawables.Error;
+                    if(drawables.Error != null)
+                    {
+                        watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;
+                    }
                     if (string.IsNullOrEmpty(watchItem.Drawables.Error))
                     {
                         watchItem.Drawables.Progress = watchItem.Drawables.Count;
@@ -400,9 +407,6 @@ namespace NeoWatch
             }
 
             stopwatch.Stop();
-
-            watchItem.Drawables.Error = watchItem.Drawables.Error + " (" + stopwatch.Elapsed.TotalMilliseconds.ToString("F0") + "ms)";
-            watchItem.Drawables.Error = "";
 
             if (watchItem.Drawables.Count > 0)
             {
