@@ -33,7 +33,7 @@ namespace NeoWatch.Loading
                 }
                 catch (COMException)
                 {
-                    return new Result<IDrawable>(FeedbackType.ExpressionLoadException);
+                    return new Result<IDrawable>(new Feedback(FeedbackType.ExpressionLoadException, nameof(expression.Parse)));
                 }
             }
 
@@ -44,13 +44,13 @@ namespace NeoWatch.Loading
         {
             if (value == null)
             {
-                return new Result<IDrawable>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<IDrawable>(new Feedback(FeedbackType.ExpressionPatternMissmatch, "null"));
             }
 
             var match = Matcher.GetMatch(value, Patterns[patternKind]);
             if (!match.Success)
             {
-                return new Result<IDrawable>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<IDrawable>(new Feedback(FeedbackType.ExpressionPatternMissmatch, value));
             }
 
             try
@@ -65,7 +65,7 @@ namespace NeoWatch.Loading
                 }
                 catch (KeyNotFoundException)
                 {
-                    return new Result<IDrawable>(FeedbackType.TypeNotFound);
+                    return new Result<IDrawable>(new Feedback(FeedbackType.TypeNotFound));
                 }
 
                 try
@@ -85,12 +85,12 @@ namespace NeoWatch.Loading
                             var circleResult = CircleInterpreter.ToDrawable(parse, Patterns);
                             return new Result<IDrawable>(circleResult.Data, circleResult.Feedback);
                         default:
-                            return new Result<IDrawable>(FeedbackType.TypeNotFound);
+                            return new Result<IDrawable>(new Feedback(FeedbackType.TypeNotFound));
                     }
                 }
                 catch (DrawableException ex)
                 {
-                    return new Result<IDrawable>(FeedbackType.UnhandledException);
+                    return new Result<IDrawable>(new Feedback(FeedbackType.UnhandledException));
                 }
             }
             // unit test this situation

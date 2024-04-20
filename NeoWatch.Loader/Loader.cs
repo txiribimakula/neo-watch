@@ -30,12 +30,12 @@ namespace NeoWatch.Loading
             }
             catch (COMException)
             {
-                return new Result<Drawables>(FeedbackType.ExpressionLoadException);
+                return new Result<Drawables>(new Feedback(FeedbackType.ExpressionLoadException));
             }
 
             if (expression == null || string.IsNullOrEmpty(expression.Type))
             {
-                return new Result<Drawables>(FeedbackType.ExpressionLoadException);
+                return new Result<Drawables>(new Feedback(FeedbackType.ExpressionLoadException));
             }
 
             var drawablesResult = await GetDrawablesAsync(expression);
@@ -87,7 +87,7 @@ namespace NeoWatch.Loading
                     currentIndex++;
                     if (currentIndex >= maxDrawables)
                     {
-                        return new Result<Drawables>(drawables, FeedbackType.MaximumElementsCap);
+                        return new Result<Drawables>(drawables, new Feedback(FeedbackType.MaximumElementsCap));
                     }
                 }
             }

@@ -18,18 +18,18 @@ namespace NeoWatch.Loading
 
             if (!match.Success)
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             string centerPointParse = match.Groups["centerPoint"].Value;
             if (string.IsNullOrEmpty(centerPointParse))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
             string radiusParse = match.Groups["radius"].Value;
             if (string.IsNullOrEmpty(radiusParse))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             var centerPointResult = PointInterpreter.ToDrawable(centerPointParse, patterns);

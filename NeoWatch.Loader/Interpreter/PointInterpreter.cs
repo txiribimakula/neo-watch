@@ -17,7 +17,7 @@ namespace NeoWatch.Loading
 
             if (!match.Success)
             {
-                return new Result<DrawablePoint>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawablePoint>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             string xParse = match.Groups["x"].Value;
@@ -26,12 +26,12 @@ namespace NeoWatch.Loading
             float x;
             if (!float.TryParse(xParse, NumberStyles.Float, CultureInfo.InvariantCulture, out x))
             {
-                return new Result<DrawablePoint>(FeedbackType.ExpressionParsingException);
+                return new Result<DrawablePoint>(new Feedback(FeedbackType.ExpressionParsingException));
             }
             float y;
             if (!float.TryParse(yParse, NumberStyles.Float, CultureInfo.InvariantCulture, out y))
             {
-                return new Result<DrawablePoint>(FeedbackType.ExpressionParsingException);
+                return new Result<DrawablePoint>(new Feedback(FeedbackType.ExpressionParsingException));
             }
 
             return new Result<DrawablePoint>(new DrawablePoint(x, y));
