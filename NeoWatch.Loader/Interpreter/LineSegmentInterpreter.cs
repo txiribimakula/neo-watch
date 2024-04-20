@@ -16,18 +16,18 @@ namespace NeoWatch.Loading
 
             if (!match.Success)
             {
-                return new Result<DrawableLineSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableLineSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             string initialPointParse = match.Groups["initialPoint"].Value;
             if (string.IsNullOrEmpty(initialPointParse))
             {
-                return new Result<DrawableLineSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableLineSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
             string finalPointParse = match.Groups["finalPoint"].Value;
             if (string.IsNullOrEmpty(finalPointParse))
             {
-                return new Result<DrawableLineSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableLineSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             // TODO: differentiate between one point or the other failing.

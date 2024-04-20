@@ -7,16 +7,17 @@
             Type = FeedbackType.OK;
         }
 
-        public Feedback(FeedbackType type)
+        public Feedback(FeedbackType type, string instance = null)
         {
             Type = type;
+            Instance = instance;
         }
 
         public FeedbackType Type { get; private set; }
 
         public bool HasError => Type != FeedbackType.OK;
 
-        public string Detail
+        public string Title
         {
             get
             {
@@ -45,6 +46,10 @@
                 }
             }
         }
+
+        public string Instance { get; set; }
+
+        public string Detail => Title + (Instance == null ? string.Empty : " (" + Instance + ")");
     }
 
     public enum FeedbackType

@@ -18,28 +18,28 @@ namespace NeoWatch.Loading
 
             if (!match.Success)
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             string centerPointParse = match.Groups["centerPoint"].Value;
             if (string.IsNullOrEmpty(centerPointParse))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
             string radiusParse = match.Groups["radius"].Value;
             if (string.IsNullOrEmpty(radiusParse))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
             string initialAngleParse = match.Groups["initialAngle"].Value;
             if (string.IsNullOrEmpty(initialAngleParse))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
             string sweepAngleParse = match.Groups["sweepAngle"].Value;
             if (string.IsNullOrEmpty(sweepAngleParse))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionPatternMissmatch);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionPatternMissmatch));
             }
 
             var centerPointResult = PointInterpreter.ToDrawable(centerPointParse, patterns);
@@ -50,17 +50,17 @@ namespace NeoWatch.Loading
             float radius;
             if (!float.TryParse(radiusParse, NumberStyles.Float, CultureInfo.InvariantCulture, out radius))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionParsingException);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionParsingException));
             }
             float initialAngle;
             if (!float.TryParse(initialAngleParse, NumberStyles.Float, CultureInfo.InvariantCulture, out initialAngle))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionParsingException);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionParsingException));
             }
             float sweepAngle;
             if (!float.TryParse(sweepAngleParse, NumberStyles.Float, CultureInfo.InvariantCulture, out sweepAngle))
             {
-                return new Result<DrawableArcSegment>(FeedbackType.ExpressionParsingException);
+                return new Result<DrawableArcSegment>(new Feedback(FeedbackType.ExpressionParsingException));
             }
 
             var drawableArcSegment = new DrawableArcSegment(centerPointResult.Data, initialAngle, sweepAngle, radius);

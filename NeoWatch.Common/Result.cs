@@ -2,26 +2,15 @@
 {
     public class Result<T>
     {
-        public Result(FeedbackType feedback)
-        {
-            Feedback = new Feedback(feedback);
-        }
-
-        public Result(T data, FeedbackType feedback = FeedbackType.OK)
-        {
-            Data = data;
-            Feedback = new Feedback(feedback);
-        }
-
-        public Result(T data, Feedback feedback)
-        {
-            Data = data;
-            Feedback = feedback;
-        }
-
         public Result(Feedback feedback)
         {
             Feedback = feedback;
+        }
+
+        public Result(T data, Feedback feedback = null)
+        {
+            Data = data;
+            Feedback = feedback ?? new Feedback(FeedbackType.OK);
         }
 
         public T Data { get; set; }
