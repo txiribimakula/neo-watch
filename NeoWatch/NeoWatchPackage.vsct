@@ -11,7 +11,7 @@
 			<Bitmap guid="neoIcon" href="Resources\morpheus.bmp" usedList="neoIcon1"/>
 		</Bitmaps>
 		<Buttons>
-			<Button guid="guidPackageCmdSet" id="idCommand" priority="0x0600" type="Button">
+			<Button guid="guidPackageCmdSet" id="idCommand" priority="0x099" type="Button">
 				<Parent guid="guidVSDebugGroup" id="IDG_DEBUG_WINDOWS_INSPECT"/>
 				<CommandFlag>DynamicVisibility</CommandFlag>
 				<Icon guid="neoIcon" id="neoIcon1" />
