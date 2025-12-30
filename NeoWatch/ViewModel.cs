@@ -58,6 +58,13 @@ namespace NeoWatch
         private GeometryDrawer geoDrawer;
         public ObservableCollection<WatchItem> WatchItems { get; set; }
 
+        private bool canUserAddRows = true;
+        public bool CanUserAddRows
+        {
+            get { return canUserAddRows; }
+            set { canUserAddRows = value; OnPropertyChanged(nameof(CanUserAddRows)); }
+        }
+
         public (Axis, Axis) Axes { get; set; }
 
         public DrawableLineSegment Ruler { get; set; }
@@ -96,7 +103,13 @@ namespace NeoWatch
 
             AutoFitCommand = new RelayCommand(parameter => AutoFit((float)frameworkElement.ActualWidth / (float)frameworkElement.ActualHeight));
             ToggleSenseCommand = new RelayCommand(_ => ToggleSense());
-            PickColorCommand = new RelayCommand(watchItem => PickColor((WatchItem)watchItem));
+            PickColorCommand = new RelayCommand(watchItemObject =>
+            {
+                if (watchItemObject is WatchItem watchItem)
+                {
+                    PickColor(watchItem);
+                }
+            });
         }
 
         private void ToggleSense()

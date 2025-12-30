@@ -121,7 +121,7 @@
                       Height="5" Width="auto"
                       Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}"/>
         <DockPanel Grid.Row="2">
-            <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" ItemsSource="{Binding WatchItems}"
+            <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" ItemsSource="{Binding WatchItems}" CanUserAddRows="{Binding CanUserAddRows}"
                   Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}"
                   Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"
                   BorderBrush="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}">
@@ -182,8 +182,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Background="{Binding Color}" Command="{Binding ElementName=dataGrid,  Path=DataContext.PickColorCommand}" CommandParameter="{Binding}" Focusable="False"></Button>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Status" Width="*">
                         <DataGridTemplateColumn.CellTemplate>

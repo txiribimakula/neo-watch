@@ -54,6 +54,7 @@ namespace NeoWatch
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             NeoWatchCommand.Initialize(this);
+            AddNeoWatchCommand.Initialize(this);
         }
 
         public new object GetService(Type serviceType)
