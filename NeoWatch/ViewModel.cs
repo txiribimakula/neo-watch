@@ -31,12 +31,6 @@ namespace NeoWatch
             Loader = new Loader(debugger, new Interpreter(patterns, typeKindPairs));
         }
 
-        public void OnToolsOptionsBlueprintsChanged(Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
-        {
-            Loader.Interpreter.Patterns = patterns;
-            Loader.Interpreter.TypeKindPairs = typeKindPairs;
-        }
-
         public void OnEnterBreakMode(dbgEventReason reason, ref dbgExecutionAction executionAction)
         {
             foreach (var watchItem in WatchItems)
