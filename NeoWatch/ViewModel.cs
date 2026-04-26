@@ -16,6 +16,13 @@ namespace NeoWatch
     {
         public bool IsSenseShown { get; set; } = false;
 
+        private bool canUserAddRows = true;
+        public bool CanUserAddRows
+        {
+            get { return canUserAddRows; }
+            set { canUserAddRows = value; OnPropertyChanged(nameof(CanUserAddRows)); }
+        }
+
         public ViewModel(IDebugger debugger, Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
         {
             WatchItems = new ObservableCollection<WatchItem>();

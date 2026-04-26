@@ -22,10 +22,12 @@ namespace NeoWatch
                 BlueprintsOptionPage page = (BlueprintsOptionPage)NeoWatchCommand.Instance.package.GetDialogPage(typeof(BlueprintsOptionPage));
                 ViewModel viewModel = new ViewModel(new Debugger(DTE2.Debugger), page.Patterns, page.TypeKindPairs);
                 page.OptionChangedEvent += viewModel.OnToolsOptionsBlueprintsChanged;
-
+               
                 NeoWatchWindow window = new NeoWatchWindow();
                 window.DataContext = viewModel;
 
+                AddNeoWatchCommand.Instance.SetDte(DTE2, viewModel);
+                
                 Content = window;
                 DebuggerEvents = DTE2.Events.DebuggerEvents;
                 DebuggerEvents.OnEnterBreakMode += viewModel.OnEnterBreakMode;

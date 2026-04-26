@@ -7,7 +7,12 @@
 	<Extern href="VsDebugGuids.h"/>
 
 	<Commands package="guidPackage">
-		<Bitmaps>
+        <Groups>
+            <Group guid="guidPackageCmdSet" id="RightClickMenu" priority="0x0300">
+                <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+            </Group>
+        </Groups>
+        <Bitmaps>
 			<Bitmap guid="neoIcon" href="Resources\morpheus.bmp" usedList="neoIcon1"/>
 		</Bitmaps>
 		<Buttons>
@@ -19,19 +24,30 @@
 					<ButtonText>Neo Watch</ButtonText>
 				</Strings>
 			</Button>
+            <Button guid="guidPackageCmdSet" id="idCommandAdd" priority="0x0100" type="Button">
+                <Parent guid="guidPackageCmdSet" id="RightClickMenu"/>
+                <CommandFlag>DynamicVisibility</CommandFlag>
+                <Icon guid="neoIcon" id="neoIcon1" />
+                <Strings>
+                    <ButtonText>Add Neo Watch</ButtonText>
+                </Strings>
+            </Button>
 		</Buttons>
 	</Commands>
-
+    
 	<VisibilityConstraints>
-		<VisibilityItem guid="guidPackageCmdSet" id="idCommand" context="UICONTEXT_Debugging" />
+        <VisibilityItem guid="guidPackageCmdSet" id="idCommand" context="UICONTEXT_Debugging" />
+        <VisibilityItem guid="guidPackageCmdSet" id="idCommandAdd" context="UICONTEXT_Debugging" />
 	</VisibilityConstraints>
 
 	<Symbols>
 		<GuidSymbol name="guidPackage" value="{2f2f2923-9433-4dcb-b3b6-373c61e85461}" />
 
 		<GuidSymbol name="guidPackageCmdSet" value="{AB6200EA-5C89-4F3C-AEEB-1374F1F578FB}">
-			<IDSymbol value="256" name="idCommand" />
-		</GuidSymbol>
+            <IDSymbol value="256" name="idCommand" />
+            <IDSymbol value="255" name="idCommandAdd" />
+            <IDSymbol name="RightClickMenu" value="0x1040" />
+        </GuidSymbol>
 		<GuidSymbol name="neoIcon" value="{153861FB-E433-49C8-BE51-5289844FC485}">
 			<IDSymbol name="neoIcon1" value="1" />
 		</GuidSymbol>
