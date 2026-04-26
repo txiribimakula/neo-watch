@@ -30,6 +30,12 @@
     <ClCompile Include="DemoRectangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DemoListOfItself.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoSegment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DemoPoint.h">
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DemoRectangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoListOfItself.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoSegment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
