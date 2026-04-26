@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using NeoWatch.Loading;
-using NeoWatch.Views;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 using Task = System.Threading.Tasks.Task;
 
 namespace NeoWatch
@@ -31,7 +31,7 @@ namespace NeoWatch
     [Guid(PackageGuidString)]
     [ProvideToolWindow(typeof(NeoWatch))]
     [ProvideBindingPath]
-    [ProvideOptionPage(typeof(BlueprintsOptionPage), "Neo Watch", "Blueprints", 0, 0, true)]
+    [ProvideOptionPage(typeof(BlueprintsOptionPage), "Neo Watch", "General", 0, 0, true)]
     public sealed class NeoWatchPackage : AsyncPackage
     {
         /// <summary>
@@ -71,16 +71,8 @@ namespace NeoWatch
     }
 
     [Guid("E77FB104-A860-4B35-A46D-BE33E3616FD4")]
-    public class BlueprintsOptionPage : DialogPage
+    public class BlueprintsOptionPage : UIElementDialogPage
     {
-        private string blueprints;
-        public string Blueprints
-        {
-            get { return blueprints; }
-            set { blueprints = value; OnOptionChanged(); }
-        }
-
-
         // TODO: set this from configuration window.
         public Dictionary<PatternKind, string[]> Patterns { get; set; } = new Dictionary<PatternKind, string[]>()
             {
@@ -101,22 +93,16 @@ namespace NeoWatch
                 { "Cir", PatternKind.Circle }
             };
 
-        protected override IWin32Window Window
+        protected override UIElement Child
         {
             get
             {
-                ToolsOptionsBlueprintsUserControl page = new ToolsOptionsBlueprintsUserControl();
-                page.BlueprintsOptionPage = this;
-                page.Initialize();
-                return page;
+                return new TextBlock
+                {
+                    Text = "(placeholder)",
+                    Margin = new Thickness(8),
+                };
             }
         }
-
-        public event OptionChanged OptionChangedEvent;
-        private void OnOptionChanged()
-        {
-            OptionChangedEvent?.Invoke(Patterns, TypeKindPairs);
-        }
-        public delegate void OptionChanged(Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs);
     }
 }

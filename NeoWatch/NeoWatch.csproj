@@ -62,12 +62,6 @@
     <Compile Include="Views\NeoWatchWindow.xaml.cs">
       <DependentUpon>NeoWatchWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ToolsOptionsBlueprintsUserControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Views\ToolsOptionsBlueprintsUserControl.Designer.cs">
-      <DependentUpon>ToolsOptionsBlueprintsUserControl.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
@@ -92,11 +86,6 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf">
       <Version>1.1.77</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Views\ToolsOptionsBlueprintsUserControl.resx">
-      <DependentUpon>ToolsOptionsBlueprintsUserControl.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NeoWatch.Common\NeoWatch.Common.csproj">
