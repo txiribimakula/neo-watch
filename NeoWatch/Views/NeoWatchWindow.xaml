@@ -7,7 +7,6 @@
              xmlns:shell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              Background="{DynamicResource {x:Static shell:VsBrushes.WindowKey}}"
              Foreground="{DynamicResource {x:Static shell:VsBrushes.WindowTextKey}}"
-             xmlns:drawing="clr-namespace:NeoWatch.Drawing;assembly=NeoWatch.Drawing"
              xmlns:local="clr-namespace:NeoWatch"
              xmlns:converters="clr-namespace:NeoWatch.Converters"
              mc:Ignorable="d"
@@ -20,6 +19,9 @@
         <converters:AxesToPathConverter x:Key="AxesToPathConverter"/>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:RulerToTextConverter x:Key="RulerToTextConverter"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesMainGeometryConverter" Mode="Main"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedGeometryConverter" Mode="Selected"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesCapsGeometryConverter" Mode="Caps"/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -85,29 +87,36 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ItemsControl ItemsSource="{Binding Drawables}" Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas ClipToBounds="True"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.Resources>
-                                <DataTemplate DataType="{x:Type drawing:Drawable}">
-                                </DataTemplate>
-                                <DataTemplate DataType="{x:Type drawing:DrawableLineSegment}">
-                                    <Grid>
-                                        <Path ToolTip="{Binding Description}" Opacity="0.8" StrokeMiterLimit="1" StrokeDashArray="{Binding Dash}" StrokeThickness="{Binding Thickness}" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Data="{Binding TransformedGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
-                                        <Path Visibility="{Binding Path=DataContext.IsSenseShown, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" Opacity="0.8" StrokeEndLineCap="Triangle" StrokeThickness="7" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Data="{Binding TransformedCapGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
-                                    </Grid>
-                                </DataTemplate>
-                                <DataTemplate DataType="{x:Type drawing:DrawableArcSegment}">
-                                    <Path ToolTip="{Binding Description}" Opacity="0.7" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" StrokeDashArray="{Binding Dash}" StrokeThickness="{Binding Thickness}" Data="{Binding TransformedGeometry, Converter={StaticResource ArcToPathConverter}, Mode=OneWay}"/>
-                                </DataTemplate>
-                                <DataTemplate DataType="{x:Type drawing:DrawablePoint}">
-                                    <Path ToolTip="{Binding Description}" Opacity="0.9" StrokeThickness="{Binding Thickness}" Stroke="{Binding Path=DataContext.Color, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Fill="Black" Data="{Binding TransformedGeometry, Converter={StaticResource PointToPathConverter}, Mode=OneWay}"/>
-                                </DataTemplate>
-                            </ItemsControl.Resources>
-                        </ItemsControl>
+                        <Canvas ClipToBounds="True" Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                            <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" Stroke="{Binding Color}" Fill="{Binding Color}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesMainGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="Drawables"/>
+                                        <Binding Path="SelectedItem"/>
+                                        <Binding Path="Drawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" StrokeDashArray="3 2" Stroke="{Binding Color}" Fill="{Binding Color}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesSelectedGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="Drawables"/>
+                                        <Binding Path="SelectedItem"/>
+                                        <Binding Path="Drawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.8" StrokeEndLineCap="Triangle" StrokeThickness="7" Stroke="{Binding Color}"
+                                  Visibility="{Binding Path=DataContext.IsSenseShown, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesCapsGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="Drawables"/>
+                                        <Binding Path="SelectedItem"/>
+                                        <Binding Path="Drawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                        </Canvas>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

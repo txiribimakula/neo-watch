@@ -35,6 +35,16 @@ namespace NeoWatch.Drawing
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
+        private int geometryVersion;
+        public int GeometryVersion {
+            get { return geometryVersion; }
+        }
+
+        public void NotifyGeometriesChanged() {
+            geometryVersion++;
+            NotifyPropertyChanged(nameof(GeometryVersion));
+        }
+
         public void AddAndNotify(IDrawable element) {
             Add(element);
             if(Box == null) {

@@ -131,6 +131,7 @@ namespace NeoWatch
             foreach (var watchItem in WatchItems)
             {
                 geoDrawer.TransformGeometries(watchItem.Drawables);
+                watchItem.Drawables.NotifyGeometriesChanged();
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
@@ -195,6 +196,7 @@ namespace NeoWatch
             foreach (var watchItem in WatchItems)
             {
                 geoDrawer.TransformGeometries(watchItem.Drawables);
+                watchItem.Drawables.NotifyGeometriesChanged();
             }
             Axes.Item1.Box = new Box(0, (float)args.NewSize.Width, 0, 0);
             Axes.Item2.Box = new Box(0, 0, 0, (float)args.NewSize.Height);
@@ -273,6 +275,7 @@ namespace NeoWatch
             foreach (var watchItem in WatchItems)
             {
                 geoDrawer.TransformGeometries(watchItem.Drawables);
+                watchItem.Drawables.NotifyGeometriesChanged();
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
@@ -338,6 +341,7 @@ namespace NeoWatch
             foreach (var watchItem in WatchItems)
             {
                 geoDrawer.TransformGeometries(watchItem.Drawables);
+                watchItem.Drawables.NotifyGeometriesChanged();
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
@@ -386,6 +390,7 @@ namespace NeoWatch
                         geoDrawer.TransformGeometry(drawable);
                     }
                     watchItem.Drawables.AddAndNotify(drawables);
+                    watchItem.Drawables.NotifyGeometriesChanged();
                     if(drawables.Error != null)
                     {
                         watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;
