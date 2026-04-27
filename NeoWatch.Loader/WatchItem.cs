@@ -64,16 +64,9 @@ namespace NeoWatch.Loading
             get { return selectedItem; }
             set
             {
-                if(selectedItem != null)
-                {
-                    selectedItem.Dash = "1 0";
-                }
                 selectedItem = value;
-                if(value != null && drawables.Count > 1)
-                {
-                    selectedItem.Dash = "3 2";
-                }
                 OnPropertyChanged(nameof(SelectedItem));
+                drawables?.NotifyGeometriesChanged();
             }
         }
 
