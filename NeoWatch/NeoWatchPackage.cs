@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using Task = System.Threading.Tasks.Task;
 
 namespace NeoWatch
@@ -93,15 +94,27 @@ namespace NeoWatch
                 { "Cir", PatternKind.Circle }
             };
 
+        public bool IsSnapEnabled { get; set; } = true;
+
         protected override UIElement Child
         {
             get
             {
-                return new TextBlock
+                StackPanel stack = new StackPanel { Margin = new Thickness(8) };
+
+                CheckBox snapCheckbox = new CheckBox
                 {
-                    Text = "(placeholder)",
-                    Margin = new Thickness(8),
+                    Content = "Snap ruler to nearby points (point, line/arc endpoints)",
                 };
+                snapCheckbox.SetBinding(CheckBox.IsCheckedProperty, new Binding(nameof(IsSnapEnabled))
+                {
+                    Source = this,
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                });
+                stack.Children.Add(snapCheckbox);
+
+                return stack;
             }
         }
     }

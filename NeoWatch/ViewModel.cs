@@ -23,13 +23,17 @@ namespace NeoWatch
             set { canUserAddRows = value; OnPropertyChanged(nameof(CanUserAddRows)); }
         }
 
-        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
+        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs, Func<bool> isSnapEnabled)
         {
             WatchItems = new ObservableCollection<WatchItem>();
             WatchItems.CollectionChanged += OnWatchItemsCollectionChanged;
 
             Loader = new Loader(debugger, new Interpreter(patterns, typeKindPairs));
+            this.isSnapEnabled = isSnapEnabled ?? (() => false);
         }
+
+        private const float SnapRadiusPixels = 12f;
+        private readonly Func<bool> isSnapEnabled;
 
         public void OnEnterBreakMode(dbgEventReason reason, ref dbgExecutionAction executionAction)
         {
@@ -245,7 +249,8 @@ namespace NeoWatch
         public void OnMouseMove(object sender, MouseEventArgs e)
         {
             Geometries.Point currentCanvasCursorPoint = GetCurrentCanvasCursorPoint(sender, e);
-            CurrentCursorPoint = geoDrawer.DrawableVisitor.CoordinateSystem.ConvertPointToLocal(currentCanvasCursorPoint);
+            Geometries.Point localCursor = geoDrawer.DrawableVisitor.CoordinateSystem.ConvertPointToLocal(currentCanvasCursorPoint);
+            CurrentCursorPoint = (isMeasuring && isSnapEnabled()) ? (TrySnap(localCursor) ?? localCursor) : localCursor;
 
             if (isMiddleMouseDown)
             {
@@ -254,6 +259,49 @@ namespace NeoWatch
             if (isMeasuring)
             {
                 SetMeasurement();
+            }
+        }
+
+        private Geometries.Point TrySnap(Geometries.Point cursorLocal)
+        {
+            float radiusLocal = geoDrawer.DrawableVisitor.CoordinateSystem.ConvertLengthToLocal(SnapRadiusPixels);
+            float bestSqr = radiusLocal * radiusLocal;
+            Geometries.Point best = null;
+
+            foreach (var watchItem in WatchItems)
+            {
+                if (!watchItem.IsVisible) continue;
+                foreach (var drawable in watchItem.Drawables)
+                {
+                    switch (drawable)
+                    {
+                        case DrawablePoint p:
+                            ConsiderSnapCandidate(p, cursorLocal, ref best, ref bestSqr);
+                            break;
+                        case DrawableLineSegment seg:
+                            ConsiderSnapCandidate(seg.InitialPoint, cursorLocal, ref best, ref bestSqr);
+                            ConsiderSnapCandidate(seg.FinalPoint, cursorLocal, ref best, ref bestSqr);
+                            break;
+                        case DrawableArcSegment arc:
+                            ConsiderSnapCandidate(arc.InitialPoint, cursorLocal, ref best, ref bestSqr);
+                            ConsiderSnapCandidate(arc.FinalPoint, cursorLocal, ref best, ref bestSqr);
+                            break;
+                    }
+                }
+            }
+
+            return best == null ? null : new Geometries.Point(best.X, best.Y);
+        }
+
+        private static void ConsiderSnapCandidate(Geometries.Point candidate, Geometries.Point cursor, ref Geometries.Point best, ref float bestSqr)
+        {
+            float dx = candidate.X - cursor.X;
+            float dy = candidate.Y - cursor.Y;
+            float sqr = dx * dx + dy * dy;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = candidate;
             }
         }
 

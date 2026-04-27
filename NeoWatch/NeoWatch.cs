@@ -20,7 +20,7 @@ namespace NeoWatch
             if (DTE2 != null)
             {
                 BlueprintsOptionPage page = (BlueprintsOptionPage)NeoWatchCommand.Instance.package.GetDialogPage(typeof(BlueprintsOptionPage));
-                ViewModel viewModel = new ViewModel(new Debugger(DTE2.Debugger), page.Patterns, page.TypeKindPairs);
+                ViewModel viewModel = new ViewModel(new Debugger(DTE2.Debugger), page.Patterns, page.TypeKindPairs, () => page.IsSnapEnabled);
 
                 NeoWatchWindow window = new NeoWatchWindow();
                 window.DataContext = viewModel;
