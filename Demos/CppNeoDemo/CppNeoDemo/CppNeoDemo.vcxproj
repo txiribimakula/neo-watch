@@ -142,6 +142,7 @@
     <ClInclude Include="DemoPoint.h" />
     <ClInclude Include="DemoRectangle.h" />
     <ClInclude Include="DemoSegment.h" />
+    <ClInclude Include="DemoStressTest.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="demo.natvis" />
