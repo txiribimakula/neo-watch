@@ -5,6 +5,7 @@
 #include "DemoRectangle.h"
 #include "DemoListOfItself.h"
 #include "DemoSegment.h"
+#include "DemoStressTest.h"
 #include <vector>
 
 int main()
@@ -73,4 +74,8 @@ int main()
     demoSegments.push_back(demoSegmentArc);
 
     std::cout << "Hello World!\n";
+
+    auto stressSegments = MakeGridSegments();
+    auto stressPoints   = MakeSpiralPoints();
+    auto stressArcs     = MakeConcentricArcs();
 }
