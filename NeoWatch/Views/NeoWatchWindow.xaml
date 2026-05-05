@@ -22,6 +22,10 @@
         <converters:DrawablesToGeometryConverter x:Key="DrawablesMainGeometryConverter" Mode="Main"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedGeometryConverter" Mode="Selected"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesCapsGeometryConverter" Mode="Caps"/>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <converters:ZeroToQuestionMarkConverter x:Key="ZeroToQuestionMarkConverter"/>
+        <converters:IntOrOneConverter x:Key="IntOrOneConverter"/>
+        <converters:PositiveIntToVisibilityConverter x:Key="PositiveIntToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -123,6 +127,17 @@
             <Canvas ClipToBounds="True">
                 <Path Opacity="1" Stroke="HotPink" StrokeThickness="2" Data="{Binding Ruler.TransformedGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
             </Canvas>
+            <Grid x:Name="loadingOverlay" Background="#80000000"
+                  Visibility="{Binding IsAnyLoading, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+                    <ProgressBar IsIndeterminate="True" Width="200" Height="14"
+                                 Style="{DynamicResource {x:Static shell:VsResourceKeys.ProgressBarStyleKey}}"/>
+                    <TextBlock Text="Loading..." Foreground="White" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    <TextBlock Text="(Press the X on the row to cancel)" Foreground="White"
+                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
         </Grid>
         <GridSplitter Grid.Row="1"
                       HorizontalAlignment="Stretch"
@@ -198,9 +213,68 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <ProgressBar Value="{Binding Drawables.Progress}" IsIndeterminate="False" Minimum="0" Maximum="{Binding Drawables.MaximumProgress}" 
-                                                 Style="{DynamicResource {x:Static shell:VsResourceKeys.ProgressBarStyleKey}}"/>
-                                    <TextBox Background="Transparent" BorderThickness="0" Foreground="DarkRed" Text="{Binding Drawables.Error, Mode=OneWay}" ToolTip="{Binding Drawables.Error}" IsReadOnly="True" TextWrapping="NoWrap" />
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <ProgressBar Minimum="0"
+                                                     Value="{Binding LoadingCount}"
+                                                     Maximum="{Binding LoadingTotal, Converter={StaticResource IntOrOneConverter}}">
+                                            <ProgressBar.Style>
+                                                <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ProgressBarStyleKey}}">
+                                                    <Setter Property="IsIndeterminate" Value="False"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsBusy}" Value="True"/>
+                                                                <Condition Binding="{Binding LoadingCount}" Value="0"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="IsIndeterminate" Value="True"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ProgressBar.Style>
+                                        </ProgressBar>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding LoadingCount, Converter={StaticResource PositiveIntToVisibilityConverter}}" Value="Visible">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <Run Text="{Binding LoadingCount, Mode=OneWay}"/>
+                                            <Run Text=" / "/>
+                                            <Run Text="{Binding LoadingTotal, Mode=OneWay, Converter={StaticResource ZeroToQuestionMarkConverter}}"/>
+                                        </TextBlock>
+                                        <TextBox Background="Transparent" BorderThickness="0" Foreground="DarkRed" Text="{Binding Drawables.Error, Mode=OneWay}" ToolTip="{Binding Drawables.Error}" IsReadOnly="True" TextWrapping="NoWrap" />
+                                    </Grid>
+                                    <Button Grid.Column="1" Padding="6,0"
+                                            ToolTip="Stop loading"
+                                            IsEnabled="{Binding IsCancelling, Converter={StaticResource InverseBooleanConverter}}"
+                                            Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay, FallbackValue=Collapsed, TargetNullValue=Collapsed}"
+                                            Command="{Binding DataContext.CancelLoadCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            CommandParameter="{Binding}">
+                                        <TextBlock>
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="X"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsCancelling}" Value="True">
+                                                            <Setter Property="Text" Value="Cancelling..."/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Button>
                                 </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

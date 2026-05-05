@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Threading;
 using NeoWatch.Drawing;
 
 namespace NeoWatch.Loading
@@ -9,7 +10,40 @@ namespace NeoWatch.Loading
             Drawables = new DrawableCollection();
             isLoading = true;
             isVisible = true;
-            color = null; 
+            color = null;
+        }
+
+        private bool isBusy;
+        public bool IsBusy {
+            get { return isBusy; }
+            set { isBusy = value; OnPropertyChanged(nameof(IsBusy)); }
+        }
+
+        private bool isCancelling;
+        public bool IsCancelling {
+            get { return isCancelling; }
+            set { isCancelling = value; OnPropertyChanged(nameof(IsCancelling)); }
+        }
+
+        private int loadingCount;
+        public int LoadingCount {
+            get { return loadingCount; }
+            set { loadingCount = value; OnPropertyChanged(nameof(LoadingCount)); }
+        }
+
+        private int loadingTotal;
+        public int LoadingTotal {
+            get { return loadingTotal; }
+            set { loadingTotal = value; OnPropertyChanged(nameof(LoadingTotal)); }
+        }
+
+        public CancellationTokenSource CurrentLoadCts { get; set; }
+
+        public void CancelLoad()
+        {
+            if (CurrentLoadCts == null || CurrentLoadCts.IsCancellationRequested) return;
+            IsCancelling = true;
+            CurrentLoadCts.Cancel();
         }
 
         private bool isVisible;

@@ -13,24 +13,23 @@
 inline std::vector<DemoLineSegment> MakeGridSegments()
 {
     std::vector<DemoLineSegment> result;
-    result.reserve(400);
 
-    for (int i = 0; i <= 19; i++)
+    for (int i = 0; i <= 44; i++)
     {
         DemoLineSegment h;
         h.demoInitialPoint = { (double)0,  (double)i };
-        h.demoFinalPoint = { (double)20, (double)i };
+        h.demoFinalPoint = { (double)44, (double)i };
         result.push_back(h);
 
         DemoLineSegment v;
         v.demoInitialPoint = { (double)i, (double)0  };
-        v.demoFinalPoint = { (double)i, (double)20 };
+        v.demoFinalPoint = { (double)i, (double)44 };
         result.push_back(v);
     }
 
-    for (int row = 0; row < 19 && (int)result.size() < 400; row++)
+    for (int row = 0; row < 44; row++)
     {
-        for (int col = 0; col < 19 && (int)result.size() < 400; col++)
+        for (int col = 0; col < 44; col++)
         {
             DemoLineSegment d;
             d.demoInitialPoint = { (double)col, (double)row };
@@ -45,11 +44,11 @@ inline std::vector<DemoLineSegment> MakeGridSegments()
 inline std::vector<DemoPoint> MakeSpiralPoints()
 {
     std::vector<DemoPoint> result;
-    result.reserve(400);
+    result.reserve(2000);
 
-    for (int i = 0; i < 400; i++)
+    for (int i = 0; i < 2000; i++)
     {
-        double t = i * (6.0 * M_PI / 400.0);
+        double t = i * (6.0 * M_PI / 2000.0);
         double r = 0.05 * t;
         double angle = t + (i % 2) * M_PI;
         DemoPoint p;
@@ -64,10 +63,9 @@ inline std::vector<DemoPoint> MakeSpiralPoints()
 inline std::vector<DemoArcSegment> MakeConcentricArcs()
 {
     std::vector<DemoArcSegment> result;
-    result.reserve(400);
 
-    const int rings = 10;
-    const int arcsPerRing = 40;
+    const int rings = 20;
+    const int arcsPerRing = 100;
     const double sweep = 360.0 / arcsPerRing * 0.8;
 
     for (int ring = 1; ring <= rings; ring++)
