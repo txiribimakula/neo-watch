@@ -291,7 +291,16 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ComboBox ItemsSource="{Binding Drawables}" SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Description"
-                                          Style="{DynamicResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}"/>
+                                          VirtualizingStackPanel.IsVirtualizing="True"
+                                          VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                          ScrollViewer.IsDeferredScrollingEnabled="True"
+                                          Style="{DynamicResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}">
+                                    <ComboBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ComboBox.ItemsPanel>
+                                </ComboBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
