@@ -225,13 +225,9 @@
                                                 <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ProgressBarStyleKey}}">
                                                     <Setter Property="IsIndeterminate" Value="False"/>
                                                     <Style.Triggers>
-                                                        <MultiDataTrigger>
-                                                            <MultiDataTrigger.Conditions>
-                                                                <Condition Binding="{Binding IsBusy}" Value="True"/>
-                                                                <Condition Binding="{Binding LoadingCount}" Value="0"/>
-                                                            </MultiDataTrigger.Conditions>
+                                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
                                                             <Setter Property="IsIndeterminate" Value="True"/>
-                                                        </MultiDataTrigger>
+                                                        </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </ProgressBar.Style>
@@ -244,15 +240,27 @@
                                                         <DataTrigger Binding="{Binding IsBusy}" Value="True">
                                                             <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding LoadingCount, Converter={StaticResource PositiveIntToVisibilityConverter}}" Value="Visible">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </TextBlock.Style>
                                             <Run Text="{Binding LoadingCount, Mode=OneWay}"/>
-                                            <Run Text=" / "/>
-                                            <Run Text="{Binding LoadingTotal, Mode=OneWay, Converter={StaticResource ZeroToQuestionMarkConverter}}"/>
+                                        </TextBlock>
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
+                                                   Text="{Binding LoadingCount, Mode=OneWay}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsBusy}" Value="False"/>
+                                                                <Condition Binding="{Binding LoadingCount, Converter={StaticResource PositiveIntToVisibilityConverter}}" Value="Visible"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
                                         </TextBlock>
                                         <TextBox Background="Transparent" BorderThickness="0" Foreground="DarkRed" Text="{Binding Drawables.Error, Mode=OneWay}" ToolTip="{Binding Drawables.Error}" IsReadOnly="True" TextWrapping="NoWrap" />
                                     </Grid>

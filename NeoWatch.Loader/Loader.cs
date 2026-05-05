@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,8 +65,6 @@ namespace NeoWatch.Loading
 
             var expressions = new ExpressionLoader(itemExpression, listTypes);
 
-            item.LoadingTotal = EstimateTotal(itemExpression, listTypes);
-
             var sinceLastYield = Stopwatch.StartNew();
             var currentIndex = 0;
             foreach (IExpression expression in expressions)
@@ -106,16 +103,10 @@ namespace NeoWatch.Loading
                 }
             }
 
-            return new Result<Drawables>(drawables);
-        }
+            item.LoadingTotal = currentIndex;
+            item.LoadingCount = currentIndex;
 
-        private static int EstimateTotal(IExpression itemExpression, string[] listTypes)
-        {
-            // Best-effort O(1) estimate: for a flat list (the common case) DataMembers.Count
-            // is exact. For nested lists we under-estimate; the count text remains useful
-            // and the bar still grows as items load.
-            var outer = new ExpressionLoader(itemExpression, listTypes);
-            return outer.Any(e => !ReferenceEquals(e, itemExpression)) ? itemExpression.DataMembers.Count : 1;
+            return new Result<Drawables>(drawables);
         }
     }
 }
