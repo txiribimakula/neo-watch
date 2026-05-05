@@ -5,7 +5,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 using NeoWatch.Drawing;
 using NeoWatch.Loading;
 using NeoWatch.Common;
@@ -29,6 +33,30 @@ namespace NeoWatch
             WatchItems.CollectionChanged += OnWatchItemsCollectionChanged;
 
             Loader = new Loader(debugger, new Interpreter(patterns, typeKindPairs));
+            Loader.YieldAction = BackgroundYield;
+
+            CancelLoadCommand = new RelayCommand(watchItem => ((WatchItem)watchItem).CancelLoad());
+            PickColorCommand = new RelayCommand(watchItem => PickColor((WatchItem)watchItem));
+            ToggleSenseCommand = new RelayCommand(_ => ToggleSense());
+        }
+
+        private static async Task BackgroundYield()
+        {
+            // Background priority so pending Input events (e.g. cancel button) drain before the loader resumes.
+            await Dispatcher.Yield(DispatcherPriority.Background);
+        }
+
+        private static Task WaitForRenderFrame()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            EventHandler handler = null;
+            handler = (s, e) =>
+            {
+                CompositionTarget.Rendering -= handler;
+                tcs.SetResult(true);
+            };
+            CompositionTarget.Rendering += handler;
+            return tcs.Task;
         }
 
         public void OnEnterBreakMode(dbgEventReason reason, ref dbgExecutionAction executionAction)
@@ -56,6 +84,7 @@ namespace NeoWatch
         }
 
         private Loader Loader;
+        private readonly SemaphoreSlim loadSemaphore = new SemaphoreSlim(1, 1);
         private GeometryDrawer geoDrawer;
         public ObservableCollection<WatchItem> WatchItems { get; set; }
 
@@ -77,6 +106,25 @@ namespace NeoWatch
         public RelayCommand AutoFitCommand { get; set; }
         public RelayCommand ToggleSenseCommand { get; set; }
         public RelayCommand PickColorCommand { get; set; }
+        public RelayCommand CancelLoadCommand { get; set; }
+
+        private int loadingCount;
+        public bool IsAnyLoading
+        {
+            get { return loadingCount > 0; }
+        }
+
+        private void IncrementLoading()
+        {
+            loadingCount++;
+            if (loadingCount == 1) OnPropertyChanged(nameof(IsAnyLoading));
+        }
+
+        private void DecrementLoading()
+        {
+            loadingCount--;
+            if (loadingCount == 0) OnPropertyChanged(nameof(IsAnyLoading));
+        }
 
 
         public void OnLoaded(object sender, RoutedEventArgs e)
@@ -96,8 +144,6 @@ namespace NeoWatch
             OnPropertyChanged(nameof(Axes));
 
             AutoFitCommand = new RelayCommand(parameter => AutoFit((float)frameworkElement.ActualWidth / (float)frameworkElement.ActualHeight));
-            ToggleSenseCommand = new RelayCommand(_ => ToggleSense());
-            PickColorCommand = new RelayCommand(watchItem => PickColor((WatchItem)watchItem));
         }
 
         private void ToggleSense()
@@ -206,6 +252,7 @@ namespace NeoWatch
 
         public void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
+            if (IsAnyLoading) return;
             IInputElement senderElement = (IInputElement)sender;
             if (e.MiddleButton == MouseButtonState.Pressed)
             {
@@ -310,6 +357,7 @@ namespace NeoWatch
                     {
                         item.NameChanged -= OnWatchItemReloadAsync;
                         item.IsLoadingActivated -= OnWatchItemReloadAsync;
+                        item.CancelLoad();
                     }
                 }
             }
@@ -360,6 +408,16 @@ namespace NeoWatch
 
             if (watchItem.IsLoading)
             {
+                watchItem.CancelLoad();
+                var cts = new CancellationTokenSource();
+                watchItem.CurrentLoadCts = cts;
+                watchItem.IsBusy = true;
+                watchItem.LoadingCount = 0;
+                watchItem.LoadingTotal = 0;
+                IncrementLoading();
+
+                await BackgroundYield();
+
                 watchItem.Drawables.ResetAndNotify();
                 try
                 {
@@ -369,7 +427,20 @@ namespace NeoWatch
                         watchItem.Color = Colours.NextColor().AsHex();
                     }
 
-                    var result = await Loader.Load(watchItem);
+                    Result<Drawables> result;
+                    await loadSemaphore.WaitAsync(cts.Token);
+                    try
+                    {
+                        // Wait for an actual WPF render frame so the row's cancel button is materialised
+                        // and clickable before the synchronous loader work starts to monopolise the UI thread.
+                        await WaitForRenderFrame();
+                        await Dispatcher.Yield(DispatcherPriority.ContextIdle);
+                        result = await Loader.Load(watchItem, cts.Token);
+                    }
+                    finally
+                    {
+                        loadSemaphore.Release();
+                    }
 
                     var feedback = result.Feedback;
 
@@ -378,27 +449,29 @@ namespace NeoWatch
                         watchItem.Drawables.Error = feedback.Detail;
                     }
 
-                    if(result.Data == null || result.Data.Count == 0)
+                    if (result.Data != null && result.Data.Count > 0)
                     {
-                        return;
+                        var drawables = result.Data;
+                        watchItem.Description = drawables.Type;
+                        foreach (var drawable in drawables)
+                        {
+                            geoDrawer.TransformGeometry(drawable);
+                        }
+                        watchItem.Drawables.AddAndNotify(drawables);
+                        watchItem.Drawables.NotifyGeometriesChanged();
+                        if (drawables.Error != null)
+                        {
+                            watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;
+                        }
+                        if (string.IsNullOrEmpty(watchItem.Drawables.Error))
+                        {
+                            watchItem.Drawables.Progress = watchItem.Drawables.Count;
+                        }
                     }
-
-                    var drawables = result.Data;
-                    watchItem.Description = drawables.Type;
-                    foreach (var drawable in drawables)
-                    {
-                        geoDrawer.TransformGeometry(drawable);
-                    }
-                    watchItem.Drawables.AddAndNotify(drawables);
-                    watchItem.Drawables.NotifyGeometriesChanged();
-                    if(drawables.Error != null)
-                    {
-                        watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;
-                    }
-                    if (string.IsNullOrEmpty(watchItem.Drawables.Error))
-                    {
-                        watchItem.Drawables.Progress = watchItem.Drawables.Count;
-                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    watchItem.Drawables.Error = new Feedback(FeedbackType.Cancelled).Detail;
                 }
                 catch (LoadingException ex)
                 {
@@ -409,6 +482,17 @@ namespace NeoWatch
                 {
                     watchItem.Drawables.Progress = 0;
                     watchItem.Drawables.Error = "Loader item caused: " + ex.Message;
+                }
+                finally
+                {
+                    watchItem.IsBusy = false;
+                    watchItem.IsCancelling = false;
+                    DecrementLoading();
+                    if (ReferenceEquals(watchItem.CurrentLoadCts, cts))
+                    {
+                        watchItem.CurrentLoadCts = null;
+                    }
+                    cts.Dispose();
                 }
             }
 

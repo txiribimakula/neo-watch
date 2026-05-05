@@ -49,10 +49,14 @@
     <Compile Include="Converters\AxesToPathConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DrawablesToGeometryConverter.cs" />
+    <Compile Include="Converters\IntOrOneConverter.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Converters\PositiveIntToVisibilityConverter.cs" />
     <Compile Include="Converters\PointToPathConverter.cs" />
     <Compile Include="Converters\PointToTextConverter.cs" />
     <Compile Include="Converters\RulerToTextConverter.cs" />
     <Compile Include="Converters\SegmentToPathConverter.cs" />
+    <Compile Include="Converters\ZeroToQuestionMarkConverter.cs" />
     <Compile Include="NeoWatch.cs" />
     <Compile Include="AddNeoWatchCommand.cs" />
     <Compile Include="NeoWatchCommand.cs" />

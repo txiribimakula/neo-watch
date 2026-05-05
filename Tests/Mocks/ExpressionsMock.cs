@@ -21,6 +21,8 @@ namespace Tests.Mocks
             }
         }
 
+        public int Count => _expressions.Count;
+
         public IEnumerator<IExpression> GetEnumerator()
         {
             return _expressions.GetEnumerator();

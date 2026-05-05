@@ -38,9 +38,8 @@
                         return "Unhandled exception.";
                     case FeedbackType.ExpressionLoadException:
                         return "Expression could not be loaded.";
-                    case FeedbackType.MaximumElementsCap:
-                        // Include arguments in Feedback, for instance: number of maximum elements.
-                        return "Maximum elements per item is currently capped because of performance reasons.";
+                    case FeedbackType.Cancelled:
+                        return "Loading was cancelled by the user.";
                     default:
                         return null;
                 }
@@ -61,6 +60,6 @@
         ExpressionPatternMissmatch,
         UnhandledException,
         ExpressionLoadException,
-        MaximumElementsCap
+        Cancelled
     }
 }

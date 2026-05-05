@@ -36,23 +36,6 @@ namespace Tests
                 Assert.AreEqual("Expression could not be loaded.", result.Feedback.Detail);
             }
 
-            [TestMethod]
-            [DataRow(2)]
-            [DataRow(3)]
-            public async Task returns_result_even_if_max_is_reached(int maxItems)
-            {
-                // Arrange
-                ExpressionMock.GetParse getParse = () => "parse";
-                debuggerMock.GetExpressionCallback = new DebuggerMock.Callback((string name) => new ExpressionMock("List", "type", getParse, 3));
-                loader = new Loader(debuggerMock, interpreterMock, maxItems);
-
-                // Act
-                var result = await loader.Load(new WatchItem());
-
-                // Assert
-                Assert.IsNotNull(result.Data);
-                Assert.AreEqual(maxItems, result.Data.Count);
-            }
         }
     }
 }

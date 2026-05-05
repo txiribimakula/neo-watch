@@ -4,5 +4,6 @@ namespace NeoWatch.Loading
 {
     public interface IExpressions : IEnumerable<IExpression>
     {
+        int Count { get; }
     }
 }
