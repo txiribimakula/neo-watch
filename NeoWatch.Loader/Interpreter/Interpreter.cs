@@ -68,29 +68,22 @@ namespace NeoWatch.Loading
                     return new Result<IDrawable>(new Feedback(FeedbackType.TypeNotFound));
                 }
 
-                try
+                switch (kind)
                 {
-                    switch (kind)
-                    {
-                        case PatternKind.Point:
-                            var pointResult = PointInterpreter.ToDrawable(parse, Patterns);
-                            return new Result<IDrawable>(pointResult.Data, pointResult.Feedback);
-                        case PatternKind.Segment:
-                            var segmentResult = LineSegmentInterpreter.ToDrawable(parse, Patterns);
-                            return new Result<IDrawable>(segmentResult.Data, segmentResult.Feedback);
-                        case PatternKind.Arc:
-                            var arcResult = ArcSegmentInterpreter.ToDrawable(parse, Patterns);
-                            return new Result<IDrawable>(arcResult.Data, arcResult.Feedback);
-                        case PatternKind.Circle:
-                            var circleResult = CircleInterpreter.ToDrawable(parse, Patterns);
-                            return new Result<IDrawable>(circleResult.Data, circleResult.Feedback);
-                        default:
-                            return new Result<IDrawable>(new Feedback(FeedbackType.TypeNotFound));
-                    }
-                }
-                catch (DrawableException ex)
-                {
-                    return new Result<IDrawable>(new Feedback(FeedbackType.UnhandledException));
+                    case PatternKind.Point:
+                        var pointResult = PointInterpreter.ToDrawable(parse, Patterns);
+                        return new Result<IDrawable>(pointResult.Data, pointResult.Feedback);
+                    case PatternKind.Segment:
+                        var segmentResult = LineSegmentInterpreter.ToDrawable(parse, Patterns);
+                        return new Result<IDrawable>(segmentResult.Data, segmentResult.Feedback);
+                    case PatternKind.Arc:
+                        var arcResult = ArcSegmentInterpreter.ToDrawable(parse, Patterns);
+                        return new Result<IDrawable>(arcResult.Data, arcResult.Feedback);
+                    case PatternKind.Circle:
+                        var circleResult = CircleInterpreter.ToDrawable(parse, Patterns);
+                        return new Result<IDrawable>(circleResult.Data, circleResult.Feedback);
+                    default:
+                        return new Result<IDrawable>(new Feedback(FeedbackType.TypeNotFound));
                 }
             }
             // unit test this situation

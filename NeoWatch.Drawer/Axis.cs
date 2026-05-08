@@ -11,15 +11,18 @@ namespace NeoWatch.Drawing
         }
 
         public string Description { get; set; }
-        public string Error { get; set; }
         public IColor Color { get; set; }
         public IGeometry TransformedGeometry { get; set; }
         public IGeometry TransformedCapGeometry { get; set; }
         public IBox Box { get; set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string prop) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+        // Required by INotifyPropertyChanged (via IDrawable), but Axis is driven
+        // entirely by ViewModel notifying changes to the Axes tuple — its own
+        // properties never change observably, so add/remove are no-ops.
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add { }
+            remove { }
         }
 
         public bool IsHorizontal => Box.HorizontalLength > Box.VerticalLength;

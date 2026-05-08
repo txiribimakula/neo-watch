@@ -421,7 +421,6 @@ namespace NeoWatch
                 watchItem.Drawables.ResetAndNotify();
                 try
                 {
-                    watchItem.Drawables.Progress = 0;
                     if (watchItem.Color == null)
                     {
                         watchItem.Color = Colours.NextColor().AsHex();
@@ -452,7 +451,6 @@ namespace NeoWatch
                     if (result.Data != null && result.Data.Count > 0)
                     {
                         var drawables = result.Data;
-                        watchItem.Description = drawables.Type;
                         foreach (var drawable in drawables)
                         {
                             geoDrawer.TransformGeometry(drawable);
@@ -463,24 +461,14 @@ namespace NeoWatch
                         {
                             watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;
                         }
-                        if (string.IsNullOrEmpty(watchItem.Drawables.Error))
-                        {
-                            watchItem.Drawables.Progress = watchItem.Drawables.Count;
-                        }
                     }
                 }
                 catch (OperationCanceledException)
                 {
                     watchItem.Drawables.Error = new Feedback(FeedbackType.Cancelled).Detail;
                 }
-                catch (LoadingException ex)
-                {
-                    watchItem.Drawables.Progress = 0;
-                    watchItem.Drawables.Error = ex.Message;
-                }
                 catch (NullReferenceException ex)
                 {
-                    watchItem.Drawables.Progress = 0;
                     watchItem.Drawables.Error = "Loader item caused: " + ex.Message;
                 }
                 finally

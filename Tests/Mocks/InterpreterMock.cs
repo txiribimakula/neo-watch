@@ -14,7 +14,7 @@ namespace Tests.Mocks
 
 
         public delegate Result<IDrawable> Callback(IExpression expression);
-        public Callback GetDrawableCallback { get; set; } = (expression) => new Result<IDrawable>(new Drawable("description"));
+        public Callback GetDrawableCallback { get; set; } = (expression) => new Result<IDrawable>(new DrawablePoint(0, 0) { Description = "description" });
         public Result<IDrawable> GetDrawable(IExpression expression)
         {
             return GetDrawableCallback(expression);

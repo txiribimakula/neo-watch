@@ -5,8 +5,5 @@
         int Red { get; set; }
         int Green { get; set; }
         int Blue { get; set; }
-        int Alpha { get; set; }
-
-        string Hex { get; }
     }
 }

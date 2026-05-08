@@ -58,7 +58,6 @@
     <Compile Include="Interpreter\Interpreter.cs" />
     <Compile Include="Interpreter\LineSegmentInterpreter.cs" />
     <Compile Include="Loader.cs" />
-    <Compile Include="LoadingException.cs" />
     <Compile Include="Interpreter\Matcher.cs" />
     <Compile Include="Interpreter\PointInterpreter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
