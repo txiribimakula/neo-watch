@@ -1,26 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using NeoWatch.Geometries;
 
 namespace NeoWatch.Drawing
 {
     public class DrawableCollection : Collection<IDrawable>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         public IBox Box { get; set; }
-
-        private int progress = 0;
-        public int Progress {
-            get { return progress; }
-            set { progress = value; NotifyPropertyChanged(nameof(Progress)); }
-        }
-
-        public int MaximumProgress
-        {
-            get => Count == 0 ? 1 : Count;
-        }
 
         private string error;
         public string Error {
@@ -45,16 +32,6 @@ namespace NeoWatch.Drawing
             NotifyPropertyChanged(nameof(GeometryVersion));
         }
 
-        public void AddAndNotify(IDrawable element) {
-            Add(element);
-            if(Box == null) {
-                Box = element.Box;
-            } else {
-                Box.Expand(element.Box);
-            }
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, element));
-        }
-
         public void AddAndNotify(List<IDrawable> elements) {
             foreach (var element in elements) {
                 Add(element);
@@ -71,11 +48,6 @@ namespace NeoWatch.Drawing
             Clear();
             Box = null;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        }
-
-        public void RemoveAndNotify(IDrawable element) {
-            Remove(element);
-            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, element));
         }
     }
 }

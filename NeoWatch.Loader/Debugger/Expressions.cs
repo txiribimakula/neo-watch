@@ -13,8 +13,6 @@ namespace NeoWatch.Loading
             _expressions = expressions;
         }
 
-        public int Count => _expressions.Count;
-
         public IEnumerator<IExpression> GetEnumerator()
         {
             var currentIndex = 0;

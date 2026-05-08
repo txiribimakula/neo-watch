@@ -12,8 +12,6 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="500">
     <UserControl.Resources>
-        <converters:ArcToPathConverter x:Key="ArcToPathConverter"/>
-        <converters:PointToPathConverter x:Key="PointToPathConverter"/>
         <converters:SegmentToPathConverter x:Key="SegmentToPathConverter"/>
         <converters:PointToTextConverter x:Key="PointToTextConverter"/>
         <converters:AxesToPathConverter x:Key="AxesToPathConverter"/>
@@ -25,7 +23,6 @@
         <converters:DrawablesToGeometryConverter x:Key="DrawablesPointsGeometryConverter" Mode="Points"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedPointGeometryConverter" Mode="SelectedPoint"/>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
-        <converters:ZeroToQuestionMarkConverter x:Key="ZeroToQuestionMarkConverter"/>
         <converters:IntOrOneConverter x:Key="IntOrOneConverter"/>
         <converters:PositiveIntToVisibilityConverter x:Key="PositiveIntToVisibilityConverter"/>
     </UserControl.Resources>

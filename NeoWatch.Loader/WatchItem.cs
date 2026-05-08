@@ -55,17 +55,14 @@ namespace NeoWatch.Loading
         private bool isLoading;
         public bool IsLoading {
             get { return isLoading; }
-            set { 
+            set {
                 isLoading = value;
                 if(isLoading) {
                     IsLoadingActivated?.Invoke(this);
-                } else {
-                    IsLoadingCancelled?.Invoke(this);
                 }
             }
         }
         public event WatchItemEventHandler IsLoadingActivated;
-        public event WatchItemEventHandler IsLoadingCancelled;
 
         private string name;
         public string Name {
@@ -73,12 +70,6 @@ namespace NeoWatch.Loading
             set { name = value; OnNameChanged(); }
         }
 
-        private string description;
-        public string Description {
-            get { return description; }
-            set { description = value; OnPropertyChanged(nameof(Description)); }
-        }
-        
         private string color;
         public string Color {
             get { return color; }
