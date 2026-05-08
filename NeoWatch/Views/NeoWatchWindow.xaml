@@ -22,6 +22,8 @@
         <converters:DrawablesToGeometryConverter x:Key="DrawablesMainGeometryConverter" Mode="Main"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedGeometryConverter" Mode="Selected"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesCapsGeometryConverter" Mode="Caps"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesPointsGeometryConverter" Mode="Points"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedPointGeometryConverter" Mode="SelectedPoint"/>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <converters:ZeroToQuestionMarkConverter x:Key="ZeroToQuestionMarkConverter"/>
         <converters:IntOrOneConverter x:Key="IntOrOneConverter"/>
@@ -92,7 +94,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Canvas ClipToBounds="True" Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                            <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" Stroke="{Binding Color}" Fill="{Binding Color}">
+                            <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" Stroke="{Binding Color}">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesMainGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
@@ -101,7 +103,7 @@
                                     </MultiBinding>
                                 </Path.Data>
                             </Path>
-                            <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" StrokeDashArray="3 2" Stroke="{Binding Color}" Fill="{Binding Color}">
+                            <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" StrokeDashArray="3 2" Stroke="{Binding Color}">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesSelectedGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
@@ -114,6 +116,24 @@
                                   Visibility="{Binding Path=DataContext.IsSenseShown, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesCapsGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="Drawables"/>
+                                        <Binding Path="SelectedItem"/>
+                                        <Binding Path="Drawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.8" StrokeThickness="4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Color}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesPointsGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="Drawables"/>
+                                        <Binding Path="SelectedItem"/>
+                                        <Binding Path="Drawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.8" StrokeThickness="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Color}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesSelectedPointGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
                                         <Binding Path="SelectedItem"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
