@@ -16,7 +16,9 @@ namespace NeoWatch.Converters
     {
         Main,
         Selected,
-        Caps
+        Caps,
+        Points,
+        SelectedPoint
     }
 
     public class DrawablesToGeometryConverter : IMultiValueConverter
@@ -38,17 +40,32 @@ namespace NeoWatch.Converters
                 foreach (var drawable in drawables)
                 {
                     bool isSelected = ReferenceEquals(drawable, selected);
-                    if (Mode == DrawablesGeometryMode.Selected && !isSelected) continue;
-                    if (Mode == DrawablesGeometryMode.Main && isSelected && drawables.Count > 1) continue;
+                    bool isPoint = drawable is DrawablePoint;
 
                     switch (Mode)
                     {
                         case DrawablesGeometryMode.Main:
+                            if (isPoint) continue;
+                            if (isSelected && drawables.Count > 1) continue;
+                            AppendDrawable(ctx, drawable);
+                            break;
                         case DrawablesGeometryMode.Selected:
+                            if (isPoint) continue;
+                            if (!isSelected) continue;
                             AppendDrawable(ctx, drawable);
                             break;
                         case DrawablesGeometryMode.Caps:
                             AppendCap(ctx, drawable);
+                            break;
+                        case DrawablesGeometryMode.Points:
+                            if (!isPoint) continue;
+                            if (isSelected && drawables.Count > 1) continue;
+                            AppendPointDot(ctx, (DrawablePoint)drawable);
+                            break;
+                        case DrawablesGeometryMode.SelectedPoint:
+                            if (!isPoint) continue;
+                            if (!isSelected) continue;
+                            AppendPointDot(ctx, (DrawablePoint)drawable);
                             break;
                     }
                 }
@@ -66,9 +83,6 @@ namespace NeoWatch.Converters
         {
             switch (drawable)
             {
-                case DrawablePoint p:
-                    AppendPoint(ctx, p.TransformedGeometry as GeoPoint);
-                    break;
                 case DrawableLineSegment seg:
                     AppendSegment(ctx, seg.TransformedGeometry as GeoLineSegment);
                     break;
@@ -86,12 +100,17 @@ namespace NeoWatch.Converters
             }
         }
 
-        private static void AppendPoint(StreamGeometryContext ctx, GeoPoint p)
+        private static void AppendPointDot(StreamGeometryContext ctx, DrawablePoint dp)
         {
+            var p = dp.TransformedGeometry as GeoPoint;
             if (p == null) return;
-            ctx.BeginFigure(new Point(p.X - 2, p.Y), true, true);
-            ctx.ArcTo(new Point(p.X + 2, p.Y), new Size(2, 2), 0, true, SweepDirection.Clockwise, true, false);
-            ctx.ArcTo(new Point(p.X - 2, p.Y), new Size(2, 2), 0, true, SweepDirection.Clockwise, true, false);
+            // Degenerate line: BeginFigure + LineTo at the same coordinate.
+            // With StrokeStartLineCap/StrokeEndLineCap = Round on the Path, this
+            // renders as a filled circle of diameter = StrokeThickness, with no
+            // arc tessellation and no stroke-offset computation.
+            var wpfPoint = new Point(p.X, p.Y);
+            ctx.BeginFigure(wpfPoint, false, false);
+            ctx.LineTo(wpfPoint, true, false);
         }
 
         private static void AppendSegment(StreamGeometryContext ctx, GeoLineSegment seg)
