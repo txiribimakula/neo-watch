@@ -25,6 +25,12 @@ namespace NeoWatch.Converters
     {
         public DrawablesGeometryMode Mode { get; set; } = DrawablesGeometryMode.Main;
 
+        /// <summary>
+        /// Side of the square drawn for each point, in device pixels. Only used by the
+        /// Points and SelectedPoint modes, whose geometry is filled rather than stroked.
+        /// </summary>
+        public double DotSize { get; set; } = 4;
+
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null || values.Length == 0) return Geometry.Empty;
@@ -60,12 +66,12 @@ namespace NeoWatch.Converters
                         case DrawablesGeometryMode.Points:
                             if (!isPoint) continue;
                             if (isSelected && drawables.Count > 1) continue;
-                            AppendPointDot(ctx, (DrawablePoint)drawable);
+                            AppendPointDot(ctx, (DrawablePoint)drawable, DotSize);
                             break;
                         case DrawablesGeometryMode.SelectedPoint:
                             if (!isPoint) continue;
                             if (!isSelected) continue;
-                            AppendPointDot(ctx, (DrawablePoint)drawable);
+                            AppendPointDot(ctx, (DrawablePoint)drawable, DotSize);
                             break;
                     }
                 }
@@ -100,17 +106,27 @@ namespace NeoWatch.Converters
             }
         }
 
-        private static void AppendPointDot(StreamGeometryContext ctx, DrawablePoint dp)
+        private static void AppendPointDot(StreamGeometryContext ctx, DrawablePoint dp, double size)
         {
             var p = dp.TransformedGeometry as GeoPoint;
             if (p == null) return;
-            // Degenerate line: BeginFigure + LineTo at the same coordinate.
-            // With StrokeStartLineCap/StrokeEndLineCap = Round on the Path, this
-            // renders as a filled circle of diameter = StrokeThickness, with no
-            // arc tessellation and no stroke-offset computation.
-            var wpfPoint = new Point(p.X, p.Y);
-            ctx.BeginFigure(wpfPoint, false, false);
-            ctx.LineTo(wpfPoint, true, false);
+
+            // Axis-aligned filled square, NOT a stroked dot. WPF only has a fast
+            // rasterisation path for axis-aligned rectangular figures; round caps,
+            // filled circles and even filled octagons all fall into the general
+            // tessellator, which is superlinear in the number of figures. Measured on
+            // 50.000 points: round caps 5.7 s, octagons 5.6 s, these squares 75 ms.
+            // See NeoWatch.Benchmark (`raster` mode) before changing the shape back.
+            double half = size / 2.0;
+            double left = p.X - half;
+            double top = p.Y - half;
+            double right = p.X + half;
+            double bottom = p.Y + half;
+
+            ctx.BeginFigure(new Point(left, top), true, true);
+            ctx.LineTo(new Point(right, top), false, false);
+            ctx.LineTo(new Point(right, bottom), false, false);
+            ctx.LineTo(new Point(left, bottom), false, false);
         }
 
         private static void AppendSegment(StreamGeometryContext ctx, GeoLineSegment seg)

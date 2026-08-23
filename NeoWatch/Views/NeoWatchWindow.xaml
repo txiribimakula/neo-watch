@@ -20,8 +20,8 @@
         <converters:DrawablesToGeometryConverter x:Key="DrawablesMainGeometryConverter" Mode="Main"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedGeometryConverter" Mode="Selected"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesCapsGeometryConverter" Mode="Caps"/>
-        <converters:DrawablesToGeometryConverter x:Key="DrawablesPointsGeometryConverter" Mode="Points"/>
-        <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedPointGeometryConverter" Mode="SelectedPoint"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesPointsGeometryConverter" Mode="Points" DotSize="4"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedPointGeometryConverter" Mode="SelectedPoint" DotSize="8"/>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <converters:IntOrOneConverter x:Key="IntOrOneConverter"/>
         <converters:PositiveIntToVisibilityConverter x:Key="PositiveIntToVisibilityConverter"/>
@@ -119,7 +119,7 @@
                                     </MultiBinding>
                                 </Path.Data>
                             </Path>
-                            <Path Opacity="0.8" StrokeThickness="4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Color}">
+                            <Path Opacity="0.8" Fill="{Binding Color}">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesPointsGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
@@ -128,7 +128,7 @@
                                     </MultiBinding>
                                 </Path.Data>
                             </Path>
-                            <Path Opacity="0.8" StrokeThickness="8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Color}">
+                            <Path Opacity="0.8" Fill="{Binding Color}">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesSelectedPointGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
