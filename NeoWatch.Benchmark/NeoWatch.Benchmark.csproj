@@ -23,8 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Linked from the production sources: the benchmark measures the real converter
-         and the real WatchItem, not a copy that could drift. -->
+    <!-- Linked rather than referenced: Smart App Control on this machine blocks loading the
+         freshly built, unsigned NeoWatch.Common.dll, which a ProjectReference to the loader
+         would drag in. Linking the sources keeps the benchmark measuring production code. -->
     <Compile Include="..\NeoWatch\Converters\DrawablesToGeometryConverter.cs" Link="Linked\DrawablesToGeometryConverter.cs" />
     <Compile Include="..\NeoWatch.Loader\WatchItem.cs" Link="Linked\WatchItem.cs" />
   </ItemGroup>

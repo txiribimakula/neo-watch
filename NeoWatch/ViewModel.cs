@@ -418,6 +418,9 @@ namespace NeoWatch
 
                 await BackgroundYield();
 
+                // Clear the selection before the reset so that the ComboBox writing null back
+                // through its two-way binding finds nothing to change, and asks for no redraw.
+                watchItem.SetSelectedItemQuietly(null);
                 watchItem.Drawables.ResetAndNotify();
                 try
                 {
@@ -456,6 +459,9 @@ namespace NeoWatch
                             geoDrawer.TransformGeometry(drawable);
                         }
                         watchItem.Drawables.AddAndNotify(drawables);
+                        // Selection first, redraw once: both feed the same converters, so
+                        // applying the selection quietly keeps this to a single pass per layer.
+                        watchItem.SetSelectedItemQuietly(watchItem.Drawables[0]);
                         watchItem.Drawables.NotifyGeometriesChanged();
                         if (drawables.Error != null)
                         {
@@ -485,11 +491,6 @@ namespace NeoWatch
             }
 
             stopwatch.Stop();
-
-            if (watchItem.Drawables.Count > 0)
-            {
-                watchItem.SelectedItem = watchItem.Drawables[0];
-            }
         }
     }
 }

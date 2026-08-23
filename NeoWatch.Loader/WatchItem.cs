@@ -84,15 +84,34 @@ namespace NeoWatch.Loading
         }
 
         private IDrawable selectedItem;
+        /// <summary>
+        /// Set by the user picking in the Items dropdown, so it redraws immediately.
+        /// The reload path must use <see cref="SetSelectedItemQuietly"/> instead and bump the
+        /// geometry once itself, otherwise every reload pays two redraws for one change.
+        /// </summary>
         public IDrawable SelectedItem
         {
             get { return selectedItem; }
             set
             {
-                selectedItem = value;
-                OnPropertyChanged(nameof(SelectedItem));
+                if (!SetSelectedItemQuietly(value)) return;
                 drawables?.NotifyGeometriesChanged();
             }
+        }
+
+        /// <summary>
+        /// Applies the selection without asking for a redraw. Returns false when nothing
+        /// changed, so callers can skip the work entirely.
+        /// </summary>
+        public bool SetSelectedItemQuietly(IDrawable value)
+        {
+            if (ReferenceEquals(selectedItem, value)) return false;
+
+            selectedItem = value;
+            // The converters read the selection from the collection, not from a binding.
+            if (drawables != null) drawables.SelectedItem = value;
+            OnPropertyChanged(nameof(SelectedItem));
+            return true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
