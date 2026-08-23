@@ -54,7 +54,7 @@ namespace NeoWatch.Benchmark
             Console.WriteLine();
             Console.WriteLine("  Transform   ViewModel.cs:454 - geoDrawer.TransformGeometry por cada drawable");
             Console.WriteLine("  Add+Box     ViewModel.cs:458 - AddAndNotify: Add + Box.Expand + CollectionChanged");
-            Console.WriteLine("  Converters  las 15 pasadas de reconstruccion de StreamGeometry");
+            Console.WriteLine("  Converters  las 5 pasadas de reconstruccion de StreamGeometry (eran 15 antes de A1+A2+A3)");
             Console.WriteLine("  ComboBox    regeneracion del CollectionView de la columna Items");
             Console.WriteLine("  Rasterizar  teselado del trazo y rasterizado real de WPF");
             Console.WriteLine();
@@ -105,8 +105,8 @@ namespace NeoWatch.Benchmark
             phase.ComboBox = 0; // measured separately below; AddAndNotify already fired the Reset
 
             sw.Restart();
-            item.Drawables.NotifyGeometriesChanged();        // ViewModel.cs:459
-            item.SelectedItem = item.Drawables[0];           // ViewModel.cs:490
+            item.SetSelectedItemQuietly(item.Drawables[0]);  // ViewModel.cs:464
+            item.Drawables.NotifyGeometriesChanged();        // ViewModel.cs:465
             Pump();
             phase.Converters = sw.Elapsed.TotalMilliseconds;
 

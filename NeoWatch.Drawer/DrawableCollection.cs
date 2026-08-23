@@ -9,6 +9,15 @@ namespace NeoWatch.Drawing
     {
         public IBox Box { get; set; }
 
+        /// <summary>
+        /// The drawable currently highlighted, kept here rather than only on the WatchItem so
+        /// that the geometry converters can read it without a binding of their own. That leaves
+        /// GeometryVersion as the single source a redraw depends on: one bump, one pass per
+        /// layer, instead of a pass per source that changes during a reload.
+        /// Owned by WatchItem.SelectedItem — assign it through there, not directly.
+        /// </summary>
+        public IDrawable SelectedItem { get; set; }
+
         private string error;
         public string Error {
             get { return error; }
@@ -47,6 +56,7 @@ namespace NeoWatch.Drawing
         public void ResetAndNotify() {
             Clear();
             Box = null;
+            SelectedItem = null;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }

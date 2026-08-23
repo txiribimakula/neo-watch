@@ -95,7 +95,6 @@
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesMainGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
-                                        <Binding Path="SelectedItem"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
                                     </MultiBinding>
                                 </Path.Data>
@@ -104,7 +103,6 @@
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesSelectedGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
-                                        <Binding Path="SelectedItem"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
                                     </MultiBinding>
                                 </Path.Data>
@@ -114,7 +112,6 @@
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesCapsGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
-                                        <Binding Path="SelectedItem"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
                                     </MultiBinding>
                                 </Path.Data>
@@ -123,7 +120,6 @@
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesPointsGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
-                                        <Binding Path="SelectedItem"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
                                     </MultiBinding>
                                 </Path.Data>
@@ -132,7 +128,6 @@
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesSelectedPointGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
-                                        <Binding Path="SelectedItem"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
                                     </MultiBinding>
                                 </Path.Data>

@@ -6,6 +6,7 @@
 #include "DemoListOfItself.h"
 #include "DemoSegment.h"
 #include "DemoStressTest.h"
+#include "DemoCheckScenario.h"
 #include <vector>
 
 int main()
@@ -79,19 +80,35 @@ int main()
     auto stressPoints   = MakeSpiralPoints();
     auto stressArcs     = MakeConcentricArcs();
 
-    // --- Escenario de stepping manual (ver docs/optimizacion-f10.html) ---
-    // 1. Pon un breakpoint en el bucle de abajo y arranca el depurador.
-    // 2. Anade 'f10Points' al Neo Watch y espera a que cargue (tarda, es a proposito).
-    // 3. Dale a F10 repetidamente: ninguna de estas lineas toca 'f10Points',
-    //    asi que todo el coste por paso es recarga y re-render evitables.
-    // Baja el tamano si la carga inicial se hace larga: el coste por F10 escala lineal.
+    // =====================================================================
+    // ESCENARIO RAPIDO - validar A1-A3 (ver docs/optimizacion-f10.html)
+    //
+    // Carga instantanea. Pon el breakpoint en el bucle de aqui abajo, anade los
+    // tres vectores al Neo Watch y no hace falta llegar nunca al bloque pesado.
+    // =====================================================================
+    auto checkPoints   = MakeCheckPoints();     // 40 puntos en anillo
+    auto checkSegments = MakeCheckSegments();   // 20 segmentos en abanico
+    auto checkArcs     = MakeCheckArcs();       // 12 arcos en espiral
+
+    volatile int checkTick = 0;
+    for (int step = 0; step < 20; step++)
+    {
+        checkTick = checkTick + 1;              // <-- breakpoint aqui para el escenario rapido
+    }
+
+    // =====================================================================
+    // ESCENARIO PESADO - solo para la prueba de tiron con la recarga desactivada.
+    //
+    // Tarda en cargar a proposito. No hace falta para validar A1-A3: si solo vas
+    // a eso, quedate arriba. Baja el tamano si te estorba; el coste escala lineal.
+    // =====================================================================
     auto f10Points = MakeSpiralPoints(50000);
 
     volatile int tick = 0;
     for (int step = 0; step < 50; step++)
     {
-        tick = tick + 1;
+        tick = tick + 1;                        // <-- breakpoint aqui para la prueba de tiron
     }
 
-    std::cout << "ticks: " << tick << std::endl;
+    std::cout << "ticks: " << (checkTick + tick) << std::endl;
 }

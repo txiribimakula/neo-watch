@@ -38,7 +38,9 @@ namespace NeoWatch.Converters
             var drawables = values[0] as DrawableCollection;
             if (drawables == null) return Geometry.Empty;
 
-            IDrawable selected = values.Length > 1 ? values[1] as IDrawable : null;
+            // Read from the collection rather than from a second binding: with GeometryVersion
+            // as the only source, a reload costs one pass per layer instead of three.
+            IDrawable selected = drawables.SelectedItem;
 
             var geometry = new StreamGeometry { FillRule = FillRule.Nonzero };
             using (var ctx = geometry.Open())
