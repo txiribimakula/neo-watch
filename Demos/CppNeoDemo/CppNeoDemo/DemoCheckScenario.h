@@ -3,6 +3,7 @@
 #include "DemoPoint.h"
 #include "DemoLineSegment.h"
 #include "demoArcSegment.h"
+#include "DemoRectangle.h"
 #include <vector>
 #include <cmath>
 
@@ -69,6 +70,27 @@ inline std::vector<DemoArcSegment> MakeCheckArcs()
         arc.demoInitialAngle = i * 30.0;
         arc.demoSweepAngle = 200.0;
         result.push_back(arc);
+    }
+
+    return result;
+}
+
+// Contenedor de contenedores: cada DemoRectangle tiene DisplayString "List" y su NatVis
+// lo expande en 4 segmentos sinteticos. Es el unico caso del demo donde ExpressionLoader
+// tiene que detectar una lista ANIDADA, leyendo Type y Value de cada elemento.
+// Sin esto, B2 podria romper la deteccion sin que ninguna prueba lo notase.
+inline std::vector<DemoRectangle> MakeCheckNested()
+{
+    std::vector<DemoRectangle> result;
+
+    for (int i = 0; i < 3; i++)
+    {
+        DemoRectangle rectangle;
+        rectangle.bottomLeftX = 2.0f + i * 1.5f;
+        rectangle.bottomLeftY = 2.0f + i * 1.5f;
+        rectangle.width = 12.0f - i * 3.0f;
+        rectangle.height = 8.0f - i * 2.0f;
+        result.push_back(rectangle);
     }
 
     return result;
