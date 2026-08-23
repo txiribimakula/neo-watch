@@ -47,10 +47,24 @@ namespace NeoWatch.Loading
         }
 
         private bool isVisible;
+        /// <summary>
+        /// A hidden item is not loaded at all, so showing one again has to ask for a reload —
+        /// its drawables are from whenever it was last visible. Same shape as
+        /// <see cref="IsLoadingActivated"/>, but only on the transition, so that the checkbox
+        /// re-writing the same value costs nothing.
+        /// </summary>
         public bool IsVisible {
             get { return isVisible; }
-            set { isVisible = value; OnPropertyChanged(nameof(IsVisible)); }
+            set {
+                bool wasVisible = isVisible;
+                isVisible = value;
+                OnPropertyChanged(nameof(IsVisible));
+                if (isVisible && !wasVisible) {
+                    IsVisibleActivated?.Invoke(this);
+                }
+            }
         }
+        public event WatchItemEventHandler IsVisibleActivated;
 
         private bool isLoading;
         public bool IsLoading {

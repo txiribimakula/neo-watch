@@ -176,6 +176,7 @@ namespace NeoWatch
         {
             foreach (var watchItem in WatchItems)
             {
+                if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
             }
@@ -241,6 +242,7 @@ namespace NeoWatch
             geoDrawer.DrawableVisitor.CoordinateSystem.ReCalculate((float)args.NewSize.Width, (float)args.NewSize.Height);
             foreach (var watchItem in WatchItems)
             {
+                if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
             }
@@ -321,6 +323,7 @@ namespace NeoWatch
             geoDrawer.DrawableVisitor.CoordinateSystem.Offset = new Geometries.Point(incrementalX, incrementalY);
             foreach (var watchItem in WatchItems)
             {
+                if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
             }
@@ -346,6 +349,7 @@ namespace NeoWatch
                     {
                         item.NameChanged += OnWatchItemReloadAsync;
                         item.IsLoadingActivated += OnWatchItemReloadAsync;
+                        item.IsVisibleActivated += OnWatchItemReloadAsync;
                     }
                 }
             }
@@ -357,6 +361,7 @@ namespace NeoWatch
                     {
                         item.NameChanged -= OnWatchItemReloadAsync;
                         item.IsLoadingActivated -= OnWatchItemReloadAsync;
+                        item.IsVisibleActivated -= OnWatchItemReloadAsync;
                         item.CancelLoad();
                     }
                 }
@@ -388,6 +393,7 @@ namespace NeoWatch
 
             foreach (var watchItem in WatchItems)
             {
+                if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
             }
@@ -406,7 +412,9 @@ namespace NeoWatch
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            if (watchItem.IsLoading)
+            // A hidden item is not drawn, so there is nothing to pay COM for. Showing it again
+            // raises IsVisibleActivated, which comes back through here.
+            if (watchItem.IsLoading && watchItem.IsVisible)
             {
                 watchItem.CancelLoad();
                 var cts = new CancellationTokenSource();
