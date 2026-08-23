@@ -255,10 +255,9 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </TextBlock.Style>
-                                            <Run Text="{Binding LoadingCount, Mode=OneWay}"/>
+                                            <Run Text="{Binding LoadingCount, Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding LoadingElapsedMs, Mode=OneWay}"/><Run Text=" ms"/>
                                         </TextBlock>
-                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
-                                                   Text="{Binding LoadingCount, Mode=OneWay}">
+                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -273,6 +272,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </TextBlock.Style>
+                                            <Run Text="{Binding LoadingCount, Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding LoadingElapsedMs, Mode=OneWay}"/><Run Text=" ms"/>
                                         </TextBlock>
                                         <TextBox Background="Transparent" BorderThickness="0" Foreground="DarkRed" Text="{Binding Drawables.Error, Mode=OneWay}" ToolTip="{Binding Drawables.Error}" IsReadOnly="True" TextWrapping="NoWrap" />
                                     </Grid>

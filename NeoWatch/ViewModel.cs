@@ -409,13 +409,13 @@ namespace NeoWatch
         private async void OnWatchItemReloadAsync(WatchItem watchItem)
         {
             watchItem.Drawables.Error = null;
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
 
             // A hidden item is not drawn, so there is nothing to pay COM for. Showing it again
             // raises IsVisibleActivated, which comes back through here.
             if (watchItem.IsLoading && watchItem.IsVisible)
             {
+                // Started here, not above: a skipped reload must not reset the time on display.
+                watchItem.StartLoadClock();
                 watchItem.CancelLoad();
                 var cts = new CancellationTokenSource();
                 watchItem.CurrentLoadCts = cts;
@@ -487,6 +487,9 @@ namespace NeoWatch
                 }
                 finally
                 {
+                    // Stopped in the finally so the total covers the drawables actually reaching
+                    // the canvas, and still lands on cancel or error.
+                    watchItem.StopLoadClock();
                     watchItem.IsBusy = false;
                     watchItem.IsCancelling = false;
                     DecrementLoading();
@@ -497,8 +500,6 @@ namespace NeoWatch
                     cts.Dispose();
                 }
             }
-
-            stopwatch.Stop();
         }
     }
 }

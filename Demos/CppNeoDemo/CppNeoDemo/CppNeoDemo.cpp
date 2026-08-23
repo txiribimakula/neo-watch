@@ -103,7 +103,7 @@ int main()
     // Tarda en cargar a proposito. No hace falta para validar A1-A3: si solo vas
     // a eso, quedate arriba. Baja el tamano si te estorba; el coste escala lineal.
     // =====================================================================
-    auto f10Points = MakeSpiralPoints(50000);
+    auto f10Points = MakeSpiralPoints(3000);
 
     volatile int tick = 0;
     for (int step = 0; step < 50; step++)

@@ -18,11 +18,13 @@ namespace NeoWatch.Loading
             var currentIndex = 0;
             foreach (DTE::Expression currentExpression in _expressions)
             {
-                var currentExpressionName = currentExpression.Name;
-                if (currentExpressionName.Equals("[" + currentIndex + "]"))
+                // Through the wrapper, so this Name read is the cached one rather than a
+                // separate COM call: Expression is the only place that talks to the evaluator.
+                var expression = new Expression(currentExpression);
+                if (expression.Name.Equals("[" + currentIndex + "]"))
                 {
                     currentIndex++;
-                    yield return new Expression(currentExpression);
+                    yield return expression;
                 }
             }
         }
