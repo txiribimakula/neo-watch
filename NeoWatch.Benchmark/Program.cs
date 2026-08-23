@@ -47,6 +47,12 @@ namespace NeoWatch.Benchmark
                 return 0;
             }
 
+            if (args.Length > 0 && args[0] == "modes")
+            {
+                ModeCost.Run(ParseSizes(args, new[] { 5000, 20000, 50000 }));
+                return 0;
+            }
+
             if (args.Length > 0 && args[0] == "raster")
             {
                 RasterExperiment.Run(ParseSizes(args, new[] { 5000, 20000, 50000 }));
