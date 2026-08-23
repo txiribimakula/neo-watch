@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <RootNamespace>NeoWatch.Benchmark</RootNamespace>
+    <AssemblyName>NeoWatch.Benchmark</AssemblyName>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.Xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NeoWatch.Drawer\NeoWatch.Drawing.csproj" />
+    <ProjectReference Include="..\NeoWatch.Geometries\NeoWatch.Geometries.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Linked from the production sources: the benchmark measures the real converter
+         and the real WatchItem, not a copy that could drift. -->
+    <Compile Include="..\NeoWatch\Converters\DrawablesToGeometryConverter.cs" Link="Linked\DrawablesToGeometryConverter.cs" />
+    <Compile Include="..\NeoWatch.Loader\WatchItem.cs" Link="Linked\WatchItem.cs" />
+  </ItemGroup>
+
+</Project>

@@ -78,4 +78,20 @@ int main()
     auto stressSegments = MakeGridSegments();
     auto stressPoints   = MakeSpiralPoints();
     auto stressArcs     = MakeConcentricArcs();
+
+    // --- Escenario de stepping manual (ver docs/optimizacion-f10.html) ---
+    // 1. Pon un breakpoint en el bucle de abajo y arranca el depurador.
+    // 2. Anade 'f10Points' al Neo Watch y espera a que cargue (tarda, es a proposito).
+    // 3. Dale a F10 repetidamente: ninguna de estas lineas toca 'f10Points',
+    //    asi que todo el coste por paso es recarga y re-render evitables.
+    // Baja el tamano si la carga inicial se hace larga: el coste por F10 escala lineal.
+    auto f10Points = MakeSpiralPoints(50000);
+
+    volatile int tick = 0;
+    for (int step = 0; step < 50; step++)
+    {
+        tick = tick + 1;
+    }
+
+    std::cout << "ticks: " << tick << std::endl;
 }

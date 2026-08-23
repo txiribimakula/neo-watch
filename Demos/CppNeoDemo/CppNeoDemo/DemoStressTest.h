@@ -41,14 +41,14 @@ inline std::vector<DemoLineSegment> MakeGridSegments()
     return result;
 }
 
-inline std::vector<DemoPoint> MakeSpiralPoints()
+inline std::vector<DemoPoint> MakeSpiralPoints(int count = 2000)
 {
     std::vector<DemoPoint> result;
-    result.reserve(2000);
+    result.reserve(count);
 
-    for (int i = 0; i < 2000; i++)
+    for (int i = 0; i < count; i++)
     {
-        double t = i * (6.0 * M_PI / 2000.0);
+        double t = i * (6.0 * M_PI / count);
         double r = 0.05 * t;
         double angle = t + (i % 2) * M_PI;
         DemoPoint p;
