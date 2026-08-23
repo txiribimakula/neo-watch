@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using NeoWatch.Drawing;
 
@@ -28,7 +29,30 @@ namespace NeoWatch.Loading
         private int loadingCount;
         public int LoadingCount {
             get { return loadingCount; }
-            set { loadingCount = value; OnPropertyChanged(nameof(LoadingCount)); }
+            set {
+                loadingCount = value;
+                OnPropertyChanged(nameof(LoadingCount));
+                // The loader refreshes the count every 100 elements or 100 ms, so hanging the
+                // clock off it keeps the elapsed time ticking without any extra plumbing.
+                OnPropertyChanged(nameof(LoadingElapsedMs));
+            }
+        }
+
+        private readonly Stopwatch loadClock = new Stopwatch();
+
+        /// <summary>Milliseconds since this row's load started, or its total once finished.</summary>
+        public long LoadingElapsedMs {
+            get { return loadClock.ElapsedMilliseconds; }
+        }
+
+        public void StartLoadClock() {
+            loadClock.Restart();
+            OnPropertyChanged(nameof(LoadingElapsedMs));
+        }
+
+        public void StopLoadClock() {
+            loadClock.Stop();
+            OnPropertyChanged(nameof(LoadingElapsedMs));
         }
 
         private int loadingTotal;
