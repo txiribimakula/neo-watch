@@ -89,6 +89,7 @@ int main()
     auto checkPoints   = MakeCheckPoints();     // 40 puntos en anillo
     auto checkSegments = MakeCheckSegments();   // 20 segmentos en abanico
     auto checkArcs     = MakeCheckArcs();       // 12 arcos en espiral
+    auto checkNested   = MakeCheckNested();     // 3 rectangulos -> 12 segmentos, lista anidada
 
     volatile int checkTick = 0;
     for (int step = 0; step < 20; step++)
