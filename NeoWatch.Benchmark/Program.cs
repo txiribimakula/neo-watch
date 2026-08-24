@@ -53,6 +53,11 @@ namespace NeoWatch.Benchmark
                 return 0;
             }
 
+            if (args.Length > 0 && args[0] == "paste")
+            {
+                return PasteCheck.Run();
+            }
+
             if (args.Length > 0 && args[0] == "snapshot")
             {
                 return SnapshotCheck.Run();

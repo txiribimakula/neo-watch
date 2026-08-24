@@ -24,6 +24,16 @@
 					<ButtonText>Neo Watch</ButtonText>
 				</Strings>
 			</Button>
+            <!-- IDG_WATCH_EDIT es el grupo que el menu contextual del Watch monta arriba del todo.
+                 0x0180 cae entre Copy Value (0x0150) y Add Watch (0x0200). -->
+            <Button guid="guidPackageCmdSet" id="idCommandAddFromWatch" priority="0x0180" type="Button">
+                <Parent guid="guidVSDebugGroup" id="IDG_WATCH_EDIT"/>
+                <CommandFlag>DynamicVisibility</CommandFlag>
+                <Icon guid="neoIcon" id="neoIcon1" />
+                <Strings>
+                    <ButtonText>Add Neo Watch</ButtonText>
+                </Strings>
+            </Button>
             <Button guid="guidPackageCmdSet" id="idCommandAdd" priority="0x0100" type="Button">
                 <Parent guid="guidPackageCmdSet" id="RightClickMenu"/>
                 <CommandFlag>DynamicVisibility</CommandFlag>
@@ -38,6 +48,7 @@
 	<VisibilityConstraints>
         <VisibilityItem guid="guidPackageCmdSet" id="idCommand" context="UICONTEXT_Debugging" />
         <VisibilityItem guid="guidPackageCmdSet" id="idCommandAdd" context="UICONTEXT_Debugging" />
+        <VisibilityItem guid="guidPackageCmdSet" id="idCommandAddFromWatch" context="UICONTEXT_Debugging" />
 	</VisibilityConstraints>
 
 	<Symbols>
@@ -46,6 +57,7 @@
 		<GuidSymbol name="guidPackageCmdSet" value="{AB6200EA-5C89-4F3C-AEEB-1374F1F578FB}">
             <IDSymbol value="256" name="idCommand" />
             <IDSymbol value="255" name="idCommandAdd" />
+            <IDSymbol value="254" name="idCommandAddFromWatch" />
             <IDSymbol name="RightClickMenu" value="0x1040" />
         </GuidSymbol>
 		<GuidSymbol name="neoIcon" value="{153861FB-E433-49C8-BE51-5289844FC485}">

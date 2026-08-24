@@ -161,6 +161,11 @@
                   Background="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBackgroundKey}}"
                   Foreground="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"
                   BorderBrush="{DynamicResource {x:Static shell:VsBrushes.ToolWindowBorderKey}}">
+                <DataGrid.InputBindings>
+                    <!-- Paste rows copied from the Visual Studio Watch window. While a cell is being
+                         edited the TextBox takes Ctrl+V first, so typing a name still pastes text. -->
+                    <KeyBinding Key="V" Modifiers="Control" Command="{Binding PasteWatchItemsCommand}"/>
+                </DataGrid.InputBindings>
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="{x:Type DataGridColumnHeader}">
                         <Setter Property="Background" Value="{DynamicResource {x:Static shell:VsBrushes.GridHeadingBackgroundKey}}" />
