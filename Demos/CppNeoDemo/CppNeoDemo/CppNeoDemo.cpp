@@ -98,6 +98,46 @@ int main()
     }
 
     // =====================================================================
+    // UNION DISCRIMINADA Y LISTA ENLAZADA - los dos extremos de la deteccion
+    // por memoria (ver docs/optimizacion-f10.html, filas C0, C0b y C0c).
+    //
+    // 'checkMixed' es contiguo y POD: entra en la deteccion por memoria, y
+    // ademas cada elemento da un drawable, asi que entra en la recarga puntual.
+    //
+    // 'chainNodes[0]' es una lista enlazada: no hay bloque contiguo que leer,
+    // asi que NO entra en nada de eso y se recarga entera en cada paso. Esta
+    // aqui para comprobar que el camino de respaldo sigue funcionando.
+    // =====================================================================
+    auto checkMixed = MakeCheckMixed();         // 24 elementos: lineas y arcos alternados
+    auto chainNodes = MakeCheckChainNodes(200); // 200 nodos...
+    LinkCheckChain(chainNodes);                 // ...enlazados ya en su sitio definitivo
+
+    volatile int mixedTick = 0;
+    for (int step = 0; step < 20; step++)
+    {
+        mixedTick = mixedTick + 1;              // <-- breakpoint aqui. Anade 'checkMixed'
+    }                                           //     y 'chainNodes[0]'
+
+    // Mueve el extremo de una linea: cambian bytes dentro de la union.
+    checkMixed[6].segment.line.demoFinalPoint.demoX += 3.0;   // <-- F10: recarga puntual
+
+    // Cambia el discriminante: los MISMOS bytes de la union pasan a leerse como
+    // linea en vez de arco. Se toca poco mas que un byte y el dibujo cambia entero.
+    checkMixed[7].type = DemoSegment::SegmentType::Line;      // <-- F10: recarga puntual
+
+    // Crece por el final.
+    DemoSegment extraSegment;
+    extraSegment.type = DemoSegment::SegmentType::Line;
+    extraSegment.segment.line.demoInitialPoint = { 2.0, 2.0 };
+    extraSegment.segment.line.demoFinalPoint = { 18.0, 18.0 };
+    checkMixed.push_back(extraSegment);                       // <-- F10: solo el anadido
+
+    // La lista enlazada no tiene atajo posible: cada uno de estos pasos recorre
+    // los 200 nodos por COM. Debe seguir dibujando bien, solo que sin acelerar.
+    chainNodes[50].x += 3.0f;                                 // <-- F10: recarga completa
+    chainNodes[50].y += 3.0f;                                 // <-- F10: recarga completa
+
+    // =====================================================================
     // ESCENARIO PESADO - solo para la prueba de tiron con la recarga desactivada.
     //
     // Tarda en cargar a proposito. No hace falta para validar A1-A3: si solo vas
@@ -111,5 +151,29 @@ int main()
         tick = tick + 1;                        // <-- breakpoint aqui para la prueba de tiron
     }
 
-    std::cout << "ticks: " << (checkTick + tick) << std::endl;
+    // =====================================================================
+    // COMPROBAR QUE UN CAMBIO SI RECARGA (C0)
+    //
+    // Con 'f10Points' en el Neo Watch, sigue dando F10. El bucle de arriba no
+    // toca el vector, asi que esos pasos deben ser inmediatos. Estos tres si lo
+    // tocan, y cada uno tiene que provocar una recarga completa: barra de
+    // progreso y el dibujo cambiando.
+    // =====================================================================
+
+    // 1. Modificar en el sitio. Misma direccion base y mismo tamano: el
+    //    DisplayString del vector sigue diciendo "{ size=3000 }". Lo unico que
+    //    delata el cambio es comparar los bytes.
+    f10Points[1500].demoX += 2.0;               // <-- F10: debe recargar
+    f10Points[1500].demoY += 2.0;               // <-- F10: debe recargar
+
+    // 2. Anadir uno. Cambia el tamano a "{ size=3001 }" y, si el vector realoja,
+    //    tambien la direccion base. Se detecta antes de leer un solo byte, y el
+    //    desplegable Items pasa a tener un elemento mas.
+    DemoPoint extraPoint;
+    extraPoint.demoX = 6.0;
+    extraPoint.demoY = 6.0;
+    f10Points.push_back(extraPoint);            // <-- F10: debe recargar
+
+    std::cout << "ticks: " << (checkTick + mixedTick + tick)
+              << " puntos: " << f10Points.size() << std::endl;
 }

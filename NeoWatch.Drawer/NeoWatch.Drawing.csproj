@@ -53,6 +53,7 @@
     <Compile Include="CoordinateSystem.cs" />
     <Compile Include="DrawableArcSegment.cs" />
     <Compile Include="DrawableCollection.cs" />
+    <Compile Include="DrawableReplacement.cs" />
     <Compile Include="DrawableLineSegment.cs" />
     <Compile Include="DrawablePoint.cs" />
     <Compile Include="Drawables.cs" />

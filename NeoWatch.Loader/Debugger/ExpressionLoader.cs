@@ -16,6 +16,31 @@ namespace NeoWatch.Loading
         private IExpression _expression;
         private string[] _listTypes;
 
+        /// <summary>
+        /// Exposed so the loader can tell a container from a single geometry: the memory
+        /// snapshot of C0 only applies to containers, where the win is.
+        /// </summary>
+        public bool IsList
+        {
+            get { return _isList; }
+        }
+
+        /// <summary>
+        /// True only when the type really is an indexable container, so that <c>v[0]</c> is a valid
+        /// expression. Narrower than <see cref="IsList"/> on purpose: that one also says yes to a
+        /// NatVis that merely displays the word "List" while synthesising its children — a linked
+        /// list, or a rectangle expanded into segments — and those have no <c>operator[]</c> and no
+        /// contiguous block to take the address of.
+        /// </summary>
+        public bool IsIndexableContainer
+        {
+            get
+            {
+                var expressionType = _expression.Type;
+                return isInListTypes(expressionType) || isMatchingListPattern(expressionType);
+            }
+        }
+
         private bool _isList
         {
             get

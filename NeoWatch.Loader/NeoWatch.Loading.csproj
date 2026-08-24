@@ -53,6 +53,9 @@
     <Compile Include="Debugger\ExpressionLoader.cs" />
     <Compile Include="Debugger\Expressions.cs" />
     <Compile Include="Debugger\IDebugger.cs" />
+    <Compile Include="Debugger\IMemoryReader.cs" />
+    <Compile Include="MemorySnapshot.cs" />
+    <Compile Include="ReloadPlan.cs" />
     <Compile Include="Debugger\IExpression.cs" />
     <Compile Include="Debugger\IExpressions.cs" />
     <Compile Include="Interpreter\IInterpreter.cs" />

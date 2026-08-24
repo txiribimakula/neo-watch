@@ -53,6 +53,17 @@ namespace NeoWatch.Benchmark
                 return 0;
             }
 
+            if (args.Length > 0 && args[0] == "snapshot")
+            {
+                return SnapshotCheck.Run();
+            }
+
+            if (args.Length > 0 && args[0] == "threshold")
+            {
+                ThresholdProbe.Run(ParseSizes(args, new[] { 3000, 20000, 50000 }));
+                return 0;
+            }
+
             if (args.Length > 0 && args[0] == "raster")
             {
                 RasterExperiment.Run(ParseSizes(args, new[] { 5000, 20000, 50000 }));
@@ -64,12 +75,12 @@ namespace NeoWatch.Benchmark
 
             if (args.Length > 0 && !int.TryParse(args[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out drawableCount))
             {
-                Console.Error.WriteLine("Uso: NeoWatch.Benchmark [numDrawables] [numPasos] | pipeline | load | raster");
+                Console.Error.WriteLine("Uso: NeoWatch.Benchmark [numDrawables] [numPasos] | pipeline | load | modes | raster | threshold | snapshot");
                 return 1;
             }
             if (args.Length > 1 && !int.TryParse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out steps))
             {
-                Console.Error.WriteLine("Uso: NeoWatch.Benchmark [numDrawables] [numPasos] | pipeline | load | raster");
+                Console.Error.WriteLine("Uso: NeoWatch.Benchmark [numDrawables] [numPasos] | pipeline | load | modes | raster | threshold | snapshot");
                 return 1;
             }
 

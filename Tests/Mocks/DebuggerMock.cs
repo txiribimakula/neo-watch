@@ -13,5 +13,8 @@ namespace Tests.Mocks
         {
             return GetExpressionCallback(name);
         }
+
+        /// <summary>Zero means "nothing being debugged", which keeps the memory reader out.</summary>
+        public int CurrentProcessId { get; set; }
     }
 }

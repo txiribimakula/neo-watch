@@ -27,12 +27,12 @@ namespace NeoWatch
             set { canUserAddRows = value; OnPropertyChanged(nameof(CanUserAddRows)); }
         }
 
-        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs)
+        public ViewModel(IDebugger debugger, Dictionary<PatternKind, string[]> patterns, Dictionary<string, PatternKind> typeKindPairs, IMemoryReader memoryReader = null)
         {
             WatchItems = new ObservableCollection<WatchItem>();
             WatchItems.CollectionChanged += OnWatchItemsCollectionChanged;
 
-            Loader = new Loader(debugger, new Interpreter(patterns, typeKindPairs));
+            Loader = new Loader(debugger, new Interpreter(patterns, typeKindPairs), memoryReader);
             Loader.YieldAction = BackgroundYield;
 
             CancelLoadCommand = new RelayCommand(watchItem => ((WatchItem)watchItem).CancelLoad());
@@ -406,6 +406,62 @@ namespace NeoWatch
             }
         }
 
+        /// <summary>
+        /// Reloads only the elements whose bytes changed. No progress bar and no cancellation: it
+        /// is a handful of expressions, not a sweep. Returns false on anything unexpected, and
+        /// then the caller falls through to the full reload.
+        /// </summary>
+        private bool TryReloadChangedElements(WatchItem watchItem, ReloadPlan plan)
+        {
+            List<DrawableReplacement> replacements = Loader.ReloadElements(watchItem, plan.ChangedIndices);
+            if (replacements == null) return false;
+
+            List<DrawableReplacement> additions = Loader.ReloadElements(watchItem, plan.AddedIndices);
+            if (additions == null) return false;
+
+            var appended = new List<IDrawable>(additions.Count);
+            foreach (var addition in additions)
+            {
+                appended.Add(addition.Drawable);
+            }
+
+            foreach (var replacement in replacements)
+            {
+                geoDrawer.TransformGeometry(replacement.Drawable);
+            }
+            foreach (var element in appended)
+            {
+                geoDrawer.TransformGeometry(element);
+            }
+
+            // Captured before the swap: if the selected drawable is one of the replaced ones, the
+            // selection has to follow the index, because the object it pointed at is gone.
+            int selectedIndex = watchItem.SelectedItem == null
+                ? -1
+                : watchItem.Drawables.IndexOf(watchItem.SelectedItem);
+
+            watchItem.Drawables.ApplyPartialAndNotify(replacements, appended, plan.FinalCount);
+
+            if (selectedIndex >= 0 && selectedIndex < watchItem.Drawables.Count)
+            {
+                watchItem.SetSelectedItemQuietly(watchItem.Drawables[selectedIndex]);
+            }
+            else if (selectedIndex >= 0)
+            {
+                // The selection was in the part that got dropped.
+                watchItem.SetSelectedItemQuietly(watchItem.Drawables.Count > 0 ? watchItem.Drawables[0] : null);
+            }
+
+            watchItem.LoadingTotal = watchItem.Drawables.Count;
+            watchItem.LoadingCount = watchItem.Drawables.Count;
+
+            // Only now that it landed does the freshly read block become the new baseline.
+            Loader.CommitSnapshot(watchItem, plan);
+
+            watchItem.Drawables.NotifyGeometriesChanged();
+            return true;
+        }
+
         private async void OnWatchItemReloadAsync(WatchItem watchItem)
         {
             watchItem.Drawables.Error = null;
@@ -414,6 +470,13 @@ namespace NeoWatch
             // raises IsVisibleActivated, which comes back through here.
             if (watchItem.IsLoading && watchItem.IsVisible)
             {
+                // C0/C0b: let memory decide what this break costs before touching anything.
+                var plan = Loader.PlanReload(watchItem);
+                // Byte for byte identical: no load, no redraw, no UI churn at all.
+                if (plan.IsUnchanged) return;
+                // A handful of elements moved: reload just those and skip the sweep.
+                if (plan.IsPartial && TryReloadChangedElements(watchItem, plan)) return;
+
                 // Started here, not above: a skipped reload must not reset the time on display.
                 watchItem.StartLoadClock();
                 watchItem.CancelLoad();
