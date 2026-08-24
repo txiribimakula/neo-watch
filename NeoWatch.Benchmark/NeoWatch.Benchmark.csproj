@@ -29,6 +29,7 @@
     <Compile Include="..\NeoWatch\Converters\DrawablesToGeometryConverter.cs" Link="Linked\DrawablesToGeometryConverter.cs" />
     <Compile Include="..\NeoWatch.Loader\WatchItem.cs" Link="Linked\WatchItem.cs" />
     <Compile Include="..\NeoWatch.Loader\MemorySnapshot.cs" Link="Linked\MemorySnapshot.cs" />
+    <Compile Include="..\NeoWatch.Loader\WatchExpressionParser.cs" Link="Linked\WatchExpressionParser.cs" />
   </ItemGroup>
 
 </Project>

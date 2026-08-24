@@ -66,6 +66,7 @@
     <Compile Include="Interpreter\Matcher.cs" />
     <Compile Include="Interpreter\PointInterpreter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WatchExpressionParser.cs" />
     <Compile Include="WatchItem.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -36,6 +36,7 @@ namespace NeoWatch
             Loader.YieldAction = BackgroundYield;
 
             CancelLoadCommand = new RelayCommand(watchItem => ((WatchItem)watchItem).CancelLoad());
+            PasteWatchItemsCommand = new RelayCommand(_ => PasteWatchItems());
             PickColorCommand = new RelayCommand(watchItem => PickColor((WatchItem)watchItem));
             ToggleSenseCommand = new RelayCommand(_ => ToggleSense());
         }
@@ -107,6 +108,7 @@ namespace NeoWatch
         public RelayCommand ToggleSenseCommand { get; set; }
         public RelayCommand PickColorCommand { get; set; }
         public RelayCommand CancelLoadCommand { get; set; }
+        public RelayCommand PasteWatchItemsCommand { get; set; }
 
         private int loadingCount;
         public bool IsAnyLoading
@@ -150,6 +152,52 @@ namespace NeoWatch
         {
             IsSenseShown = !IsSenseShown;
             OnPropertyChanged(nameof(IsSenseShown));
+        }
+
+        /// <summary>
+        /// Adds a watch item per expression on the clipboard, so rows copied from the Visual Studio
+        /// Watch window land here with a paste. Several at once, which is the usual case when you
+        /// are already looking at them there.
+        /// </summary>
+        private void PasteWatchItems()
+        {
+            string text = TryGetClipboardText();
+            if (text == null) return;
+
+            List<string> expressions = WatchExpressionParser.Parse(text);
+            if (expressions.Count == 0) return;
+
+            // Same dance as adding from the editor: the grid's own new-row placeholder interferes
+            // with adding programmatically, so it is off while the rows go in.
+            CanUserAddRows = false;
+            var added = new List<WatchItem>(expressions.Count);
+            foreach (string expression in expressions)
+            {
+                var watchItem = new WatchItem();
+                WatchItems.Add(watchItem);
+                added.Add(watchItem);
+            }
+            CanUserAddRows = true;
+
+            // Names last: setting one starts its load, and by now the collection has wired up the
+            // handler that listens for it.
+            for (int i = 0; i < added.Count; i++)
+            {
+                added[i].Name = expressions[i];
+            }
+        }
+
+        private static string TryGetClipboardText()
+        {
+            try
+            {
+                return Clipboard.ContainsText() ? Clipboard.GetText() : null;
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                // Another process had the clipboard locked. Nothing to do but skip the paste.
+                return null;
+            }
         }
 
         private void PickColor(WatchItem watchItem)
