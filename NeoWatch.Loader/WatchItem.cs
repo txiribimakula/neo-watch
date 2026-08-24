@@ -63,6 +63,13 @@ namespace NeoWatch.Loading
 
         public CancellationTokenSource CurrentLoadCts { get; set; }
 
+        /// <summary>
+        /// The bytes this item's elements held after the last successful load, used to skip the
+        /// next reload when nothing moved. Null means no baseline, so the next break loads
+        /// normally. See <see cref="Loader.IsUnchanged"/>.
+        /// </summary>
+        public MemorySnapshot Snapshot { get; set; }
+
         public void CancelLoad()
         {
             if (CurrentLoadCts == null || CurrentLoadCts.IsCancellationRequested) return;

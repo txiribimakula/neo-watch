@@ -4,6 +4,8 @@
 #include "DemoLineSegment.h"
 #include "demoArcSegment.h"
 #include "DemoRectangle.h"
+#include "DemoSegment.h"
+#include "DemoListOfItself.h"
 #include <vector>
 #include <cmath>
 
@@ -94,4 +96,69 @@ inline std::vector<DemoRectangle> MakeCheckNested()
     }
 
     return result;
+}
+
+// Contenedor heterogeneo: una union discriminada donde cada elemento es linea o arco
+// segun su campo 'type'. Contiguo y POD, asi que la deteccion por memoria SI aplica,
+// y cada elemento produce exactamente un drawable, asi que la recarga puntual tambien.
+//
+// Lo interesante es que cambiar 'type' reinterpreta los mismos bytes de la union: el
+// dibujo cambia por completo aunque se toque poco mas que un byte.
+inline std::vector<DemoSegment> MakeCheckMixed()
+{
+    std::vector<DemoSegment> result;
+
+    const int count = 24;
+    for (int i = 0; i < count; i++)
+    {
+        const double angle = i * (2.0 * M_PI / count);
+        DemoSegment item;
+
+        if (i % 2 == 0)
+        {
+            item.type = DemoSegment::SegmentType::Line;
+            item.segment.line.demoInitialPoint = { 10.0, 10.0 };
+            item.segment.line.demoFinalPoint = { 10.0 + 7.0 * std::cos(angle), 10.0 + 7.0 * std::sin(angle) };
+        }
+        else
+        {
+            item.type = DemoSegment::SegmentType::Arc;
+            item.segment.arc.demoCenterPoint = { 10.0, 10.0 };
+            item.segment.arc.demoRadius = 3.0 + (i % 6) * 0.6;
+            item.segment.arc.demoInitialAngle = i * 15.0;
+            item.segment.arc.demoSweepAngle = 120.0;
+        }
+
+        result.push_back(item);
+    }
+
+    return result;
+}
+
+// Nodos de una lista enlazada, SIN enlazar todavia: enlazarlos aqui no serviria de nada
+// porque devolver el vector por valor moveria el buffer y dejaria los punteros colgando.
+inline std::vector<DemoListOfItself> MakeCheckChainNodes(int count)
+{
+    std::vector<DemoListOfItself> result(count);
+
+    for (int i = 0; i < count; i++)
+    {
+        const double angle = i * (2.0 * M_PI / count);
+        result[i].x = (float)(10.0 + 7.5 * std::cos(angle));
+        result[i].y = (float)(10.0 + 7.5 * std::sin(angle));
+        result[i].Next = nullptr;
+        result[i].Previous = nullptr;
+    }
+
+    return result;
+}
+
+// Enlaza los nodos una vez el vector ya esta en su sitio definitivo.
+inline void LinkCheckChain(std::vector<DemoListOfItself>& nodes)
+{
+    for (size_t i = 0; i < nodes.size(); i++)
+    {
+        nodes[i].Previous = (i == 0) ? nullptr : &nodes[i - 1];
+        nodes[i].Next = (i + 1 == nodes.size()) ? nullptr : &nodes[i + 1];
+    }
 }

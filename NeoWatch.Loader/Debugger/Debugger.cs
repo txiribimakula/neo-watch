@@ -17,5 +17,21 @@ namespace NeoWatch.Loading
 
             return new Expression(expression);
         }
+
+        public int CurrentProcessId
+        {
+            get
+            {
+                try
+                {
+                    var process = _debugger.CurrentProcess;
+                    return process == null ? 0 : process.ProcessID;
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    return 0;
+                }
+            }
+        }
     }
 }

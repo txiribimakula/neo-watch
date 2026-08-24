@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.Shell;
 using System;
 using System.Runtime.InteropServices;
+using NeoWatch.Debugging;
 using NeoWatch.Loading;
 
 namespace NeoWatch
@@ -20,7 +21,8 @@ namespace NeoWatch
             if (DTE2 != null)
             {
                 BlueprintsOptionPage page = (BlueprintsOptionPage)NeoWatchCommand.Instance.package.GetDialogPage(typeof(BlueprintsOptionPage));
-                ViewModel viewModel = new ViewModel(new Debugger(DTE2.Debugger), page.Patterns, page.TypeKindPairs);
+                var debugger = new Debugger(DTE2.Debugger);
+                ViewModel viewModel = new ViewModel(debugger, page.Patterns, page.TypeKindPairs, new DkmMemoryReader(debugger));
 
                 NeoWatchWindow window = new NeoWatchWindow();
                 window.DataContext = viewModel;
