@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using NeoWatch.Drawing;
@@ -9,6 +10,7 @@ namespace NeoWatch.Loading
     {
         public WatchItem() {
             Drawables = new DrawableCollection();
+            PreviousDrawables = new DrawableCollection();
             isLoading = true;
             isVisible = true;
             color = null;
@@ -112,7 +114,15 @@ namespace NeoWatch.Loading
         private string name;
         public string Name {
             get { return name; }
-            set { name = value; OnNameChanged(); }
+            set {
+                if (name != value) {
+                    ClearPreviousDrawables();
+                    Snapshot = null;
+                    discardPreviousOnNextLoad = true;
+                }
+                name = value;
+                OnNameChanged();
+            }
         }
 
         private string color;
@@ -125,7 +135,141 @@ namespace NeoWatch.Loading
         private DrawableCollection drawables;
         public DrawableCollection Drawables {
             get { return drawables; }
-            set { drawables = value; OnPropertyChanged(nameof(Drawables)); }
+            set {
+                drawables = value;
+                OnPropertyChanged(nameof(Drawables));
+                OnPropertyChanged(nameof(DisplayedDrawables));
+            }
+        }
+
+        private DrawableCollection previousDrawables;
+        private readonly List<IDrawable> changedCurrentDrawables = new List<IDrawable>();
+        private readonly List<IDrawable> changedPreviousDrawables = new List<IDrawable>();
+
+        public DrawableCollection PreviousDrawables {
+            get { return previousDrawables; }
+            private set {
+                previousDrawables = value;
+                OnPropertyChanged(nameof(PreviousDrawables));
+                OnPropertyChanged(nameof(HasPreviousDrawables));
+                OnPropertyChanged(nameof(DisplayedDrawables));
+            }
+        }
+
+        public bool HasPreviousDrawables {
+            get { return PreviousDrawables != null && PreviousDrawables.Count > 0; }
+        }
+
+        private bool isShowingPrevious;
+        private bool isSwitchingDisplayedDrawables;
+        public bool IsShowingPrevious {
+            get { return isShowingPrevious; }
+        }
+
+        public DrawableCollection DisplayedDrawables {
+            get { return IsShowingPrevious && HasPreviousDrawables ? PreviousDrawables : Drawables; }
+        }
+
+        private bool discardPreviousOnNextLoad;
+
+        public bool ConsumeDiscardPreviousOnNextLoad()
+        {
+            bool discard = discardPreviousOnNextLoad;
+            discardPreviousOnNextLoad = false;
+            return discard;
+        }
+
+        public void RememberPreviousDrawables(IList<IDrawable> previous)
+        {
+            FindChangedDrawables(previous, Drawables);
+
+            var snapshot = new DrawableCollection();
+            snapshot.AddAndNotify(new List<IDrawable>(previous));
+
+            isShowingPrevious = false;
+            PreviousDrawables = snapshot;
+            SynchronizeSelectionCollections();
+            OnPropertyChanged(nameof(IsShowingPrevious));
+        }
+
+        public void ClearPreviousDrawables()
+        {
+            changedCurrentDrawables.Clear();
+            changedPreviousDrawables.Clear();
+            isShowingPrevious = false;
+            PreviousDrawables = new DrawableCollection();
+            SynchronizeSelectionCollections();
+            OnPropertyChanged(nameof(IsShowingPrevious));
+        }
+
+        public bool SetShowingPrevious(bool value)
+        {
+            if (value && !HasPreviousDrawables) return false;
+            if (isShowingPrevious == value) return false;
+
+            DrawableCollection source = DisplayedDrawables;
+            int selectedIndex = selectedItem == null ? -1 : source.IndexOf(selectedItem);
+
+            isShowingPrevious = value;
+            DrawableCollection target = DisplayedDrawables;
+            IDrawable targetSelection = selectedIndex >= 0 && selectedIndex < target.Count
+                ? target[selectedIndex]
+                : (target.Count > 0 ? target[0] : null);
+
+            isSwitchingDisplayedDrawables = true;
+            try
+            {
+                selectedItem = targetSelection;
+                SynchronizeSelectionCollections();
+                OnPropertyChanged(nameof(IsShowingPrevious));
+                OnPropertyChanged(nameof(DisplayedDrawables));
+                OnPropertyChanged(nameof(SelectedItem));
+            }
+            finally
+            {
+                isSwitchingDisplayedDrawables = false;
+            }
+            return true;
+        }
+
+        public bool IsDrawableChanged(IDrawable drawable)
+        {
+            return ContainsReference(changedCurrentDrawables, drawable)
+                || ContainsReference(changedPreviousDrawables, drawable);
+        }
+
+        private void FindChangedDrawables(IList<IDrawable> previous, IList<IDrawable> current)
+        {
+            changedCurrentDrawables.Clear();
+            changedPreviousDrawables.Clear();
+
+            int sharedCount = previous.Count < current.Count ? previous.Count : current.Count;
+            for (int index = 0; index < sharedCount; index++)
+            {
+                if (previous[index].Equals(current[index])) continue;
+
+                changedPreviousDrawables.Add(previous[index]);
+                changedCurrentDrawables.Add(current[index]);
+            }
+
+            for (int index = sharedCount; index < previous.Count; index++)
+            {
+                changedPreviousDrawables.Add(previous[index]);
+            }
+            for (int index = sharedCount; index < current.Count; index++)
+            {
+                changedCurrentDrawables.Add(current[index]);
+            }
+        }
+
+        private static bool ContainsReference(IList<IDrawable> drawables, IDrawable candidate)
+        {
+            for (int index = 0; index < drawables.Count; index++)
+            {
+                if (ReferenceEquals(drawables[index], candidate)) return true;
+            }
+
+            return false;
         }
 
         private IDrawable selectedItem;
@@ -139,8 +283,13 @@ namespace NeoWatch.Loading
             get { return selectedItem; }
             set
             {
+                if (isSwitchingDisplayedDrawables) return;
                 if (!SetSelectedItemQuietly(value)) return;
                 drawables?.NotifyGeometriesChanged();
+                if (previousDrawables != null && !ReferenceEquals(previousDrawables, drawables))
+                {
+                    previousDrawables.NotifyGeometriesChanged();
+                }
             }
         }
 
@@ -153,10 +302,36 @@ namespace NeoWatch.Loading
             if (ReferenceEquals(selectedItem, value)) return false;
 
             selectedItem = value;
-            // The converters read the selection from the collection, not from a binding.
-            if (drawables != null) drawables.SelectedItem = value;
+            SynchronizeSelectionCollections();
             OnPropertyChanged(nameof(SelectedItem));
             return true;
+        }
+
+        private void SynchronizeSelectionCollections()
+        {
+            // The converters read the selection from their collection, not from a binding.
+            int selectedIndex = -1;
+            if (selectedItem != null && drawables != null)
+            {
+                selectedIndex = drawables.IndexOf(selectedItem);
+            }
+            if (selectedIndex < 0 && selectedItem != null && previousDrawables != null)
+            {
+                selectedIndex = previousDrawables.IndexOf(selectedItem);
+            }
+
+            if (drawables != null)
+            {
+                drawables.SelectedItem = selectedIndex >= 0 && selectedIndex < drawables.Count
+                    ? drawables[selectedIndex]
+                    : null;
+            }
+            if (previousDrawables != null)
+            {
+                previousDrawables.SelectedItem = selectedIndex >= 0 && selectedIndex < previousDrawables.Count
+                    ? previousDrawables[selectedIndex]
+                    : null;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

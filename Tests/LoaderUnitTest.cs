@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NeoWatch.Drawing;
 using NeoWatch.Loading;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -111,6 +112,41 @@ namespace Tests
                 memoryReaderMock.SetMemory(0x1000, new byte[] { first, 0, 0, 0 });
                 memoryReaderMock.SetMemory(0x2000, new byte[] { second, 0, 0, 0 });
                 memoryReaderMock.SetMemory(0x3000, new byte[] { third, 0, 0, 0 });
+            }
+        }
+
+        [TestClass]
+        public class WatchItem_PreviousDrawables
+        {
+            [TestMethod]
+            public void toggles_between_current_and_previous_at_the_same_selected_index()
+            {
+                var currentFirst = new DrawablePoint(1, 1);
+                var currentSecond = new DrawablePoint(2, 2);
+                var previousFirst = new DrawablePoint(1, 1);
+                var previousSecond = new DrawablePoint(3, 3);
+                var item = new WatchItem();
+                item.Drawables.AddAndNotify(new List<IDrawable> { currentFirst, currentSecond });
+                item.SetSelectedItemQuietly(currentSecond);
+                item.RememberPreviousDrawables(new List<IDrawable> { previousFirst, previousSecond });
+
+                item.SetShowingPrevious(true);
+
+                Assert.AreSame(item.PreviousDrawables, item.DisplayedDrawables);
+                Assert.AreSame(previousSecond, item.SelectedItem);
+                Assert.AreSame(previousSecond, item.PreviousDrawables.SelectedItem);
+                Assert.AreSame(currentSecond, item.Drawables.SelectedItem);
+                Assert.IsFalse(item.IsDrawableChanged(previousFirst));
+                Assert.IsTrue(item.IsDrawableChanged(previousSecond));
+
+                item.SetShowingPrevious(false);
+
+                Assert.AreSame(item.Drawables, item.DisplayedDrawables);
+                Assert.AreSame(currentSecond, item.SelectedItem);
+                Assert.AreSame(currentSecond, item.Drawables.SelectedItem);
+                Assert.AreSame(previousSecond, item.PreviousDrawables.SelectedItem);
+                Assert.IsFalse(item.IsDrawableChanged(currentFirst));
+                Assert.IsTrue(item.IsDrawableChanged(currentSecond));
             }
         }
     }
