@@ -29,6 +29,7 @@ namespace NeoWatch.Loading
             {
                 string expression = FirstColumn(line);
                 if (expression.Length == 0) continue;
+                if (!LooksLikeExpression(expression)) continue;
 
                 // Repeats add nothing and each one costs a full load on every break.
                 if (!seen.Add(expression)) continue;
@@ -38,6 +39,18 @@ namespace NeoWatch.Loading
             }
 
             return expressions;
+        }
+
+        /// <summary>
+        /// Rejects whole statements. Copying with nothing selected in an editor yields the entire
+        /// source line, which reads like an expression until you try to evaluate it. None of these
+        /// can appear in something you would put in a watch.
+        /// </summary>
+        private static bool LooksLikeExpression(string candidate)
+        {
+            return candidate.IndexOf(';') < 0
+                && candidate.IndexOf("//", System.StringComparison.Ordinal) < 0
+                && candidate.IndexOf("/*", System.StringComparison.Ordinal) < 0;
         }
 
         /// <summary>
