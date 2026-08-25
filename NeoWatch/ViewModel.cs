@@ -39,6 +39,7 @@ namespace NeoWatch
             PasteWatchItemsCommand = new RelayCommand(_ => PasteWatchItems());
             PickColorCommand = new RelayCommand(watchItem => PickColor((WatchItem)watchItem));
             ToggleSenseCommand = new RelayCommand(_ => ToggleSense());
+            TogglePreviousCommand = new RelayCommand(watchItem => TogglePrevious((WatchItem)watchItem));
         }
 
         private static async Task BackgroundYield()
@@ -109,6 +110,7 @@ namespace NeoWatch
         public RelayCommand PickColorCommand { get; set; }
         public RelayCommand CancelLoadCommand { get; set; }
         public RelayCommand PasteWatchItemsCommand { get; set; }
+        public RelayCommand TogglePreviousCommand { get; set; }
 
         private int loadingCount;
         public bool IsAnyLoading
@@ -152,6 +154,19 @@ namespace NeoWatch
         {
             IsSenseShown = !IsSenseShown;
             OnPropertyChanged(nameof(IsSenseShown));
+        }
+
+        private void TogglePrevious(WatchItem watchItem)
+        {
+            if (!watchItem.SetShowingPrevious(!watchItem.IsShowingPrevious)) return;
+
+            if (watchItem.IsShowingPrevious && geoDrawer != null)
+            {
+                geoDrawer.TransformGeometries(watchItem.PreviousDrawables);
+            }
+
+            watchItem.Drawables.NotifyGeometriesChanged();
+            watchItem.PreviousDrawables.NotifyGeometriesChanged();
         }
 
         /// <summary>
@@ -227,9 +242,18 @@ namespace NeoWatch
                 if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
+                TransformPreviousIfShown(watchItem);
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
+        }
+
+        private void TransformPreviousIfShown(WatchItem watchItem)
+        {
+            if (!watchItem.IsShowingPrevious) return;
+
+            geoDrawer.TransformGeometries(watchItem.PreviousDrawables);
+            watchItem.PreviousDrawables.NotifyGeometriesChanged();
         }
 
         private void SetNewCoordinateSystem(float windowRatio, IBox box)
@@ -293,6 +317,7 @@ namespace NeoWatch
                 if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
+                TransformPreviousIfShown(watchItem);
             }
             Axes.Item1.Box = new Box(0, (float)args.NewSize.Width, 0, 0);
             Axes.Item2.Box = new Box(0, 0, 0, (float)args.NewSize.Height);
@@ -374,6 +399,7 @@ namespace NeoWatch
                 if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
+                TransformPreviousIfShown(watchItem);
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
@@ -444,6 +470,7 @@ namespace NeoWatch
                 if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
                 watchItem.Drawables.NotifyGeometriesChanged();
+                TransformPreviousIfShown(watchItem);
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
@@ -461,6 +488,8 @@ namespace NeoWatch
         /// </summary>
         private bool TryReloadChangedElements(WatchItem watchItem, ReloadPlan plan)
         {
+            var previousDrawables = new List<IDrawable>(watchItem.Drawables);
+
             List<DrawableReplacement> replacements = Loader.ReloadElements(watchItem, plan.ChangedIndices);
             if (replacements == null) return false;
 
@@ -506,7 +535,28 @@ namespace NeoWatch
             // Only now that it landed does the freshly read block become the new baseline.
             Loader.CommitSnapshot(watchItem, plan);
 
+            RememberPreviousIfChanged(watchItem, previousDrawables);
             watchItem.Drawables.NotifyGeometriesChanged();
+            return true;
+        }
+
+        private static void RememberPreviousIfChanged(WatchItem watchItem, IList<IDrawable> previousDrawables)
+        {
+            if (previousDrawables == null || previousDrawables.Count == 0) return;
+            if (DrawablesAreEquivalent(previousDrawables, watchItem.Drawables)) return;
+
+            watchItem.RememberPreviousDrawables(previousDrawables);
+        }
+
+        private static bool DrawablesAreEquivalent(IList<IDrawable> previous, IList<IDrawable> current)
+        {
+            if (previous.Count != current.Count) return false;
+
+            for (int i = 0; i < previous.Count; i++)
+            {
+                if (!previous[i].Equals(current[i])) return false;
+            }
+
             return true;
         }
 
@@ -518,6 +568,12 @@ namespace NeoWatch
             // raises IsVisibleActivated, which comes back through here.
             if (watchItem.IsLoading && watchItem.IsVisible)
             {
+                if (watchItem.IsShowingPrevious)
+                {
+                    watchItem.SetShowingPrevious(false);
+                }
+                bool discardPrevious = watchItem.ConsumeDiscardPreviousOnNextLoad();
+
                 // C0/C0b: let memory decide what this break costs before touching anything.
                 var plan = Loader.PlanReload(watchItem);
                 // Byte for byte identical: no load, no redraw, no UI churn at all.
@@ -536,6 +592,10 @@ namespace NeoWatch
                 IncrementLoading();
 
                 await BackgroundYield();
+
+                List<IDrawable> previousDrawables = discardPrevious
+                    ? null
+                    : new List<IDrawable>(watchItem.Drawables);
 
                 // Clear the selection before the reset so that the ComboBox writing null back
                 // through its two-way binding finds nothing to change, and asks for no redraw.
@@ -586,6 +646,11 @@ namespace NeoWatch
                         {
                             watchItem.Drawables.Error = watchItem.Drawables.Error + " | " + drawables.Error;
                         }
+                    }
+
+                    if (!feedback.HasError && result.Data != null)
+                    {
+                        RememberPreviousIfChanged(watchItem, previousDrawables);
                     }
                 }
                 catch (OperationCanceledException)

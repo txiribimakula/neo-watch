@@ -18,10 +18,13 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:RulerToTextConverter x:Key="RulerToTextConverter"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesMainGeometryConverter" Mode="Main"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesPreviousGeometryConverter" Mode="Unselected"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedGeometryConverter" Mode="Selected"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesCapsGeometryConverter" Mode="Caps"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesPointsGeometryConverter" Mode="Points" DotSize="4"/>
+        <converters:DrawablesToGeometryConverter x:Key="DrawablesPreviousPointsGeometryConverter" Mode="UnselectedPoints" DotSize="7"/>
         <converters:DrawablesToGeometryConverter x:Key="DrawablesSelectedPointGeometryConverter" Mode="SelectedPoint" DotSize="8"/>
+        <converters:DrawableChangedConverter x:Key="DrawableChangedConverter"/>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <converters:IntOrOneConverter x:Key="IntOrOneConverter"/>
         <converters:PositiveIntToVisibilityConverter x:Key="PositiveIntToVisibilityConverter"/>
@@ -91,6 +94,24 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Canvas ClipToBounds="True" Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                            <Path Opacity="0.2" StrokeMiterLimit="1" StrokeThickness="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stroke="{Binding Color}"
+                                  Visibility="{Binding IsShowingPrevious, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesPreviousGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="PreviousDrawables"/>
+                                        <Binding Path="PreviousDrawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.2" Fill="{Binding Color}"
+                                  Visibility="{Binding IsShowingPrevious, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesPreviousPointsGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="PreviousDrawables"/>
+                                        <Binding Path="PreviousDrawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
                             <Path Opacity="0.8" StrokeMiterLimit="1" StrokeThickness="1" Stroke="{Binding Color}">
                                 <Path.Data>
                                     <MultiBinding Converter="{StaticResource DrawablesMainGeometryConverter}" Mode="OneWay">
@@ -129,6 +150,25 @@
                                     <MultiBinding Converter="{StaticResource DrawablesSelectedPointGeometryConverter}" Mode="OneWay">
                                         <Binding Path="Drawables"/>
                                         <Binding Path="Drawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.2" StrokeMiterLimit="1" StrokeThickness="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  StrokeDashArray="3 2" Stroke="{Binding Color}"
+                                  Visibility="{Binding IsShowingPrevious, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesSelectedGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="PreviousDrawables"/>
+                                        <Binding Path="PreviousDrawables.GeometryVersion"/>
+                                    </MultiBinding>
+                                </Path.Data>
+                            </Path>
+                            <Path Opacity="0.2" Fill="{Binding Color}"
+                                  Visibility="{Binding IsShowingPrevious, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <Path.Data>
+                                    <MultiBinding Converter="{StaticResource DrawablesSelectedPointGeometryConverter}" Mode="OneWay">
+                                        <Binding Path="PreviousDrawables"/>
+                                        <Binding Path="PreviousDrawables.GeometryVersion"/>
                                     </MultiBinding>
                                 </Path.Data>
                             </Path>
@@ -307,19 +347,86 @@
                     <DataGridTemplateColumn Header="Items" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ComboBox ItemsSource="{Binding Drawables}" SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Description"
+                                <ComboBox ItemsSource="{Binding DisplayedDrawables}" SelectedItem="{Binding SelectedItem, UpdateSourceTrigger=PropertyChanged}"
                                           VirtualizingStackPanel.IsVirtualizing="True"
                                           VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                          ScrollViewer.IsDeferredScrollingEnabled="True"
-                                          Style="{DynamicResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}">
+                                          ScrollViewer.IsDeferredScrollingEnabled="True">
+                                    <ComboBox.Style>
+                                        <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Static shell:VsResourceKeys.ComboBoxStyleKey}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsShowingPrevious}" Value="True">
+                                                    <Setter Property="Opacity" Value="0.62"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.Style>
                                     <ComboBox.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <VirtualizingStackPanel/>
                                         </ItemsPanelTemplate>
                                     </ComboBox.ItemsPanel>
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Padding" Value="4,1"/>
+                                                        <Setter Property="BorderThickness" Value="0"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True">
+                                                                <DataTrigger.Binding>
+                                                                    <MultiBinding Converter="{StaticResource DrawableChangedConverter}">
+                                                                        <Binding/>
+                                                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType={x:Type ComboBox}}"/>
+                                                                        <Binding Path="DataContext.HasPreviousDrawables" RelativeSource="{RelativeSource AncestorType={x:Type ComboBox}}"/>
+                                                                    </MultiBinding>
+                                                                </DataTrigger.Binding>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static shell:VsBrushes.HighlightKey}}"/>
+                                                                <Setter Property="BorderThickness" Value="3,0,0,0"/>
+                                                                <Setter Property="TextElement.FontWeight" Value="SemiBold"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Description}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="auto" CanUserResize="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          ToolTip="Show previous state"
+                                          IsEnabled="{Binding HasPreviousDrawables}"
+                                          IsChecked="{Binding IsShowingPrevious, Mode=OneWay}"
+                                          Command="{Binding DataContext.TogglePreviousCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                          CommandParameter="{Binding}">
+                                    <CheckBox.Style>
+                                        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Opacity" Value="0.35"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </CheckBox.Style>
+                                </CheckBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Center" MaxWidth="15">
+                                    <Viewbox Stretch="Fill">
+                                        <Path Fill="{DynamicResource {x:Static shell:VsBrushes.ToolWindowTextKey}}"
+                                              Data="M1,8 L7,3 L7,13 Z M7,8 L13,3 L13,13 Z"/>
+                                    </Viewbox>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Width="auto" CanUserResize="False">
                         <DataGridTemplateColumn.CellTemplate>

@@ -15,9 +15,11 @@ namespace NeoWatch.Converters
     public enum DrawablesGeometryMode
     {
         Main,
+        Unselected,
         Selected,
         Caps,
         Points,
+        UnselectedPoints,
         SelectedPoint
     }
 
@@ -27,7 +29,7 @@ namespace NeoWatch.Converters
 
         /// <summary>
         /// Side of the square drawn for each point, in device pixels. Only used by the
-        /// Points and SelectedPoint modes, whose geometry is filled rather than stroked.
+        /// Points, UnselectedPoints and SelectedPoint modes, whose geometry is filled rather than stroked.
         /// </summary>
         public double DotSize { get; set; } = 4;
 
@@ -57,6 +59,10 @@ namespace NeoWatch.Converters
                             if (isSelected && drawables.Count > 1) continue;
                             AppendDrawable(ctx, drawable);
                             break;
+                        case DrawablesGeometryMode.Unselected:
+                            if (isPoint || isSelected) continue;
+                            AppendDrawable(ctx, drawable);
+                            break;
                         case DrawablesGeometryMode.Selected:
                             if (isPoint) continue;
                             if (!isSelected) continue;
@@ -68,6 +74,10 @@ namespace NeoWatch.Converters
                         case DrawablesGeometryMode.Points:
                             if (!isPoint) continue;
                             if (isSelected && drawables.Count > 1) continue;
+                            AppendPointDot(ctx, (DrawablePoint)drawable, DotSize);
+                            break;
+                        case DrawablesGeometryMode.UnselectedPoints:
+                            if (!isPoint || isSelected) continue;
                             AppendPointDot(ctx, (DrawablePoint)drawable, DotSize);
                             break;
                         case DrawablesGeometryMode.SelectedPoint:
