@@ -2,7 +2,7 @@
 class DemoListOfItself
 {
 public:
-    struct DemoListOfItself* Next, * Previous;
+    DemoListOfItself* Next, * Previous;
 
     float x;
     float y;

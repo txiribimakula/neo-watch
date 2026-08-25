@@ -55,6 +55,7 @@
     <Compile Include="Mocks\ExpressionMock.cs" />
     <Compile Include="Mocks\ExpressionsMock.cs" />
     <Compile Include="Mocks\InterpreterMock.cs" />
+    <Compile Include="Mocks\MemoryReaderMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

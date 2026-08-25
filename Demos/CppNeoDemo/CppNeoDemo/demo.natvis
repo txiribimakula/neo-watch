@@ -69,4 +69,22 @@
         </Expand>
     </Type>
 
+    <Type Name="DemoSegmentChainNode">
+        <DisplayString ExcludeView="item">Line/Arc Segment Node</DisplayString>
+        <DisplayString IncludeView="item" Condition="demoSegment.type == 0">Seg: {demoSegment.segment.line.demoInitialPoint} - {demoSegment.segment.line.demoFinalPoint}</DisplayString>
+        <DisplayString IncludeView="item" Condition="demoSegment.type == 1">Arc: C: {demoSegment.segment.arc.demoCenterPoint} R: {demoSegment.segment.arc.demoRadius} AngIni: {demoSegment.segment.arc.demoInitialAngle} AngPaso: {demoSegment.segment.arc.demoSweepAngle}</DisplayString>
+    </Type>
+
+    <Type Name="DemoSegmentLinkedList">
+        <DisplayString>List of Line/Arc Segments</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <Size>Count</Size>
+                <HeadPointer>Head</HeadPointer>
+                <NextPointer>Next</NextPointer>
+                <ValueNode>demoSegment</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
