@@ -44,6 +44,14 @@
             </Button>
 		</Buttons>
 	</Commands>
+
+    <!-- Segunda colocacion del mismo comando: la vista flotante de la variable sobre el editor.
+         0x0180 cae entre Edit Value (0x0100) y Add Watch (0x0200), igual que en el Watch. -->
+    <CommandPlacements>
+        <CommandPlacement guid="guidPackageCmdSet" id="idCommandAddFromWatch" priority="0x0180">
+            <Parent guid="guidVSDebugGroup" id="IDG_DATATIP_WATCH"/>
+        </CommandPlacement>
+    </CommandPlacements>
     
 	<VisibilityConstraints>
         <VisibilityItem guid="guidPackageCmdSet" id="idCommand" context="UICONTEXT_Debugging" />

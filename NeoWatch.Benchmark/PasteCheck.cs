@@ -39,6 +39,13 @@ namespace NeoWatch.Benchmark
             ok &= Case("expansor de flecha", "▶ f10Points\t{ size=3000 }", "f10Points");
             ok &= Case("expansores y filas reales mezclados", "+\r\ncheckPoints\t{ size=40 }\r\n-", "checkPoints");
 
+            // Copiar sin seleccion en el editor devuelve la linea entera de codigo.
+            ok &= Case("linea de codigo completa",
+                       "    auto checkMixed = MakeCheckMixed();         // 24 elementos: lineas y arcos alternados");
+            ok &= Case("sentencia suelta", "checkMixed.push_back(extraSegment);");
+            ok &= Case("comentario de bloque", "checkPoints /* ojo */");
+            ok &= Case("codigo y una expresion buena", "int i = 0;\r\ncheckPoints", "checkPoints");
+
             ok &= Case("solo espacios", "   \r\n\t\r\n");
             ok &= Case("nulo", null);
             ok &= Case("vacio", "");
