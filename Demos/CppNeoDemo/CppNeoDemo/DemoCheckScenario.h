@@ -6,6 +6,7 @@
 #include "DemoRectangle.h"
 #include "DemoSegment.h"
 #include "DemoListOfItself.h"
+#include "DemoSegmentChainNode.h"
 #include <vector>
 #include <cmath>
 
@@ -160,5 +161,38 @@ inline void LinkCheckChain(std::vector<DemoListOfItself>& nodes)
     {
         nodes[i].Previous = (i == 0) ? nullptr : &nodes[i - 1];
         nodes[i].Next = (i + 1 == nodes.size()) ? nullptr : &nodes[i + 1];
+    }
+}
+
+inline DemoSegment MakeCheckMixedSegment(int index, int count)
+{
+    const double angle = index * (2.0 * M_PI / count);
+    DemoSegment segment;
+
+    if (index % 2 == 0)
+    {
+        segment.type = DemoSegment::SegmentType::Line;
+        segment.segment.line.demoInitialPoint = { 3.0, 3.0 };
+        segment.segment.line.demoFinalPoint = { 3.0 + 5.5 * std::cos(angle), 3.0 + 5.5 * std::sin(angle) };
+    }
+    else
+    {
+        segment.type = DemoSegment::SegmentType::Arc;
+        segment.segment.arc.demoCenterPoint = { 17.0, 11.0 };
+        segment.segment.arc.demoRadius = 2.0 + (index % 5) * 0.45;
+        segment.segment.arc.demoInitialAngle = index * 20.0;
+        segment.segment.arc.demoSweepAngle = 100.0;
+    }
+
+    return segment;
+}
+
+// Lista doblemente enlazada heterogenea y personalizada: no usa vector/list/deque
+// para almacenar nodos. NatVis es quien la muestra como lista de elementos.
+inline void FillCheckMixedChain(DemoSegmentLinkedList& list, int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        list.PushBack(MakeCheckMixedSegment(i, count));
     }
 }

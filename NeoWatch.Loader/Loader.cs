@@ -74,6 +74,11 @@ namespace NeoWatch.Loading
 
             if (expression == null || string.IsNullOrEmpty(expression.Type)) return ReloadPlan.Everything();
 
+            if (snapshot.IsSegmented)
+            {
+                return PlanSegmentedReload(item, snapshot);
+            }
+
             // The container's own display string is the cheapest signal there is: identical means
             // the same number of elements, different usually means it grew or shrank.
             int finalCount;
@@ -122,6 +127,22 @@ namespace NeoWatch.Loading
 
             var newSnapshot = new MemorySnapshot(address, expression.Value, snapshot.Stride, finalCount, true, buffer);
             return ReloadPlan.Partial(changed, added, finalCount, newSnapshot);
+        }
+
+        private ReloadPlan PlanSegmentedReload(WatchItem item, MemorySnapshot snapshot)
+        {
+            int finalCount;
+            if (!TryEvaluateInt(item.Name + ".Count", out finalCount)) return ReloadPlan.Everything();
+            if (finalCount != snapshot.Count) return ReloadPlan.Everything();
+
+            ulong head;
+            if (!TryGetPointerAddress(item.Name + ".Head", out head)) return ReloadPlan.Everything();
+            if (head != snapshot.Address) return ReloadPlan.Everything();
+
+            byte[] buffer;
+            if (!TryReadSegmented(snapshot.ElementAddresses, snapshot.Stride, out buffer)) return ReloadPlan.Everything();
+
+            return snapshot.Matches(buffer) ? ReloadPlan.Nothing() : ReloadPlan.Everything();
         }
 
         /// <summary>
@@ -204,7 +225,11 @@ namespace NeoWatch.Loading
             // Indexable containers only. Not merely "something that expands": a linked list or a
             // NatVis-synthesised expansion has no operator[] and no contiguous block, so asking for
             // the address of its first element is a malformed expression.
-            if (!new ExpressionLoader(expression, ListTypes).IsIndexableContainer) return;
+            if (!new ExpressionLoader(expression, ListTypes).IsIndexableContainer)
+            {
+                TryCaptureLinkedListSnapshot(item, expression, elementCount, drawableCount);
+                return;
+            }
 
             ulong address;
             if (!TryGetElementAddress(item.Name, out address)) return;
@@ -224,6 +249,65 @@ namespace NeoWatch.Loading
             bool supportsPartial = elementCount == drawableCount;
 
             item.Snapshot = new MemorySnapshot(address, expression.Value, stride, elementCount, supportsPartial, buffer);
+        }
+
+        private bool TryCaptureLinkedListSnapshot(WatchItem item, IExpression expression, int elementCount, int drawableCount)
+        {
+            if (elementCount != drawableCount) return false;
+
+            int count;
+            if (!TryEvaluateInt(item.Name + ".Count", out count)) return false;
+            if (count != elementCount || count <= 0) return false;
+
+            ulong head;
+            if (!TryGetPointerAddress(item.Name + ".Head", out head)) return false;
+            if (head == 0) return false;
+
+            int stride;
+            if (!TryEvaluateInt("sizeof(*(" + item.Name + ".Head))", out stride)) return false;
+            if (stride <= 0) return false;
+
+            long blockSize = (long)stride * count;
+            if (blockSize <= 0 || blockSize > MaxSnapshotBytes) return false;
+
+            var addresses = new ulong[count];
+            string nodeExpression = item.Name + ".Head";
+            for (int index = 0; index < count; index++)
+            {
+                ulong nodeAddress;
+                if (!TryGetPointerAddress(nodeExpression, out nodeAddress)) return false;
+                if (nodeAddress == 0) return false;
+
+                addresses[index] = nodeAddress;
+                nodeExpression += "->Next";
+            }
+
+            byte[] buffer;
+            if (!TryReadSegmented(addresses, stride, out buffer)) return false;
+
+            item.Snapshot = new MemorySnapshot(head, expression.Value, stride, count, false, buffer, addresses);
+            return true;
+        }
+
+        private bool TryReadSegmented(ulong[] addresses, int stride, out byte[] buffer)
+        {
+            buffer = null;
+            if (addresses == null || stride <= 0) return false;
+
+            long blockSize = (long)stride * addresses.Length;
+            if (blockSize <= 0 || blockSize > MaxSnapshotBytes) return false;
+
+            buffer = new byte[blockSize];
+            var nodeBytes = new byte[stride];
+            for (int index = 0; index < addresses.Length; index++)
+            {
+                if (addresses[index] == 0) return false;
+                if (!MemoryReader.TryRead(addresses[index], nodeBytes)) return false;
+
+                Buffer.BlockCopy(nodeBytes, 0, buffer, index * stride, stride);
+            }
+
+            return true;
         }
 
         // 64 MB is far past any collection worth drawing, and keeps a runaway expression from
@@ -252,6 +336,28 @@ namespace NeoWatch.Loading
 
             Match match = Regex.Match(value, @"\d+");
             return match.Success && int.TryParse(match.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out size) && size > 0;
+        }
+
+        private bool TryEvaluateInt(string expressionText, out int value)
+        {
+            value = 0;
+            string text = EvaluateValue(expressionText);
+            if (text == null) return false;
+
+            Match match = Regex.Match(text, @"\d+");
+            return match.Success && int.TryParse(match.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+        }
+
+        private bool TryGetPointerAddress(string expressionText, out ulong address)
+        {
+            address = 0;
+            string value = EvaluateValue("(void*)(" + expressionText + ")");
+            if (value == null) return false;
+
+            Match match = Regex.Match(value, @"0x([0-9a-fA-F]+)");
+            if (!match.Success) return false;
+
+            return ulong.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out address);
         }
 
         private string EvaluateValue(string expressionText)

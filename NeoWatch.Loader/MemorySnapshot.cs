@@ -13,6 +13,11 @@ namespace NeoWatch.Loading
     public class MemorySnapshot
     {
         public MemorySnapshot(ulong address, string containerValue, int stride, int count, bool supportsPartial, byte[] bytes)
+            : this(address, containerValue, stride, count, supportsPartial, bytes, null)
+        {
+        }
+
+        public MemorySnapshot(ulong address, string containerValue, int stride, int count, bool supportsPartial, byte[] bytes, ulong[] elementAddresses)
         {
             Address = address;
             ContainerValue = containerValue;
@@ -20,6 +25,7 @@ namespace NeoWatch.Loading
             Count = count;
             SupportsPartial = supportsPartial;
             Bytes = bytes;
+            ElementAddresses = elementAddresses;
         }
 
         /// <summary>Address of the first element. Changes when the container reallocates.</summary>
@@ -45,6 +51,17 @@ namespace NeoWatch.Loading
         public bool SupportsPartial { get; private set; }
 
         public byte[] Bytes { get; private set; }
+
+        /// <summary>
+        /// Non-null when the snapshot was captured from separate allocations, such as a linked
+        /// list. The byte buffer still stores the nodes in visible order.
+        /// </summary>
+        public ulong[] ElementAddresses { get; private set; }
+
+        public bool IsSegmented
+        {
+            get { return ElementAddresses != null; }
+        }
 
         public bool Matches(byte[] other)
         {

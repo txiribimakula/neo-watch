@@ -5,6 +5,7 @@
 #include "DemoRectangle.h"
 #include "DemoListOfItself.h"
 #include "DemoSegment.h"
+#include "DemoSegmentChainNode.h"
 #include "DemoStressTest.h"
 #include "DemoCheckScenario.h"
 #include <vector>
@@ -104,19 +105,24 @@ int main()
     // 'checkMixed' es contiguo y POD: entra en la deteccion por memoria, y
     // ademas cada elemento da un drawable, asi que entra en la recarga puntual.
     //
-    // 'chainNodes[0]' es una lista enlazada: no hay bloque contiguo que leer,
-    // asi que NO entra en nada de eso y se recarga entera en cada paso. Esta
-    // aqui para comprobar que el camino de respaldo sigue funcionando.
+    // 'chainNodes[0]' es una lista enlazada de puntos: no hay bloque contiguo
+    // que leer, asi que NO entra en nada de eso y se recarga entera en cada paso.
+    //
+    // 'mixedChain' combina los dos casos: una lista doblemente enlazada propia
+    // cuyos nodos contienen la misma union discriminada de linea/arco. No hay
+    // array de nodos; el aspecto de lista lo da NatVis.
     // =====================================================================
-    auto checkMixed = MakeCheckMixed();         // 24 elementos: lineas y arcos alternados
-    auto chainNodes = MakeCheckChainNodes(200); // 200 nodos...
-    LinkCheckChain(chainNodes);                 // ...enlazados ya en su sitio definitivo
+    auto checkMixed = MakeCheckMixed();              // 24 elementos: lineas y arcos alternados
+    auto chainNodes = MakeCheckChainNodes(200);      // 200 nodos de puntos...
+    DemoSegmentLinkedList mixedChain;                // 18 nodos propios de lineas/arcos
+    FillCheckMixedChain(mixedChain, 18);
+    LinkCheckChain(chainNodes);                      // ...enlazados ya en su sitio definitivo
 
     volatile int mixedTick = 0;
     for (int step = 0; step < 20; step++)
     {
-        mixedTick = mixedTick + 1;              // <-- breakpoint aqui. Anade 'checkMixed'
-    }                                           //     y 'chainNodes[0]'
+        mixedTick = mixedTick + 1;              // <-- breakpoint aqui. Anade 'checkMixed',
+    }                                           //     'chainNodes[0]' y 'mixedChain'
 
     // Mueve el extremo de una linea: cambian bytes dentro de la union.
     checkMixed[6].segment.line.demoFinalPoint.demoX += 3.0;   // <-- F10: recarga puntual
@@ -136,6 +142,20 @@ int main()
     // los 200 nodos por COM. Debe seguir dibujando bien, solo que sin acelerar.
     chainNodes[50].x += 3.0f;                                 // <-- F10: recarga completa
     chainNodes[50].y += 3.0f;                                 // <-- F10: recarga completa
+
+    // Cambia un valor dentro de un nodo existente. El snapshot detecta que la
+    // lista ha cambiado y Neo Watch vuelve a dibujarla.
+    mixedChain.GetAt(6)->demoSegment.segment.line.demoFinalPoint.demoX += 3.0; // <-- F10: cambia un valor
+
+    // Anade un arco al final: cambian Count, Tail y los enlaces entre nodos.
+    mixedChain.PushBack(MakeCheckMixedSegment(19, 20));                      // <-- F10: aparece un elemento
+
+    // Quita un nodo intermedio: se actualizan Next y Previous a ambos lados.
+    mixedChain.RemoveAt(4);                                                  // <-- F10: desaparece un elemento
+
+    // Tras el borrado, el indice 6 contiene el arco que originalmente estaba
+    // en el indice 7. Cambia el tipo activo de la union de arco a linea.
+    mixedChain.GetAt(6)->demoSegment.type = DemoSegment::SegmentType::Line;  // <-- F10: cambia la geometria
 
     // =====================================================================
     // ESCENARIO PESADO - solo para la prueba de tiron con la recarga desactivada.
