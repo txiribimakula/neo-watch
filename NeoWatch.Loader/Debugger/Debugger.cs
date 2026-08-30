@@ -13,7 +13,12 @@ namespace NeoWatch.Loading
 
         public IExpression GetExpression(string name)
         {
-            var expression = _debugger.GetExpression(name, true);
+            return GetExpression(name, true);
+        }
+
+        public IExpression GetExpression(string name, bool useAutoExpandRules)
+        {
+            var expression = _debugger.GetExpression(name, useAutoExpandRules, -1);
 
             return new Expression(expression);
         }

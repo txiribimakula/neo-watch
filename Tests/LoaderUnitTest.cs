@@ -40,6 +40,26 @@ namespace Tests
             }
 
             [TestMethod]
+            public async Task linked_list_mode_rejects_invalid_root_without_natvis_expansion()
+            {
+                bool requestedAutoExpansion = true;
+                debuggerMock.GetExpressionWithOptionsCallback = (name, useAutoExpandRules) =>
+                {
+                    requestedAutoExpansion = useAutoExpandRules;
+                    return new ExpressionMock(string.Empty, string.Empty, () => string.Empty)
+                    {
+                        IsValidValue = false
+                    };
+                };
+                loader.ConfigureLinkedListMemoryLoading(true, string.Empty);
+
+                var result = await loader.Load(new WatchItem { Name = "notDeclaredYet" });
+
+                Assert.IsTrue(result.Feedback.HasError);
+                Assert.IsFalse(requestedAutoExpansion);
+            }
+
+            [TestMethod]
             public async Task reacquires_an_indexable_element_if_natvis_is_incomplete_after_yield()
             {
                 bool yielded = false;
@@ -209,6 +229,376 @@ namespace Tests
             {
                 return new NeoWatch.Common.Result<IDrawable>(new NeoWatch.Common.Feedback(
                     NeoWatch.Common.FeedbackType.ExpressionParsingException, value));
+            }
+        }
+
+        [TestClass]
+        public class Load_LinkedListFromMemory
+        {
+            private const string Blueprint =
+@"[DemoSegmentLinkedList]
+Count=Count
+Head=Head
+Next=Next
+Tag=demoSegment.type|Int32
+Line.Tag=0
+Line.InitialX=demoSegment.segment.line.demoInitialPoint.demoX|Float64
+Line.InitialY=demoSegment.segment.line.demoInitialPoint.demoY|Float64
+Line.FinalX=demoSegment.segment.line.demoFinalPoint.demoX|Float64
+Line.FinalY=demoSegment.segment.line.demoFinalPoint.demoY|Float64
+Arc.Tag=1
+Arc.CenterX=demoSegment.segment.arc.demoCenterPoint.demoX|Float64
+Arc.CenterY=demoSegment.segment.arc.demoCenterPoint.demoY|Float64
+Arc.Radius=demoSegment.segment.arc.demoRadius|Float64
+Arc.InitialAngle=demoSegment.segment.arc.demoInitialAngle|Float64
+Arc.SweepAngle=demoSegment.segment.arc.demoSweepAngle|Float64";
+
+            private const string PointBlueprint =
+@"[DemoPointLinkedList]
+Count=Count
+Head=Head
+Next=Next
+Point.X=x|Float32
+Point.Y=y|Float32";
+
+            [TestMethod]
+            public async Task returns_empty_recognised_list_without_natvis_expansion()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                int expandedCalls = 0;
+                debugger.GetExpressionWithOptionsCallback = (expression, useAutoExpandRules) =>
+                {
+                    if (useAutoExpandRules) expandedCalls++;
+                    if (expression == "emptyChain")
+                    {
+                        return new ExpressionMock(string.Empty, "DemoPointLinkedList", () => string.Empty);
+                    }
+                    if (expression == "(emptyChain).Count")
+                    {
+                        return new ExpressionMock("0", "int", () => string.Empty);
+                    }
+                    throw new COMException();
+                };
+
+                var loader = new Loader(debugger, new InterpreterMock(), new MemoryReaderMock());
+                loader.ConfigureLinkedListMemoryLoading(true, PointBlueprint);
+
+                var result = await loader.Load(new WatchItem { Name = "emptyChain" });
+
+                Assert.IsFalse(result.Feedback.HasError);
+                Assert.AreEqual(0, result.Data.Count);
+                Assert.AreEqual(0, expandedCalls);
+            }
+
+            [TestMethod]
+            public async Task decodes_line_and_arc_without_interpreting_natvis_elements()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                var memory = new MemoryReaderMock();
+                var interpreter = new InterpreterMock();
+                int interpreterCalls = 0;
+                interpreter.GetDrawableCallback = expression =>
+                {
+                    interpreterCalls++;
+                    return new NeoWatch.Common.Result<IDrawable>(new DrawablePoint(99, 99));
+                };
+
+                ConfigureDebugger(debugger);
+                memory.SetMemory(0x1000, LineNode(0x2000, 1, 2, 3, 4));
+                memory.SetMemory(0x2000, ArcNode(0, 5, 6, 7, 8, 9));
+
+                var loader = new Loader(debugger, interpreter, memory);
+                loader.ConfigureLinkedListMemoryLoading(true, Blueprint);
+                var item = new WatchItem { Name = "mixedChain" };
+
+                var result = await loader.Load(item);
+
+                Assert.IsFalse(result.Feedback.HasError);
+                Assert.AreEqual(0, interpreterCalls);
+                Assert.AreEqual(2, result.Data.Count);
+
+                var line = result.Data[0] as DrawableLineSegment;
+                Assert.IsNotNull(line);
+                Assert.AreEqual(1f, line.InitialPoint.X);
+                Assert.AreEqual(2f, line.InitialPoint.Y);
+                Assert.AreEqual(3f, line.FinalPoint.X);
+                Assert.AreEqual(4f, line.FinalPoint.Y);
+
+                var arc = result.Data[1] as DrawableArcSegment;
+                Assert.IsNotNull(arc);
+                Assert.AreEqual(5f, arc.CenterPoint.X);
+                Assert.AreEqual(6f, arc.CenterPoint.Y);
+                Assert.AreEqual(7f, arc.Radius);
+                Assert.AreEqual(8f, arc.InitialAngle);
+                Assert.AreEqual(9f, arc.SweepAngle);
+
+                Assert.IsNotNull(item.Snapshot);
+                Assert.IsTrue(item.Snapshot.IsSegmented);
+                Assert.AreEqual(2, item.Snapshot.Count);
+                Assert.AreEqual(ReloadScope.Nothing, loader.PlanReload(item).Scope);
+            }
+
+            [TestMethod]
+            public async Task decodes_custom_point_chain_from_its_blueprint()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                debugger.GetExpressionCallback = expression =>
+                {
+                    if (expression == "chainNodes")
+                    {
+                        return new ExpressionMock("List of Points", "DemoPointLinkedList",
+                            () => "parse", 2);
+                    }
+                    if (expression == "(chainNodes).Count") return Value("2");
+                    if (expression == "(void*)((chainNodes).Head)") return Value("0x3000");
+                    if (expression == "sizeof(*((chainNodes).Head))") return Value("24");
+                    if (expression == "sizeof(void*)") return Value("8");
+                    if (expression.StartsWith("(long long)", StringComparison.Ordinal))
+                    {
+                        if (expression.Contains("->Next")) return Value("0");
+                        if (expression.Contains("->x")) return Value("16");
+                        if (expression.Contains("->y")) return Value("20");
+                    }
+
+                    throw new COMException();
+                };
+
+                var memory = new MemoryReaderMock();
+                memory.SetMemory(0x3000, PointNode(0x4000, 1.5f, 2.5f));
+                memory.SetMemory(0x4000, PointNode(0, 3.5f, 4.5f));
+
+                var loader = new Loader(debugger, new InterpreterMock(), memory);
+                loader.ConfigureLinkedListMemoryLoading(true, PointBlueprint);
+                var item = new WatchItem { Name = "chainNodes" };
+
+                var result = await loader.Load(item);
+
+                Assert.IsFalse(result.Feedback.HasError);
+                Assert.AreEqual(2, result.Data.Count);
+                Assert.AreEqual(1.5f, ((DrawablePoint)result.Data[0]).X);
+                Assert.AreEqual(2.5f, ((DrawablePoint)result.Data[0]).Y);
+                Assert.AreEqual(3.5f, ((DrawablePoint)result.Data[1]).X);
+                Assert.AreEqual(4.5f, ((DrawablePoint)result.Data[1]).Y);
+                Assert.AreEqual(ReloadScope.Nothing, loader.PlanReload(item).Scope);
+            }
+
+            [TestMethod]
+            public async Task falls_back_to_natvis_when_a_memory_read_fails()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                var memory = new MemoryReaderMock();
+                var interpreter = new InterpreterMock();
+                ConfigureDebugger(debugger, dataMembers: 1);
+
+                var loader = new Loader(debugger, interpreter, memory);
+                loader.ConfigureLinkedListMemoryLoading(true, Blueprint);
+
+                var result = await loader.Load(new WatchItem { Name = "mixedChain" });
+
+                Assert.IsFalse(result.Feedback.HasError);
+                Assert.AreEqual(1, result.Data.Count);
+                Assert.IsInstanceOfType(result.Data[0], typeof(DrawablePoint));
+            }
+
+            [TestMethod]
+            public async Task reuses_changed_node_bytes_instead_of_reading_the_list_twice()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                var memory = new MemoryReaderMock();
+                var interpreter = new InterpreterMock();
+                ConfigureDebugger(debugger);
+                memory.SetMemory(0x1000, LineNode(0x2000, 1, 2, 3, 4));
+                memory.SetMemory(0x2000, ArcNode(0, 5, 6, 7, 8, 9));
+
+                var loader = new Loader(debugger, interpreter, memory);
+                loader.ConfigureLinkedListMemoryLoading(true, Blueprint);
+                var item = new WatchItem { Name = "mixedChain" };
+                await loader.Load(item);
+
+                int readsAfterLoad = memory.ReadCount;
+                memory.SetMemory(0x2000, ArcNode(0, 5, 6, 70, 8, 9));
+
+                ReloadPlan plan = loader.PlanReload(item);
+                Assert.AreEqual(ReloadScope.Partial, plan.Scope);
+                Assert.AreEqual(readsAfterLoad + 2, memory.ReadCount);
+
+                List<DrawableReplacement> replacements = loader.ReloadElements(
+                    item, plan.ChangedIndices, plan);
+
+                Assert.AreEqual(readsAfterLoad + 2, memory.ReadCount);
+                Assert.AreEqual(1, replacements.Count);
+                Assert.AreEqual(1, replacements[0].Index);
+                Assert.AreEqual(70f, ((DrawableArcSegment)replacements[0].Drawable).Radius);
+            }
+
+            [TestMethod]
+            public async Task reloads_everything_when_the_linked_list_topology_changes()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                var memory = new MemoryReaderMock();
+                ConfigureDebugger(debugger);
+                memory.SetMemory(0x1000, LineNode(0x2000, 1, 2, 3, 4));
+                memory.SetMemory(0x2000, ArcNode(0, 5, 6, 7, 8, 9));
+
+                var loader = new Loader(debugger, new InterpreterMock(), memory);
+                loader.ConfigureLinkedListMemoryLoading(true, Blueprint);
+                var item = new WatchItem { Name = "mixedChain" };
+                await loader.Load(item);
+
+                memory.SetMemory(0x1000, LineNode(0x3000, 1, 2, 3, 4));
+
+                Assert.AreEqual(ReloadScope.Everything, loader.PlanReload(item).Scope);
+            }
+
+            [TestMethod]
+            public async Task never_reuses_a_snapshot_from_another_process()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                var memory = new MemoryReaderMock();
+                ConfigureDebugger(debugger);
+                memory.SetMemory(0x1000, LineNode(0x2000, 1, 2, 3, 4));
+                memory.SetMemory(0x2000, ArcNode(0, 5, 6, 7, 8, 9));
+
+                var loader = new Loader(debugger, new InterpreterMock(), memory);
+                loader.ConfigureLinkedListMemoryLoading(true, Blueprint);
+                var item = new WatchItem { Name = "mixedChain" };
+                await loader.Load(item);
+                int readsBeforeNewProcess = memory.ReadCount;
+
+                debugger.CurrentProcessId = 43;
+                ReloadPlan plan = loader.PlanReload(item);
+
+                Assert.AreEqual(ReloadScope.Everything, plan.Scope);
+                Assert.AreEqual(readsBeforeNewProcess, memory.ReadCount);
+            }
+
+            [TestMethod]
+            public async Task keeps_using_natvis_when_the_experimental_mode_is_disabled()
+            {
+                var debugger = new DebuggerMock { CurrentProcessId = 42 };
+                var memory = new MemoryReaderMock();
+                var interpreter = new InterpreterMock();
+                int interpreterCalls = 0;
+                interpreter.GetDrawableCallback = expression =>
+                {
+                    interpreterCalls++;
+                    return new NeoWatch.Common.Result<IDrawable>(new DrawablePoint(10, 20));
+                };
+                ConfigureDebugger(debugger, dataMembers: 1);
+                memory.SetMemory(0x1000, LineNode(0x2000, 1, 2, 3, 4));
+                memory.SetMemory(0x2000, ArcNode(0, 5, 6, 7, 8, 9));
+
+                var loader = new Loader(debugger, interpreter, memory);
+                loader.ConfigureLinkedListMemoryLoading(false, Blueprint);
+
+                var result = await loader.Load(new WatchItem { Name = "mixedChain" });
+
+                Assert.IsFalse(result.Feedback.HasError);
+                Assert.AreEqual(1, interpreterCalls);
+                Assert.AreEqual(1, result.Data.Count);
+            }
+
+            [TestMethod]
+            public void ignores_invalid_blueprint_sections()
+            {
+                List<LinkedListMemoryBlueprint> parsed = LinkedListMemoryBlueprintParser.Parse(
+                    "[Broken]\nCount=Count\nHead=Head\nNext=Next");
+
+                Assert.AreEqual(0, parsed.Count);
+            }
+
+            private static void ConfigureDebugger(DebuggerMock debugger, int dataMembers = 0)
+            {
+                debugger.GetExpressionCallback = expression =>
+                {
+                    if (expression == "mixedChain")
+                    {
+                        return new ExpressionMock("List of Line/Arc Segments", "DemoSegmentLinkedList",
+                            () => "parse", dataMembers);
+                    }
+                    if (expression == "(mixedChain).Count") return Value("2");
+                    if (expression == "(void*)((mixedChain).Head)") return Value("0x1000");
+                    if (expression == "sizeof(*((mixedChain).Head))") return Value("64");
+                    if (expression == "sizeof(void*)") return Value("8");
+
+                    if (expression.StartsWith("(long long)", StringComparison.Ordinal))
+                    {
+                        if (expression.Contains("->Next")) return Value("0");
+                        if (expression.Contains("demoSegment.type")) return Value("16");
+                        if (expression.Contains("demoInitialPoint.demoX")) return Value("24");
+                        if (expression.Contains("demoInitialPoint.demoY")) return Value("32");
+                        if (expression.Contains("demoFinalPoint.demoX")) return Value("40");
+                        if (expression.Contains("demoFinalPoint.demoY")) return Value("48");
+                        if (expression.Contains("demoCenterPoint.demoX")) return Value("24");
+                        if (expression.Contains("demoCenterPoint.demoY")) return Value("32");
+                        if (expression.Contains("demoInitialAngle")) return Value("40");
+                        if (expression.Contains("demoSweepAngle")) return Value("48");
+                        if (expression.Contains("demoRadius")) return Value("56");
+                    }
+
+                    // The fallback snapshot path uses the original conventional expressions.
+                    if (expression == "mixedChain.Count") return Value("2");
+                    if (expression == "(void*)(mixedChain.Head)") return Value("0x1000");
+                    if (expression == "sizeof(*(mixedChain.Head))") return Value("64");
+                    if (expression == "(void*)(mixedChain.Head->Next)") return Value("0x2000");
+
+                    throw new COMException();
+                };
+            }
+
+            private static ExpressionMock Value(string value)
+            {
+                return new ExpressionMock(value, "any", () => "parse");
+            }
+
+            private static byte[] LineNode(ulong next, double x1, double y1, double x2, double y2)
+            {
+                var bytes = new byte[64];
+                Write(bytes, 0, next);
+                Write(bytes, 16, 0);
+                Write(bytes, 24, x1);
+                Write(bytes, 32, y1);
+                Write(bytes, 40, x2);
+                Write(bytes, 48, y2);
+                return bytes;
+            }
+
+            private static byte[] ArcNode(ulong next, double x, double y, double radius,
+                double initialAngle, double sweepAngle)
+            {
+                var bytes = new byte[64];
+                Write(bytes, 0, next);
+                Write(bytes, 16, 1);
+                Write(bytes, 24, x);
+                Write(bytes, 32, y);
+                Write(bytes, 40, initialAngle);
+                Write(bytes, 48, sweepAngle);
+                Write(bytes, 56, radius);
+                return bytes;
+            }
+
+            private static byte[] PointNode(ulong next, float x, float y)
+            {
+                var bytes = new byte[24];
+                Write(bytes, 0, next);
+                Buffer.BlockCopy(BitConverter.GetBytes(x), 0, bytes, 16, sizeof(float));
+                Buffer.BlockCopy(BitConverter.GetBytes(y), 0, bytes, 20, sizeof(float));
+                return bytes;
+            }
+
+            private static void Write(byte[] target, int offset, ulong value)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(value), 0, target, offset, sizeof(ulong));
+            }
+
+            private static void Write(byte[] target, int offset, int value)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(value), 0, target, offset, sizeof(int));
+            }
+
+            private static void Write(byte[] target, int offset, double value)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(value), 0, target, offset, sizeof(double));
             }
         }
 

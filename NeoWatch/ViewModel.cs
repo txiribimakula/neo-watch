@@ -42,6 +42,17 @@ namespace NeoWatch
             TogglePreviousCommand = new RelayCommand(watchItem => TogglePrevious((WatchItem)watchItem));
         }
 
+        public void ConfigureLinkedListMemoryLoading(bool enabled, string blueprints)
+        {
+            Loader.ConfigureLinkedListMemoryLoading(enabled, blueprints);
+            foreach (WatchItem item in WatchItems)
+            {
+                // A snapshot records the stride and addresses produced by the previous loading
+                // strategy. Re-evaluate once after changing mode or blueprint.
+                item.Snapshot = null;
+            }
+        }
+
         private static async Task BackgroundYield()
         {
             // Background priority so pending Input events (e.g. cancel button) drain before the loader resumes.
@@ -507,10 +518,10 @@ namespace NeoWatch
         {
             var previousDrawables = new List<IDrawable>(watchItem.Drawables);
 
-            List<DrawableReplacement> replacements = Loader.ReloadElements(watchItem, plan.ChangedIndices);
+            List<DrawableReplacement> replacements = Loader.ReloadElements(watchItem, plan.ChangedIndices, plan);
             if (replacements == null) return false;
 
-            List<DrawableReplacement> additions = Loader.ReloadElements(watchItem, plan.AddedIndices);
+            List<DrawableReplacement> additions = Loader.ReloadElements(watchItem, plan.AddedIndices, plan);
             if (additions == null) return false;
 
             var appended = new List<IDrawable>(additions.Count);

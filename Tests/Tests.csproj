@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="InterpreterUnitTest.cs" />
     <Compile Include="LoaderUnitTest.cs" />
+    <Compile Include="ContiguousMemoryLoaderTests.cs" />
     <Compile Include="Mocks\DebuggerMock.cs" />
     <Compile Include="Mocks\ExpressionMock.cs" />
     <Compile Include="Mocks\ExpressionsMock.cs" />

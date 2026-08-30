@@ -14,6 +14,9 @@ namespace NeoWatch.Loading
     public class Loader
     {
         private IDebugger debugger;
+        private readonly LinkedListMemoryLoader linkedListMemoryLoader;
+        private List<LinkedListMemoryBlueprint> linkedListMemoryBlueprints = new List<LinkedListMemoryBlueprint>();
+        private bool isLinkedListMemoryLoadingEnabled;
 
         public IInterpreter Interpreter { get; set; }
 
@@ -24,6 +27,7 @@ namespace NeoWatch.Loading
             this.debugger = debugger;
             Interpreter = interpreter;
             MemoryReader = memoryReader;
+            linkedListMemoryLoader = new LinkedListMemoryLoader(debugger, memoryReader);
         }
 
         /// <summary>
@@ -32,8 +36,16 @@ namespace NeoWatch.Loading
         /// </summary>
         public IMemoryReader MemoryReader { get; set; }
 
+        public void ConfigureLinkedListMemoryLoading(bool enabled, string blueprints)
+        {
+            isLinkedListMemoryLoadingEnabled = enabled;
+            linkedListMemoryBlueprints = LinkedListMemoryBlueprintParser.Parse(blueprints);
+            linkedListMemoryLoader.ClearLayoutCache();
+        }
+
         public void ResetDebugSession()
         {
+            linkedListMemoryLoader.ClearLayoutCache();
             if (MemoryReader != null) MemoryReader.Reset();
         }
 
@@ -74,7 +86,10 @@ namespace NeoWatch.Loading
             IExpression expression;
             try
             {
-                expression = debugger.GetExpression(item.Name);
+                // A linked-list snapshot only needs the root type here. Avoid asking NatVis to
+                // expand the whole list just to decide whether its bytes changed.
+                expression = debugger.GetExpression(item.Name,
+                    !snapshot.IsSegmented && snapshot.ContiguousBlueprintType == null);
             }
             catch (COMException)
             {
@@ -84,9 +99,16 @@ namespace NeoWatch.Loading
             if (expression == null || !expression.IsValidValue
                 || string.IsNullOrEmpty(expression.Type)) return ReloadPlan.Everything();
 
+            if (snapshot.ContiguousBlueprintType != null)
+            {
+                return linkedListMemoryLoader.PlanContiguousReload(item.Name, expression.Type,
+                    FindLinkedListMemoryBlueprint(expression.Type), snapshot, PartialReloadLimit(snapshot.Count));
+            }
+
             if (snapshot.IsSegmented)
             {
-                return PlanSegmentedReload(item, snapshot);
+                return PlanSegmentedReload(item, snapshot, expression.Type,
+                    FindLinkedListMemoryBlueprint(expression.Type));
             }
 
             // The container's own display string is the cheapest signal there is: identical means
@@ -140,20 +162,40 @@ namespace NeoWatch.Loading
             return ReloadPlan.Partial(changed, added, finalCount, newSnapshot);
         }
 
-        private ReloadPlan PlanSegmentedReload(WatchItem item, MemorySnapshot snapshot)
+        private ReloadPlan PlanSegmentedReload(WatchItem item, MemorySnapshot snapshot,
+            string expressionType, LinkedListMemoryBlueprint blueprint)
         {
+            string countExpression = blueprint == null
+                ? item.Name + ".Count"
+                : "(" + item.Name + ")." + blueprint.CountPath;
+            string headExpression = blueprint == null
+                ? item.Name + ".Head"
+                : "(" + item.Name + ")." + blueprint.HeadPath;
+
             int finalCount;
-            if (!TryEvaluateInt(item.Name + ".Count", out finalCount)) return ReloadPlan.Everything();
+            if (!TryEvaluateInt(countExpression, out finalCount)) return ReloadPlan.Everything();
             if (finalCount != snapshot.Count) return ReloadPlan.Everything();
 
             ulong head;
-            if (!TryGetPointerAddress(item.Name + ".Head", out head)) return ReloadPlan.Everything();
+            if (!TryGetPointerAddress(headExpression, out head)) return ReloadPlan.Everything();
             if (head != snapshot.Address) return ReloadPlan.Everything();
 
             byte[] buffer;
             if (!TryReadSegmented(snapshot.ElementAddresses, snapshot.Stride, out buffer)) return ReloadPlan.Everything();
 
-            return snapshot.Matches(buffer) ? ReloadPlan.Nothing() : ReloadPlan.Everything();
+            if (snapshot.Matches(buffer)) return ReloadPlan.Nothing();
+
+            List<int> changed = snapshot.FindChangedElements(buffer, finalCount,
+                PartialReloadLimit(snapshot.Count));
+            if (changed == null) return ReloadPlan.Everything();
+
+            var newSnapshot = new MemorySnapshot(head, null, snapshot.Stride, finalCount,
+                true, buffer, snapshot.ElementAddresses, debugger.CurrentProcessId);
+            List<DrawableReplacement> prepared;
+            if (!linkedListMemoryLoader.TryPrepareReplacements(expressionType, blueprint, snapshot,
+                newSnapshot, changed, out prepared)) return ReloadPlan.Everything();
+
+            return ReloadPlan.Partial(changed, new List<int>(), finalCount, newSnapshot, prepared);
         }
 
         /// <summary>
@@ -183,8 +225,22 @@ namespace NeoWatch.Loading
         /// Re-reads just the elements the diff flagged. Returns null if anything is not exactly as
         /// expected, which sends the caller back to a full reload.
         /// </summary>
-        public List<DrawableReplacement> ReloadElements(WatchItem item, List<int> indices)
+        public List<DrawableReplacement> ReloadElements(WatchItem item, List<int> indices,
+            ReloadPlan plan = null)
         {
+            if (plan != null && plan.PreparedReplacements != null)
+            {
+                var prepared = new List<DrawableReplacement>(indices.Count);
+                foreach (int index in indices)
+                {
+                    DrawableReplacement replacement = plan.PreparedReplacements.Find(
+                        candidate => candidate.Index == index);
+                    if (replacement == null) return null;
+                    prepared.Add(replacement);
+                }
+                return prepared;
+            }
+
             var replacements = new List<DrawableReplacement>(indices.Count);
 
             foreach (int index in indices)
@@ -396,6 +452,43 @@ namespace NeoWatch.Loading
 
             IExpression expression = null;
 
+            // Match the native Watch window's first step while the experimental loader is active:
+            // resolve the root without running NatVis. An out-of-scope name is then rejected before
+            // any collection expansion, while a recognised blueprint can stay on the fast path.
+            if (isLinkedListMemoryLoadingEnabled)
+            {
+                try
+                {
+                    expression = debugger.GetExpression(item.Name, false);
+                }
+                catch (COMException)
+                {
+                    return new Result<Drawables>(new Feedback(FeedbackType.ExpressionLoadException, item.Name));
+                }
+
+                if (expression == null || !expression.IsValidValue
+                    || string.IsNullOrEmpty(expression.Type))
+                {
+                    return new Result<Drawables>(new Feedback(FeedbackType.ExpressionLoadException, item.Name));
+                }
+
+                LinkedListMemoryBlueprint fastBlueprint = FindLinkedListMemoryBlueprint(expression.Type);
+                if (fastBlueprint != null)
+                {
+                    LinkedListMemoryLoadResult fastResult = await linkedListMemoryLoader.TryLoadAsync(
+                        item.Name, expression.Type, fastBlueprint, item, cancellationToken, YieldAction);
+                    if (fastResult != null)
+                    {
+                        item.Snapshot = fastResult.Snapshot;
+                        return new Result<Drawables>(fastResult.Drawables);
+                    }
+                }
+
+                // The probe was valid but the experimental path could not prove the layout. Keep
+                // the established NatVis path as the source of truth.
+                expression = null;
+            }
+
             try
             {
                 expression = debugger.GetExpression(item.Name);
@@ -429,6 +522,12 @@ namespace NeoWatch.Loading
             }
 
             return drawablesResult;
+        }
+
+        private LinkedListMemoryBlueprint FindLinkedListMemoryBlueprint(string typeName)
+        {
+            if (!isLinkedListMemoryLoadingEnabled || string.IsNullOrEmpty(typeName)) return null;
+            return linkedListMemoryBlueprints.Find(blueprint => blueprint.Matches(typeName));
         }
 
         /// <summary>
