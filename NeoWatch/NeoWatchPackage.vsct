@@ -8,6 +8,9 @@
 
 	<Commands package="guidPackage">
         <Groups>
+            <Group guid="guidPackageCmdSet" id="BlueprintToolsGroup" priority="0x0800">
+                <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
+            </Group>
             <Group guid="guidPackageCmdSet" id="RightClickMenu" priority="0x0300">
                 <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
             </Group>
@@ -16,6 +19,20 @@
 			<Bitmap guid="neoIcon" href="Resources\morpheus.bmp" usedList="neoIcon1"/>
 		</Bitmaps>
 		<Buttons>
+            <Button guid="guidPackageCmdSet" id="idEditBlueprints" priority="0x0090" type="Button">
+                <Parent guid="guidPackageCmdSet" id="BlueprintToolsGroup" />
+                <Strings>
+                    <ButtonText>Edit Neo Watch Blueprints</ButtonText>
+                    <CommandName>NeoWatch.EditBlueprints</CommandName>
+                </Strings>
+            </Button>
+            <Button guid="guidPackageCmdSet" id="idCopyBlueprintPrompt" priority="0x0100" type="Button">
+                <Parent guid="guidPackageCmdSet" id="BlueprintToolsGroup" />
+                <Strings>
+                    <ButtonText>Copy Neo Watch Blueprint Prompt</ButtonText>
+                    <CommandName>NeoWatch.CopyBlueprintPrompt</CommandName>
+                </Strings>
+            </Button>
 			<Button guid="guidPackageCmdSet" id="idCommand" priority="0x099" type="Button">
 				<Parent guid="guidVSDebugGroup" id="IDG_DEBUG_WINDOWS_INSPECT"/>
 				<CommandFlag>DynamicVisibility</CommandFlag>
@@ -52,6 +69,11 @@
             <Parent guid="guidVSDebugGroup" id="IDG_DATATIP_WATCH"/>
         </CommandPlacement>
     </CommandPlacements>
+
+    <KeyBindings>
+        <KeyBinding guid="guidPackageCmdSet" id="idCommandAdd" editor="guidVSStd97"
+                    key1="W" mod1="Control Alt" key2="N" mod2="Control Alt" />
+    </KeyBindings>
     
 	<VisibilityConstraints>
         <VisibilityItem guid="guidPackageCmdSet" id="idCommand" context="UICONTEXT_Debugging" />
@@ -66,6 +88,9 @@
             <IDSymbol value="256" name="idCommand" />
             <IDSymbol value="255" name="idCommandAdd" />
             <IDSymbol value="254" name="idCommandAddFromWatch" />
+            <IDSymbol value="253" name="idCopyBlueprintPrompt" />
+            <IDSymbol value="252" name="idEditBlueprints" />
+            <IDSymbol value="0x1041" name="BlueprintToolsGroup" />
             <IDSymbol name="RightClickMenu" value="0x1040" />
         </GuidSymbol>
 		<GuidSymbol name="neoIcon" value="{153861FB-E433-49C8-BE51-5289844FC485}">

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://aka.ms/unified-settings-experience/registration/schema",
+  "properties": {
+    "neoWatch.general.enableLinkedListMemoryLoader": {
+      "type": "boolean",
+      "title": "Enable memory blueprint loader",
+      "description": "Loads configured native linked lists and contiguous containers directly from process memory. Falls back to NatVis on any failure.",
+      "default": false,
+      "order": 10,
+      "migration": {
+        "pass": {
+          "input": {
+            "store": "VsUserSettingsRegistry",
+            "path": "DialogPage\\NeoWatch.BlueprintsOptionPage\\EnableLinkedListMemoryLoader"
+          }
+        }
+      }
+    },
+    "neoWatch.general.linkedListMemoryBlueprints": {
+      "type": "string",
+      "format": "multiLine",
+      "title": "Memory blueprints",
+      "visibleWhen": "false",
+      "description": "INI blueprints. Member values use path|Float32, Float64, Int32, UInt32, Int64 or UInt64.",
+      "default": "# One section per native container type.\n[DemoSegmentLinkedList]\nCount=Count\nHead=Head\nNext=Next\nTag=demoSegment.type|Int32\nLine.Tag=0\nLine.InitialX=demoSegment.segment.line.demoInitialPoint.demoX|Float64\nLine.InitialY=demoSegment.segment.line.demoInitialPoint.demoY|Float64\nLine.FinalX=demoSegment.segment.line.demoFinalPoint.demoX|Float64\nLine.FinalY=demoSegment.segment.line.demoFinalPoint.demoY|Float64\nArc.Tag=1\nArc.CenterX=demoSegment.segment.arc.demoCenterPoint.demoX|Float64\nArc.CenterY=demoSegment.segment.arc.demoCenterPoint.demoY|Float64\nArc.Radius=demoSegment.segment.arc.demoRadius|Float64\nArc.InitialAngle=demoSegment.segment.arc.demoInitialAngle|Float64\nArc.SweepAngle=demoSegment.segment.arc.demoSweepAngle|Float64\n\n[DemoPointLinkedList]\nCount=Count\nHead=Head\nNext=Next\nPoint.X=x|Float32\nPoint.Y=y|Float32\n\n# MSVC std::vector<DemoPoint>, including f10Points and stressPoints.\n[std::vector<DemoPoint,std::allocator<DemoPoint>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nPoint.X=demoX|Float64\nPoint.Y=demoY|Float64\n\n# MSVC node storage: one point per vector element, without following Next.\n[std::vector<DemoListOfItself,std::allocator<DemoListOfItself>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nPoint.X=x|Float32\nPoint.Y=y|Float32\n\n# MSVC std::vector<DemoLineSegment>, including stressSegments.\n[std::vector<DemoLineSegment,std::allocator<DemoLineSegment>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nLine.InitialX=demoInitialPoint.demoX|Float64\nLine.InitialY=demoInitialPoint.demoY|Float64\nLine.FinalX=demoFinalPoint.demoX|Float64\nLine.FinalY=demoFinalPoint.demoY|Float64\n\n# MSVC std::vector<DemoArcSegment>, including stressArcs.\n[std::vector<DemoArcSegment,std::allocator<DemoArcSegment>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nArc.CenterX=demoCenterPoint.demoX|Float64\nArc.CenterY=demoCenterPoint.demoY|Float64\nArc.Radius=demoRadius|Float64\nArc.InitialAngle=demoInitialAngle|Float64\nArc.SweepAngle=demoSweepAngle|Float64",
+      "order": 20,
+      "enableWhen": "${config:neoWatch.general.enableLinkedListMemoryLoader} == 'true'",
+      "migration": {
+        "pass": {
+          "input": {
+            "store": "VsUserSettingsRegistry",
+            "path": "DialogPage\\NeoWatch.BlueprintsOptionPage\\LinkedListMemoryBlueprints"
+          }
+        }
+      }
+    }
+  },
+  "categories": {
+    "neoWatch": {
+      "title": "Neo Watch",
+      "description": "Debugger visualization settings."
+    },
+    "neoWatch.general": {
+      "title": "General",
+      "description": "Blueprints map your C++ container and geometry members to points, lines or arcs.",
+      "commands": [
+        {
+          "vsct": {
+            "text": "Edit blueprints",
+            "set": "AB6200EA-5C89-4F3C-AEEB-1374F1F578FB",
+            "id": 252
+          }
+        },
+        {
+          "vsct": {
+            "text": "Copy AI prompt",
+            "set": "AB6200EA-5C89-4F3C-AEEB-1374F1F578FB",
+            "id": 253
+          }
+        }
+      ],
+      "legacyOptionPageId": "E77FB104-A860-4B35-A46D-BE33E3616FD4"
+    }
+  }
+}

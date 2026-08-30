@@ -2,10 +2,10 @@
 using NeoWatch.Loading;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing.Design;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
 using Task = System.Threading.Tasks.Task;
 
 namespace NeoWatch
@@ -31,7 +31,9 @@ namespace NeoWatch
     [Guid(PackageGuidString)]
     [ProvideToolWindow(typeof(NeoWatch))]
     [ProvideBindingPath]
-    [ProvideOptionPage(typeof(BlueprintsOptionPage), "Neo Watch", "General", 0, 0, true)]
+    [ProvideSettingsManifest]
+    [ProvideOptionPage(typeof(BlueprintsOptionPage), "Neo Watch", "General", 0, 0, true,
+        IsInUnifiedSettings = true)]
     public sealed class NeoWatchPackage : AsyncPackage
     {
         /// <summary>
@@ -55,6 +57,8 @@ namespace NeoWatch
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             NeoWatchCommand.Initialize(this);
             AddNeoWatchCommand.Initialize(this);
+            CopyBlueprintPromptCommand.Initialize(this);
+            EditBlueprintsCommand.Initialize(this);
         }
 
         public new object GetService(Type serviceType)
@@ -71,9 +75,110 @@ namespace NeoWatch
     }
 
     [Guid("E77FB104-A860-4B35-A46D-BE33E3616FD4")]
-    public class BlueprintsOptionPage : UIElementDialogPage
+    public class BlueprintsOptionPage : DialogPage
     {
-        // TODO: set this from configuration window.
+        public const string DefaultLinkedListMemoryBlueprints =
+@"# One section per native container type.
+[DemoSegmentLinkedList]
+Count=Count
+Head=Head
+Next=Next
+Tag=demoSegment.type|Int32
+Line.Tag=0
+Line.InitialX=demoSegment.segment.line.demoInitialPoint.demoX|Float64
+Line.InitialY=demoSegment.segment.line.demoInitialPoint.demoY|Float64
+Line.FinalX=demoSegment.segment.line.demoFinalPoint.demoX|Float64
+Line.FinalY=demoSegment.segment.line.demoFinalPoint.demoY|Float64
+Arc.Tag=1
+Arc.CenterX=demoSegment.segment.arc.demoCenterPoint.demoX|Float64
+Arc.CenterY=demoSegment.segment.arc.demoCenterPoint.demoY|Float64
+Arc.Radius=demoSegment.segment.arc.demoRadius|Float64
+Arc.InitialAngle=demoSegment.segment.arc.demoInitialAngle|Float64
+Arc.SweepAngle=demoSegment.segment.arc.demoSweepAngle|Float64
+
+[DemoPointLinkedList]
+Count=Count
+Head=Head
+Next=Next
+Point.X=x|Float32
+Point.Y=y|Float32
+
+# MSVC std::vector<DemoPoint>, including f10Points and stressPoints.
+[std::vector<DemoPoint,std::allocator<DemoPoint>>]
+Storage=Contiguous
+Head=_Mypair._Myval2._Myfirst
+End=_Mypair._Myval2._Mylast
+Capacity=_Mypair._Myval2._Myend
+Point.X=demoX|Float64
+Point.Y=demoY|Float64
+
+# MSVC node storage: one point per vector element, without following Next.
+[std::vector<DemoListOfItself,std::allocator<DemoListOfItself>>]
+Storage=Contiguous
+Head=_Mypair._Myval2._Myfirst
+End=_Mypair._Myval2._Mylast
+Capacity=_Mypair._Myval2._Myend
+Point.X=x|Float32
+Point.Y=y|Float32
+
+# MSVC std::vector<DemoLineSegment>, including stressSegments.
+[std::vector<DemoLineSegment,std::allocator<DemoLineSegment>>]
+Storage=Contiguous
+Head=_Mypair._Myval2._Myfirst
+End=_Mypair._Myval2._Mylast
+Capacity=_Mypair._Myval2._Myend
+Line.InitialX=demoInitialPoint.demoX|Float64
+Line.InitialY=demoInitialPoint.demoY|Float64
+Line.FinalX=demoFinalPoint.demoX|Float64
+Line.FinalY=demoFinalPoint.demoY|Float64
+
+# MSVC std::vector<DemoArcSegment>, including stressArcs.
+[std::vector<DemoArcSegment,std::allocator<DemoArcSegment>>]
+Storage=Contiguous
+Head=_Mypair._Myval2._Myfirst
+End=_Mypair._Myval2._Mylast
+Capacity=_Mypair._Myval2._Myend
+Arc.CenterX=demoCenterPoint.demoX|Float64
+Arc.CenterY=demoCenterPoint.demoY|Float64
+Arc.Radius=demoRadius|Float64
+Arc.InitialAngle=demoInitialAngle|Float64
+Arc.SweepAngle=demoSweepAngle|Float64";
+
+        [Category("Experimental memory loader")]
+        [DisplayName("Enabled")]
+        [Description("Loads configured native linked lists and contiguous containers directly from process memory. Falls back to NatVis on any failure.")]
+        [DefaultValue(false)]
+        public bool EnableLinkedListMemoryLoader { get; set; }
+
+        [Category("Experimental memory loader")]
+        [DisplayName("Blueprints")]
+        [Description("INI blueprints. Member values use path|Float32, Float64, Int32, UInt32, Int64 or UInt64.")]
+        [DefaultValue(DefaultLinkedListMemoryBlueprints)]
+        [Editor(typeof(Settings.BlueprintsPropertyEditor), typeof(UITypeEditor))]
+        public string LinkedListMemoryBlueprints { get; set; } = DefaultLinkedListMemoryBlueprints;
+
+        public event EventHandler MemoryLoaderSettingsChanged;
+
+        internal void SaveBlueprints(string text)
+        {
+            string previous = LinkedListMemoryBlueprints;
+            LinkedListMemoryBlueprints = text;
+            try { SaveSettingsToStorage(); }
+            catch
+            {
+                LinkedListMemoryBlueprints = previous;
+                throw;
+            }
+            MemoryLoaderSettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected override void OnApply(PageApplyEventArgs e)
+        {
+            base.OnApply(e);
+            MemoryLoaderSettingsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        [Browsable(false)]
         public Dictionary<PatternKind, string[]> Patterns { get; set; } = new Dictionary<PatternKind, string[]>()
             {
                 { PatternKind.Type, new string[] { @"(?<type>\w+): (?<parse>.*)" } },
@@ -84,7 +189,7 @@ namespace NeoWatch
                 { PatternKind.Point, new string[] { @"^\((?<x>\d*\.?\d+),(?<y>\d*\.?\d+)\)$", @"\((?<x>.*),(?<y>.*)\)" } }
             };
 
-        // TODO: set this from configuration window.
+        [Browsable(false)]
         public Dictionary<string, PatternKind> TypeKindPairs { get; set; } = new Dictionary<string, PatternKind>()
             {
                 { "Pnt", PatternKind.Point },
@@ -93,16 +198,5 @@ namespace NeoWatch
                 { "Cir", PatternKind.Circle }
             };
 
-        protected override UIElement Child
-        {
-            get
-            {
-                return new TextBlock
-                {
-                    Text = "(placeholder)",
-                    Margin = new Thickness(8),
-                };
-            }
-        }
     }
 }

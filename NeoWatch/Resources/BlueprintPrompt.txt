@@ -1,0 +1,26 @@
+Help me create one new blueprint for Neo Watch, a Visual Studio extension that draws C++ points, lines and arcs while debugging.
+
+Information I need to provide:
+- Exact container type shown in the debugger, not the variable name: [fill in]
+- C++ declarations of the container, its nodes/elements and geometry members, including any unions and enums: [paste here]
+- Compiler and standard library versions, and target architecture (32 or 64 bit): [fill in]
+- Which members describe the geometry, their units, and how the active union member is identified, if applicable: [fill in]
+
+Ask for missing or ambiguous information before generating the blueprint. Do not invent types, members or enum values. If my type cannot be represented, explain what prevents it.
+
+Blueprint format:
+- Return one INI section headed [ExactContainerType], followed by key=value lines. No wildcards.
+- For linked lists, use Storage=LinkedList, Count and Head as member paths in the container, and Next as a member path in each node. Head must point to the first geometry node; Count excludes any sentinel node. Head and Next must be raw pointers. The loader follows Next for exactly Count distinct nodes; it does not use Previous or custom stopping expressions.
+- For contiguous storage, use Storage=Contiguous and Head, End, Capacity as member paths in the container. They must be raw pointers to the first element, just past the last element, and just past the allocated storage. Each element supplies one geometry, in storage order. Confirm these members for my standard library; do not assume a particular implementation.
+- Geometry values use Field=member.path|ScalarType, relative to the node or element. Example: Point.X=position.x|Float64. Use stored members, not calculations, function calls, casts or byte offsets.
+- Scalar types: Float32 for float, Float64 for double, or Int32, UInt32, Int64, UInt64 matching the actual integer width and signedness. Other widths are unsupported.
+
+Required fields for each supported 2D geometry:
+- Point: Point.X, Point.Y
+- Line: Line.InitialX, Line.InitialY, Line.FinalX, Line.FinalY
+- Arc: Arc.CenterX, Arc.CenterY, Arc.Radius, Arc.InitialAngle, Arc.SweepAngle
+
+Angles must be stored in degrees; coordinates and radius must use compatible units. The blueprint cannot convert units.
+For mixed geometry, add Tag=member.path|ScalarType and Point.Tag, Line.Tag or Arc.Tag with the distinct integer values selecting the active union member. Only one variant per geometry kind is supported. Contiguous storage does not accept enum-typed tag fields, even if their underlying type is an integer.
+
+Once the information is complete, return only the new INI section, ready to paste into an entry in Edit blueprints. Do not modify existing blueprints or project code.
