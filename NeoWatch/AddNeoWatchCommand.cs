@@ -1,5 +1,6 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NeoWatch.Loading;
 using System;
 using System.ComponentModel.Design;
@@ -30,11 +31,15 @@ namespace NeoWatch
 
         private AddNeoWatchCommand(NeoWatchPackage package, OleMenuCommandService commandService)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             this.package = package ?? throw new ArgumentNullException(nameof(package));
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
+            dte = package.GetService(typeof(DTE::DTE)) as DTE::DTE;
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            menuCommand = new MenuCommand(this.Add, menuCommandID);
+            var addCommand = new OleMenuCommand(this.Add, menuCommandID);
+            addCommand.BeforeQueryStatus += (sender, args) => addCommand.Enabled = CanAddFromActiveWindow();
+            menuCommand = addCommand;
             commandService.AddCommand(menuCommand);
 
             var fromWatchCommandID = new CommandID(CommandSet, AddFromWatchCommandId);
@@ -75,7 +80,33 @@ namespace NeoWatch
 
         private void Add(object sender, EventArgs e)
         {
-            AddExpressions(ExpressionsFromEditor());
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (!CanAddFromActiveWindow()) return;
+
+            // Capture before opening Neo Watch, while the invoking surface still has focus.
+            AddExpressions(IsToolWindowActive() ? ExpressionsFromSelectedRows() : ExpressionsFromEditor());
+        }
+
+        private bool CanAddFromActiveWindow()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            try
+            {
+                if (dte == null || dte.Debugger.CurrentMode != dbgDebugMode.dbgBreakMode) return false;
+                DTE::Window active = dte.ActiveWindow;
+                if (active == null) return false;
+                if (active.Kind == "Document") return dte.ActiveDocument?.Object() is TextDocument;
+
+                Guid kind;
+                if (!Guid.TryParse(active.ObjectKind, out kind)) return false;
+                return kind == Microsoft.VisualStudio.VSConstants.StandardToolWindows.Watch
+                    || kind == Microsoft.VisualStudio.VSConstants.StandardToolWindows.Locals
+                    || kind == Microsoft.VisualStudio.VSConstants.StandardToolWindows.Autos;
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                return false;
+            }
         }
 
         /// <summary>The expression at the caret, which is what the code window command reads.</summary>
@@ -254,7 +285,31 @@ namespace NeoWatch
         /// <summary>Creates a watch item per expression, newest last.</summary>
         private void AddExpressions(System.Collections.Generic.List<string> expressions)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (expressions.Count == 0) return;
+
+            ToolWindowPane window = package.FindToolWindow(typeof(NeoWatch), 0, true);
+            if (viewModel == null || !(window?.Frame is IVsWindowFrame frame)) return;
+            if (window.Content is FrameworkElement content && !content.IsLoaded)
+            {
+                DTE::Window origin = dte.ActiveWindow;
+                RoutedEventHandler loaded = null;
+                loaded = (sender, args) =>
+                {
+                    content.Loaded -= loaded;
+                    // OnLoaded creates the geometry drawer. Run after all Loaded handlers.
+                    content.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (dte.Debugger.CurrentMode != dbgDebugMode.dbgBreakMode) return;
+                        AddExpressions(expressions);
+                        origin?.Activate();
+                    }));
+                };
+                content.Loaded += loaded;
+                Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(frame.Show());
+                return;
+            }
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(frame.ShowNoActivate());
 
             // Adding through the grid at the same time interferes with adding programmatically.
             this.viewModel.CanUserAddRows = false;
