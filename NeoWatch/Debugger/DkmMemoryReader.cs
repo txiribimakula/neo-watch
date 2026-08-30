@@ -16,6 +16,8 @@ namespace NeoWatch.Debugging
     {
         private readonly IDebugger debugger;
         private bool disabled;
+        private int cachedProcessId;
+        private DkmProcess cachedProcess;
 
         public DkmMemoryReader(IDebugger debugger)
         {
@@ -28,6 +30,13 @@ namespace NeoWatch.Debugging
             get { return !disabled; }
         }
 
+        public void Reset()
+        {
+            cachedProcess = null;
+            cachedProcessId = 0;
+            disabled = false;
+        }
+
         public bool TryRead(ulong address, byte[] buffer)
         {
             if (disabled || address == 0 || buffer == null || buffer.Length == 0) return false;
@@ -37,13 +46,15 @@ namespace NeoWatch.Debugging
                 DkmProcess process = FindProcess();
                 if (process == null) return false;
 
-                process.ReadMemory(address, DkmReadMemoryFlags.None, buffer);
-                return true;
+                int bytesRead = process.ReadMemory(address, DkmReadMemoryFlags.None, buffer);
+                return bytesRead == buffer.Length;
             }
             catch (DkmException)
             {
                 // Bad address or a process that moved on: expected, and not a reason to give up
                 // on the feature as a whole.
+                cachedProcess = null;
+                cachedProcessId = 0;
                 return false;
             }
             catch (Exception)
@@ -57,7 +68,16 @@ namespace NeoWatch.Debugging
         private DkmProcess FindProcess()
         {
             int processId = debugger.CurrentProcessId;
-            if (processId == 0) return null;
+            if (processId == 0)
+            {
+                cachedProcess = null;
+                cachedProcessId = 0;
+                return null;
+            }
+
+            // DkmProcess.GetProcesses crosses into Concord. A linked list performs one memory
+            // read per node, so resolving the same process for every node dwarfs the reads.
+            if (cachedProcess != null && cachedProcessId == processId) return cachedProcess;
 
             DkmProcess[] processes = DkmProcess.GetProcesses();
             if (processes == null) return null;
@@ -66,6 +86,8 @@ namespace NeoWatch.Debugging
             {
                 if (process.LivePart != null && process.LivePart.Id == processId)
                 {
+                    cachedProcess = process;
+                    cachedProcessId = processId;
                     return process;
                 }
             }

@@ -8,6 +8,13 @@ namespace Tests.Mocks
         private readonly Dictionary<ulong, byte[]> memory = new Dictionary<ulong, byte[]>();
 
         public bool IsAvailable { get; set; } = true;
+        public int ReadCount { get; private set; }
+        public int ResetCount { get; private set; }
+
+        public void Reset()
+        {
+            ResetCount++;
+        }
 
         public void SetMemory(ulong address, byte[] bytes)
         {
@@ -16,6 +23,7 @@ namespace Tests.Mocks
 
         public bool TryRead(ulong address, byte[] buffer)
         {
+            ReadCount++;
             byte[] bytes;
             if (!memory.TryGetValue(address, out bytes)) return false;
             if (bytes.Length < buffer.Length) return false;
