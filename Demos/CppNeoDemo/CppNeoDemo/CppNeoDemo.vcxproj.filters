@@ -18,6 +18,9 @@
     <ClCompile Include="CppNeoDemo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DemoScenarios.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="DemoPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -60,6 +63,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DemoSegmentChainNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoCheckScenario.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoScenarios.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

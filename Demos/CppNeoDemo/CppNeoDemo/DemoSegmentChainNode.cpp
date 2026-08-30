@@ -13,6 +13,16 @@ DemoSegmentLinkedList::DemoSegmentLinkedList()
 {
 }
 
+DemoSegmentLinkedList::DemoSegmentLinkedList(DemoSegmentLinkedList&& other) noexcept
+    : Head(other.Head),
+      Tail(other.Tail),
+      Count(other.Count)
+{
+    other.Head = nullptr;
+    other.Tail = nullptr;
+    other.Count = 0;
+}
+
 DemoSegmentLinkedList::~DemoSegmentLinkedList()
 {
     DemoSegmentChainNode* current = Head;

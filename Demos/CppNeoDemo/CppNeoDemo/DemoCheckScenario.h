@@ -136,8 +136,7 @@ inline std::vector<DemoSegment> MakeCheckMixed()
     return result;
 }
 
-// Nodos de una lista enlazada, SIN enlazar todavia: enlazarlos aqui no serviria de nada
-// porque devolver el vector por valor moveria el buffer y dejaria los punteros colgando.
+// Crea los nodos sin enlazar; LinkCheckChain permite observar el enlazado por separado.
 inline std::vector<DemoListOfItself> MakeCheckChainNodes(int count)
 {
     std::vector<DemoListOfItself> result(count);
@@ -154,7 +153,8 @@ inline std::vector<DemoListOfItself> MakeCheckChainNodes(int count)
     return result;
 }
 
-// Enlaza los nodos una vez el vector ya esta en su sitio definitivo.
+// Enlaza despues de fijar el tamano. Mover el vector conserva el buffer; copiarlo
+// o realojarlo exige volver a enlazarlo y actualizar las vistas que lo referencien.
 inline void LinkCheckChain(std::vector<DemoListOfItself>& nodes)
 {
     for (size_t i = 0; i < nodes.size(); i++)

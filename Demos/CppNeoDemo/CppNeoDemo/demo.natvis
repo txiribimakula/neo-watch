@@ -58,6 +58,18 @@
         </Expand>
     </Type>
 
+    <Type Name="DemoPointLinkedList">
+        <DisplayString>List of Points</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <Size>Count</Size>
+                <HeadPointer>Head</HeadPointer>
+                <NextPointer>Next</NextPointer>
+                <ValueNode>*this,view(item)</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+
     <Type Name="DemoSegment">
         <DisplayString Condition="type == 0">{segment.line}</DisplayString>
         <DisplayString Condition="type == 1">{segment.arc}</DisplayString>

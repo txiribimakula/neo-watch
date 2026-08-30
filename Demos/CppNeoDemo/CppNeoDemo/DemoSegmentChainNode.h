@@ -20,6 +20,7 @@ public:
 
     DemoSegmentLinkedList(const DemoSegmentLinkedList&) = delete;
     DemoSegmentLinkedList& operator=(const DemoSegmentLinkedList&) = delete;
+    DemoSegmentLinkedList(DemoSegmentLinkedList&& other) noexcept;
 
     DemoSegmentChainNode* Head;
     DemoSegmentChainNode* Tail;
