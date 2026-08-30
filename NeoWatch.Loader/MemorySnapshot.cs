@@ -12,12 +12,14 @@ namespace NeoWatch.Loading
     /// </summary>
     public class MemorySnapshot
     {
-        public MemorySnapshot(ulong address, string containerValue, int stride, int count, bool supportsPartial, byte[] bytes)
-            : this(address, containerValue, stride, count, supportsPartial, bytes, null)
+        public MemorySnapshot(ulong address, string containerValue, int stride, int count,
+            bool supportsPartial, byte[] bytes, int processId = 0)
+            : this(address, containerValue, stride, count, supportsPartial, bytes, null, processId)
         {
         }
 
-        public MemorySnapshot(ulong address, string containerValue, int stride, int count, bool supportsPartial, byte[] bytes, ulong[] elementAddresses)
+        public MemorySnapshot(ulong address, string containerValue, int stride, int count,
+            bool supportsPartial, byte[] bytes, ulong[] elementAddresses, int processId = 0)
         {
             Address = address;
             ContainerValue = containerValue;
@@ -26,7 +28,11 @@ namespace NeoWatch.Loading
             SupportsPartial = supportsPartial;
             Bytes = bytes;
             ElementAddresses = elementAddresses;
+            ProcessId = processId;
         }
+
+        /// <summary>Debuggee process that produced this snapshot. Zero means unspecified.</summary>
+        public int ProcessId { get; private set; }
 
         /// <summary>Address of the first element. Changes when the container reallocates.</summary>
         public ulong Address { get; private set; }

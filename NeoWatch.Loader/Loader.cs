@@ -32,6 +32,11 @@ namespace NeoWatch.Loading
         /// </summary>
         public IMemoryReader MemoryReader { get; set; }
 
+        public void ResetDebugSession()
+        {
+            if (MemoryReader != null) MemoryReader.Reset();
+        }
+
         private static readonly string[] ListTypes =
         {
             "std::vector",
@@ -61,6 +66,10 @@ namespace NeoWatch.Loading
             MemorySnapshot snapshot = item.Snapshot;
             if (snapshot == null) return ReloadPlan.Everything();
             if (MemoryReader == null || !MemoryReader.IsAvailable) return ReloadPlan.Everything();
+            if (snapshot.ProcessId != 0 && snapshot.ProcessId != debugger.CurrentProcessId)
+            {
+                return ReloadPlan.Everything();
+            }
 
             IExpression expression;
             try
@@ -72,7 +81,8 @@ namespace NeoWatch.Loading
                 return ReloadPlan.Everything();
             }
 
-            if (expression == null || string.IsNullOrEmpty(expression.Type)) return ReloadPlan.Everything();
+            if (expression == null || !expression.IsValidValue
+                || string.IsNullOrEmpty(expression.Type)) return ReloadPlan.Everything();
 
             if (snapshot.IsSegmented)
             {
@@ -125,7 +135,8 @@ namespace NeoWatch.Loading
             // Loading a long tail one element at a time loses to a single sweep, same as replacing.
             if (changed.Count + added.Count > PartialReloadLimit(snapshot.Count)) return ReloadPlan.Everything();
 
-            var newSnapshot = new MemorySnapshot(address, expression.Value, snapshot.Stride, finalCount, true, buffer);
+            var newSnapshot = new MemorySnapshot(address, expression.Value, snapshot.Stride,
+                finalCount, true, buffer, debugger.CurrentProcessId);
             return ReloadPlan.Partial(changed, added, finalCount, newSnapshot);
         }
 
@@ -248,7 +259,8 @@ namespace NeoWatch.Loading
             // so those keep whole-block detection but lose the targeted reload.
             bool supportsPartial = elementCount == drawableCount;
 
-            item.Snapshot = new MemorySnapshot(address, expression.Value, stride, elementCount, supportsPartial, buffer);
+            item.Snapshot = new MemorySnapshot(address, expression.Value, stride, elementCount,
+                supportsPartial, buffer, debugger.CurrentProcessId);
         }
 
         private bool TryCaptureLinkedListSnapshot(WatchItem item, IExpression expression, int elementCount, int drawableCount)
@@ -285,7 +297,8 @@ namespace NeoWatch.Loading
             byte[] buffer;
             if (!TryReadSegmented(addresses, stride, out buffer)) return false;
 
-            item.Snapshot = new MemorySnapshot(head, expression.Value, stride, count, false, buffer, addresses);
+            item.Snapshot = new MemorySnapshot(head, expression.Value, stride, count, false,
+                buffer, addresses, debugger.CurrentProcessId);
             return true;
         }
 
@@ -392,7 +405,7 @@ namespace NeoWatch.Loading
                 return new Result<Drawables>(new Feedback(FeedbackType.ExpressionLoadException, item.Name));
             }
 
-            if (expression == null || string.IsNullOrEmpty(expression.Type))
+            if (expression == null || !expression.IsValidValue || string.IsNullOrEmpty(expression.Type))
             {
                 // Named, so the Status column says which expression the debugger would not resolve.
                 return new Result<Drawables>(new Feedback(FeedbackType.ExpressionLoadException, item.Name));
@@ -448,6 +461,7 @@ namespace NeoWatch.Loading
                 counter.Count++;
 
                 var innerExpressions = new ExpressionLoader(expression, listTypes);
+                int innerIndex = 0;
 
                 foreach (IExpression innerExpression in innerExpressions)
                 {
@@ -458,6 +472,21 @@ namespace NeoWatch.Loading
 
                     var newDrawableResult = Interpreter.GetDrawable(innerExpression);
 
+                    // Reacquire the same NatVis path once. Evaluating C++ operator[] loses custom
+                    // views and cannot address synthetic children or nested linked-list items.
+                    if (newDrawableResult == null || newDrawableResult.Feedback.HasError)
+                    {
+                        var retry = ReinterpretElement(item.Name, itemExpression,
+                            expressions.IsList, counter.Count - 1, expression,
+                            innerExpressions.IsList, innerIndex, innerExpression);
+                        if (retry != null && !retry.Feedback.HasError) newDrawableResult = retry;
+                    }
+
+                    if (newDrawableResult == null)
+                    {
+                        return new Result<Drawables>(drawables,
+                            new Feedback(FeedbackType.ExpressionLoadException, item.Name));
+                    }
                     if (newDrawableResult.Feedback.HasError)
                     {
                         return new Result<Drawables>(drawables, newDrawableResult.Feedback);
@@ -467,6 +496,7 @@ namespace NeoWatch.Loading
                     drawables.Add(newDrawableResult.Data);
 
                     currentIndex++;
+                    innerIndex++;
                     if (currentIndex % YieldEvery == 0 || sinceLastYield.Elapsed > MaxBetweenYields)
                     {
                         item.LoadingCount = currentIndex;
@@ -480,6 +510,30 @@ namespace NeoWatch.Loading
             item.LoadingCount = currentIndex;
 
             return new Result<Drawables>(drawables);
+        }
+
+        private Result<IDrawable> ReinterpretElement(string name, IExpression root, bool isList,
+            int outerIndex, IExpression outer, bool isNestedList, int innerIndex, IExpression leaf)
+        {
+            try
+            {
+                IExpression fresh = debugger.GetExpression(name);
+                if (!HasSameValidType(fresh, root)) return null;
+                if (isList) fresh = fresh.DataMembers?.GetAt(outerIndex);
+                if (!HasSameValidType(fresh, outer)) return null;
+                if (isNestedList) fresh = fresh.DataMembers?.GetAt(innerIndex);
+                return HasSameValidType(fresh, leaf) ? Interpreter.GetDrawable(fresh) : null;
+            }
+            catch (COMException)
+            {
+                // Preserve the original error rather than skip an element or reuse stale data.
+                return null;
+            }
+        }
+
+        private static bool HasSameValidType(IExpression current, IExpression previous)
+        {
+            return current != null && current.IsValidValue && current.Type == previous.Type;
         }
     }
 }

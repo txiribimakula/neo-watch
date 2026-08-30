@@ -79,6 +79,17 @@ namespace NeoWatch.Loading
             CurrentLoadCts.Cancel();
         }
 
+        public void ClearDebugSessionState()
+        {
+            CancelLoad();
+            Snapshot = null;
+            SetSelectedItemQuietly(null);
+            Drawables.Error = null;
+            Drawables.ResetAndNotify();
+            ClearPreviousDrawables();
+            discardPreviousOnNextLoad = true;
+        }
+
         private bool isVisible;
         /// <summary>
         /// A hidden item is not loaded at all, so showing one again has to ask for a reload —

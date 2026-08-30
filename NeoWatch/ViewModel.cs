@@ -48,17 +48,22 @@ namespace NeoWatch
             await Dispatcher.Yield(DispatcherPriority.Background);
         }
 
-        private static Task WaitForRenderFrame()
+        private static async Task WaitForRenderFrame(CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            EventHandler handler = null;
-            handler = (s, e) =>
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            EventHandler handler = (s, e) => tcs.TrySetResult(true);
+            CompositionTarget.Rendering += handler;
+            try
+            {
+                // A hidden tool window may not produce a frame. Give visible controls a chance
+                // to render, but never make loading depend on the window becoming visible.
+                await Task.WhenAny(tcs.Task, Task.Delay(100, cancellationToken));
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            finally
             {
                 CompositionTarget.Rendering -= handler;
-                tcs.SetResult(true);
-            };
-            CompositionTarget.Rendering += handler;
-            return tcs.Task;
+            }
         }
 
         public void OnEnterBreakMode(dbgEventReason reason, ref dbgExecutionAction executionAction)
@@ -66,6 +71,17 @@ namespace NeoWatch
             foreach (var watchItem in WatchItems)
             {
                 OnWatchItemReloadAsync(watchItem);
+            }
+        }
+
+        public void OnEnterDesignMode(dbgEventReason reason)
+        {
+            debugSessionVersion++;
+            Loader.ResetDebugSession();
+
+            foreach (WatchItem watchItem in WatchItems)
+            {
+                watchItem.ClearDebugSessionState();
             }
         }
 
@@ -86,6 +102,7 @@ namespace NeoWatch
         }
 
         private Loader Loader;
+        private int debugSessionVersion;
         private readonly SemaphoreSlim loadSemaphore = new SemaphoreSlim(1, 1);
         private GeometryDrawer geoDrawer;
         public ObservableCollection<WatchItem> WatchItems { get; set; }
@@ -562,6 +579,7 @@ namespace NeoWatch
 
         private async void OnWatchItemReloadAsync(WatchItem watchItem)
         {
+            int loadSessionVersion = debugSessionVersion;
             watchItem.Drawables.Error = null;
 
             // A hidden item is not drawn, so there is nothing to pay COM for. Showing it again
@@ -591,8 +609,6 @@ namespace NeoWatch
                 watchItem.LoadingTotal = 0;
                 IncrementLoading();
 
-                await BackgroundYield();
-
                 List<IDrawable> previousDrawables = discardPrevious
                     ? null
                     : new List<IDrawable>(watchItem.Drawables);
@@ -609,19 +625,24 @@ namespace NeoWatch
                     }
 
                     Result<Drawables> result;
-                    await loadSemaphore.WaitAsync(cts.Token);
+                    bool enteredLoadSemaphore = false;
                     try
                     {
+                        await loadSemaphore.WaitAsync(cts.Token);
+                        enteredLoadSemaphore = true;
                         // Wait for an actual WPF render frame so the row's cancel button is materialised
                         // and clickable before the synchronous loader work starts to monopolise the UI thread.
-                        await WaitForRenderFrame();
-                        await Dispatcher.Yield(DispatcherPriority.ContextIdle);
+                        await WaitForRenderFrame(cts.Token);
                         result = await Loader.Load(watchItem, cts.Token);
                     }
                     finally
                     {
-                        loadSemaphore.Release();
+                        if (enteredLoadSemaphore) loadSemaphore.Release();
                     }
+
+                    // A stopped session may complete an awaited debugger call after DesignMode
+                    // has already cleared the canvas. Never let that old result return to the UI.
+                    if (loadSessionVersion != debugSessionVersion) return;
 
                     var feedback = result.Feedback;
 

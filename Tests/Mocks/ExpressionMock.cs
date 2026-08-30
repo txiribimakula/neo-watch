@@ -24,6 +24,8 @@ namespace Tests.Mocks
 
         public string Name => throw new NotImplementedException();
 
+        public bool IsValidValue { get; set; } = true;
+
         public string Parse => getParse();
 
         public IExpressions DataMembers { get; set; }

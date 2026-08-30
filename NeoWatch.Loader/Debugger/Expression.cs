@@ -69,6 +69,8 @@ namespace NeoWatch.Loading
             }
         }
 
+        public bool IsValidValue => _expression.IsValidValue;
+
         // Not cached: only read on the fallback path when the main pattern fails, and it throws
         // COMException when the type has no Parse member, which is not worth memoising.
         public string Parse => _expression.DataMembers.Item("Parse").Value;

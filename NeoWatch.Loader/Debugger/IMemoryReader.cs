@@ -17,5 +17,8 @@ namespace NeoWatch.Loading
         /// failure — bad address, no process, unsupported API — without throwing.
         /// </summary>
         bool TryRead(ulong address, byte[] buffer);
+
+        /// <summary>Forgets all process-specific state when a debug session ends.</summary>
+        void Reset();
     }
 }

@@ -13,6 +13,16 @@ namespace NeoWatch.Loading
             _expressions = expressions;
         }
 
+        public IExpression GetAt(int index)
+        {
+            if (index < 0 || _expressions == null) return null;
+            string name = "[" + index + "]";
+            var child = _expressions.Item(name);
+            if (child == null) return null;
+            var expression = new Expression(child);
+            return expression.Name == name ? expression : null;
+        }
+
         public IEnumerator<IExpression> GetEnumerator()
         {
             var currentIndex = 0;

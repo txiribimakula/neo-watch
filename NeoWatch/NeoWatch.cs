@@ -34,6 +34,7 @@ namespace NeoWatch
                 DebuggerEvents.OnEnterBreakMode += viewModel.OnEnterBreakMode;
                 DebuggerEvents.OnEnterRunMode += NeoWatchCommand.Instance.RunHandler;
                 DebuggerEvents.OnEnterDesignMode += NeoWatchCommand.Instance.DesignHandler;
+                DebuggerEvents.OnEnterDesignMode += viewModel.OnEnterDesignMode;
             }
         }
     }
