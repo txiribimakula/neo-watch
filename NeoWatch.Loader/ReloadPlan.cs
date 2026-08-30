@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NeoWatch.Drawing;
 
 namespace NeoWatch.Loading
 {
@@ -9,13 +10,15 @@ namespace NeoWatch.Loading
     {
         private static readonly List<int> None = new List<int>();
 
-        private ReloadPlan(ReloadScope scope, List<int> changedIndices, List<int> addedIndices, int finalCount, MemorySnapshot newSnapshot)
+        private ReloadPlan(ReloadScope scope, List<int> changedIndices, List<int> addedIndices,
+            int finalCount, MemorySnapshot newSnapshot, List<DrawableReplacement> preparedReplacements)
         {
             Scope = scope;
             ChangedIndices = changedIndices ?? None;
             AddedIndices = addedIndices ?? None;
             FinalCount = finalCount;
             NewSnapshot = newSnapshot;
+            PreparedReplacements = preparedReplacements;
         }
 
         public ReloadScope Scope { get; private set; }
@@ -36,22 +39,35 @@ namespace NeoWatch.Loading
         /// </summary>
         public MemorySnapshot NewSnapshot { get; private set; }
 
+        /// <summary>
+        /// Drawables already decoded from the bytes read while planning. Avoids reading changed
+        /// linked-list nodes a second time merely to rebuild their geometry.
+        /// </summary>
+        public List<DrawableReplacement> PreparedReplacements { get; private set; }
+
         public bool IsUnchanged { get { return Scope == ReloadScope.Nothing; } }
         public bool IsPartial { get { return Scope == ReloadScope.Partial; } }
 
         public static ReloadPlan Everything()
         {
-            return new ReloadPlan(ReloadScope.Everything, null, null, 0, null);
+            return new ReloadPlan(ReloadScope.Everything, null, null, 0, null, null);
         }
 
         public static ReloadPlan Nothing()
         {
-            return new ReloadPlan(ReloadScope.Nothing, null, null, 0, null);
+            return new ReloadPlan(ReloadScope.Nothing, null, null, 0, null, null);
         }
 
         public static ReloadPlan Partial(List<int> changedIndices, List<int> addedIndices, int finalCount, MemorySnapshot newSnapshot)
         {
-            return new ReloadPlan(ReloadScope.Partial, changedIndices, addedIndices, finalCount, newSnapshot);
+            return Partial(changedIndices, addedIndices, finalCount, newSnapshot, null);
+        }
+
+        public static ReloadPlan Partial(List<int> changedIndices, List<int> addedIndices,
+            int finalCount, MemorySnapshot newSnapshot, List<DrawableReplacement> preparedReplacements)
+        {
+            return new ReloadPlan(ReloadScope.Partial, changedIndices, addedIndices, finalCount,
+                newSnapshot, preparedReplacements);
         }
     }
 

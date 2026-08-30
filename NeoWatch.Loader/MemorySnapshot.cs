@@ -6,9 +6,9 @@ namespace NeoWatch.Loading
     /// What a watch item looked like in memory at the end of its last load, so the next break can
     /// tell whether anything changed without walking the elements again.
     ///
-    /// Only the bytes are compared, never interpreted: that is why this works for types whose
-    /// NatVis synthesises values that do not exist in memory. What is drawn is a pure function of
-    /// this block, so identical bytes mean an identical drawing.
+    /// The normal NatVis path only compares these bytes. The experimental memory-blueprint path
+    /// also decodes them into drawables, then keeps the same buffer as its comparison baseline.
+    /// In either case, identical bytes mean an identical drawing.
     /// </summary>
     public class MemorySnapshot
     {
@@ -33,6 +33,9 @@ namespace NeoWatch.Loading
 
         /// <summary>Debuggee process that produced this snapshot. Zero means unspecified.</summary>
         public int ProcessId { get; private set; }
+
+        // Kept separate from NatVis snapshots: their container strings and reload paths differ.
+        public string ContiguousBlueprintType { get; set; }
 
         /// <summary>Address of the first element. Changes when the container reallocates.</summary>
         public ulong Address { get; private set; }
