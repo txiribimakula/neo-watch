@@ -47,11 +47,17 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InterpreterUnitTest.cs" />
     <Compile Include="LoaderUnitTest.cs" />
     <Compile Include="ContiguousMemoryLoaderTests.cs" />
+    <Compile Include="DemoMemoryBlueprintTests.cs" />
+    <Compile Include="BlueprintEditorTests.cs" />
+    <Compile Include="..\NeoWatch\Settings\BlueprintEditorModel.cs">
+      <Link>Settings\BlueprintEditorModel.cs</Link>
+    </Compile>
     <Compile Include="Mocks\DebuggerMock.cs" />
     <Compile Include="Mocks\ExpressionMock.cs" />
     <Compile Include="Mocks\ExpressionsMock.cs" />
@@ -61,6 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="..\NeoWatch\registration.json">
+      <LogicalName>DemoBlueprintSettings.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NeoWatch.Common\NeoWatch.Common.csproj">
