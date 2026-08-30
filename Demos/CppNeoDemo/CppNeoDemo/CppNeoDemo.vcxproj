@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CppNeoDemo.cpp" />
+    <ClCompile Include="DemoScenarios.cpp" />
     <ClCompile Include="DemoArcSegment.cpp" />
     <ClCompile Include="DemoLineSegment.cpp" />
     <ClCompile Include="DemoListOfItself.cpp" />
@@ -145,6 +146,8 @@
     <ClInclude Include="DemoSegment.h" />
     <ClInclude Include="DemoSegmentChainNode.h" />
     <ClInclude Include="DemoStressTest.h" />
+    <ClInclude Include="DemoCheckScenario.h" />
+    <ClInclude Include="DemoScenarios.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="demo.natvis" />
