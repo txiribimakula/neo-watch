@@ -28,6 +28,16 @@
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         <converters:IntOrOneConverter x:Key="IntOrOneConverter"/>
         <converters:PositiveIntToVisibilityConverter x:Key="PositiveIntToVisibilityConverter"/>
+        <Style x:Key="WatchItemCheckBoxStyle" TargetType="CheckBox" BasedOn="{StaticResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding}" Value="{x:Static CollectionView.NewItemPlaceholder}">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.35"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -401,19 +411,11 @@
                             <DataTemplate>
                                 <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
                                           ToolTip="Show previous state"
-                                          IsEnabled="{Binding HasPreviousDrawables}"
-                                          IsChecked="{Binding IsShowingPrevious, Mode=OneWay}"
+                                          IsEnabled="{Binding HasPreviousDrawables, FallbackValue=False}"
+                                          IsChecked="{Binding IsShowingPrevious, Mode=OneWay, FallbackValue=False}"
+                                          Style="{StaticResource WatchItemCheckBoxStyle}"
                                           Command="{Binding DataContext.TogglePreviousCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                           CommandParameter="{Binding}">
-                                    <CheckBox.Style>
-                                        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsEnabled" Value="False">
-                                                    <Setter Property="Opacity" Value="0.35"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </CheckBox.Style>
                                 </CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -432,8 +434,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{DynamicResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
+                                    IsChecked="{Binding Path=IsVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=False}"
+                                    Style="{StaticResource WatchItemCheckBoxStyle}">
                                 </CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -454,8 +456,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsLoading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    Style="{DynamicResource {x:Static shell:VsResourceKeys.CheckBoxStyleKey}}">
+                                    IsChecked="{Binding Path=IsLoading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=False}"
+                                    Style="{StaticResource WatchItemCheckBoxStyle}">
                                 </CheckBox>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
