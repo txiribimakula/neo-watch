@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InterpreterUnitTest.cs" />
+    <Compile Include="CanvasSceneTests.cs" />
     <Compile Include="LoaderUnitTest.cs" />
     <Compile Include="ContiguousMemoryLoaderTests.cs" />
     <Compile Include="DemoMemoryBlueprintTests.cs" />
