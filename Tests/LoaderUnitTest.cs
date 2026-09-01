@@ -40,6 +40,44 @@ namespace Tests
             }
 
             [TestMethod]
+            public void empty_row_controls_are_disabled_and_unchecked_until_it_has_a_name()
+            {
+                var item = new WatchItem();
+
+                Assert.IsFalse(item.IsRowConfigured);
+                Assert.IsFalse(item.IsVisibleControlChecked);
+                Assert.IsFalse(item.IsLoadingControlChecked);
+                Assert.IsTrue(item.IsVisible);
+                Assert.IsTrue(item.IsLoading);
+
+                item.Name = "points";
+
+                Assert.IsTrue(item.IsRowConfigured);
+                Assert.IsTrue(item.IsVisibleControlChecked);
+                Assert.IsTrue(item.IsLoadingControlChecked);
+            }
+
+            [TestMethod]
+            public void row_control_values_follow_name_and_update_the_underlying_options()
+            {
+                var item = new WatchItem { Name = "points" };
+                var changes = new List<string>();
+                item.PropertyChanged += (sender, args) => changes.Add(args.PropertyName);
+
+                item.IsVisibleControlChecked = false;
+                item.IsLoadingControlChecked = false;
+                item.Name = null;
+
+                Assert.IsFalse(item.IsVisible);
+                Assert.IsFalse(item.IsLoading);
+                Assert.IsFalse(item.IsVisibleControlChecked);
+                Assert.IsFalse(item.IsLoadingControlChecked);
+                CollectionAssert.Contains(changes, nameof(WatchItem.IsVisibleControlChecked));
+                CollectionAssert.Contains(changes, nameof(WatchItem.IsLoadingControlChecked));
+                CollectionAssert.Contains(changes, nameof(WatchItem.IsRowConfigured));
+            }
+
+            [TestMethod]
             public async Task linked_list_mode_rejects_invalid_root_without_natvis_expansion()
             {
                 bool requestedAutoExpansion = true;

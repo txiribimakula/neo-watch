@@ -103,10 +103,15 @@ namespace NeoWatch.Loading
                 bool wasVisible = isVisible;
                 isVisible = value;
                 OnPropertyChanged(nameof(IsVisible));
+                OnPropertyChanged(nameof(IsVisibleControlChecked));
                 if (isVisible && !wasVisible) {
                     IsVisibleActivated?.Invoke(this);
                 }
             }
+        }
+        public bool IsVisibleControlChecked {
+            get { return IsRowConfigured && IsVisible; }
+            set { IsVisible = value; }
         }
         public event WatchItemEventHandler IsVisibleActivated;
 
@@ -115,10 +120,16 @@ namespace NeoWatch.Loading
             get { return isLoading; }
             set {
                 isLoading = value;
+                OnPropertyChanged(nameof(IsLoading));
+                OnPropertyChanged(nameof(IsLoadingControlChecked));
                 if(isLoading) {
                     IsLoadingActivated?.Invoke(this);
                 }
             }
+        }
+        public bool IsLoadingControlChecked {
+            get { return IsRowConfigured && IsLoading; }
+            set { IsLoading = value; }
         }
         public event WatchItemEventHandler IsLoadingActivated;
 
@@ -132,9 +143,14 @@ namespace NeoWatch.Loading
                     discardPreviousOnNextLoad = true;
                 }
                 name = value;
+                OnPropertyChanged(nameof(Name));
+                OnPropertyChanged(nameof(IsRowConfigured));
+                OnPropertyChanged(nameof(IsVisibleControlChecked));
+                OnPropertyChanged(nameof(IsLoadingControlChecked));
                 OnNameChanged();
             }
         }
+        public bool IsRowConfigured { get { return !string.IsNullOrWhiteSpace(name); } }
 
         private string color;
         public string Color {
