@@ -434,7 +434,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=False}"
+                                    IsEnabled="{Binding IsRowConfigured, FallbackValue=False}"
+                                    IsChecked="{Binding Path=IsVisibleControlChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=False}"
                                     Style="{StaticResource WatchItemCheckBoxStyle}">
                                 </CheckBox>
                             </DataTemplate>
@@ -456,7 +457,8 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox x:Name="select" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                    IsChecked="{Binding Path=IsLoading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=False}"
+                                    IsEnabled="{Binding IsRowConfigured, FallbackValue=False}"
+                                    IsChecked="{Binding Path=IsLoadingControlChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=False}"
                                     Style="{StaticResource WatchItemCheckBoxStyle}">
                                 </CheckBox>
                             </DataTemplate>
