@@ -95,6 +95,12 @@
             </Canvas>
             <TextBlock Foreground="HotPink" FontWeight="Bold" Text="{Binding Ruler, Converter={StaticResource RulerToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 15"/>
             <TextBlock Text="{Binding CurrentCursorPoint, Converter={StaticResource PointToTextConverter}}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0, 0, 5, 3"/>
+            <ContentControl Content="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
             <ItemsControl ItemsSource="{Binding WatchItems}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -186,6 +192,19 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsGpuCanvasActive}" Value="True">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value><DataTemplate><local:GpuCanvas/></DataTemplate></Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
             <Canvas ClipToBounds="True">
                 <Path Opacity="1" Stroke="HotPink" StrokeThickness="2" Data="{Binding Ruler.TransformedGeometry, Converter={StaticResource SegmentToPathConverter}, Mode=OneWay}"/>
             </Canvas>

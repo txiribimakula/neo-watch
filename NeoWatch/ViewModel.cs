@@ -13,12 +13,41 @@ using System.Windows.Threading;
 using NeoWatch.Drawing;
 using NeoWatch.Loading;
 using NeoWatch.Common;
+using NeoWatch.Drawing.Scene;
+using NeoWatch.Rendering;
 
 namespace NeoWatch
 {
     public class ViewModel : INotifyPropertyChanged
     {
         public bool IsSenseShown { get; set; } = false;
+
+        public bool IsGpuCanvasActive { get; private set; }
+        public SceneCamera CanvasCamera => geoDrawer == null ? default(SceneCamera)
+            : SceneCamera.From(geoDrawer.DrawableVisitor.CoordinateSystem);
+
+        public void ConfigureGpuCanvas(bool enabled)
+        {
+            if (IsGpuCanvasActive == enabled) return;
+            IsGpuCanvasActive = enabled;
+            if (geoDrawer != null) TransformCanvasGeometries();
+            OnPropertyChanged(nameof(IsGpuCanvasActive));
+        }
+
+        public void UseCanvasFallback(string reason)
+        {
+            Microsoft.VisualStudio.Shell.ActivityLog.LogWarning("Neo Watch", "Canvas GPU fallback: " + reason);
+            ConfigureGpuCanvas(false);
+        }
+
+        public void RecordCanvasFrame(double preparationMs, FrameStatistics frame)
+        {
+            // GPU completion is not the same as WPF/DWM presentation. Keep the stages separate.
+            Trace.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "NeoWatch.Canvas scene={0:F2} upload={1:F2} gpuComplete={2:F2} uploadedBlocks={3} residentBlocks={4}",
+                preparationMs, frame.UploadMilliseconds, frame.SubmitAndWaitMilliseconds,
+                frame.UploadedBlocks, frame.ResidentBlocks));
+        }
 
         private bool canUserAddRows = true;
         public bool CanUserAddRows
@@ -162,6 +191,14 @@ namespace NeoWatch
         public void OnLoaded(object sender, RoutedEventArgs e)
         {
             FrameworkElement frameworkElement = (FrameworkElement)sender;
+            if (frameworkElement.ActualWidth <= 0 || frameworkElement.ActualHeight <= 0) return;
+
+            if (geoDrawer != null)
+            {
+                geoDrawer.DrawableVisitor.CoordinateSystem.ReCalculate((float)frameworkElement.ActualWidth, (float)frameworkElement.ActualHeight);
+                TransformCanvasGeometries();
+                return;
+            }
 
             ICoordinateSystem coordinateSystem = new CoordinateSystem((float)frameworkElement.ActualWidth, (float)frameworkElement.ActualHeight, new Box(-10, 10, -10, 10));
 
@@ -176,6 +213,8 @@ namespace NeoWatch
             OnPropertyChanged(nameof(Axes));
 
             AutoFitCommand = new RelayCommand(parameter => AutoFit((float)frameworkElement.ActualWidth / (float)frameworkElement.ActualHeight));
+            OnPropertyChanged(nameof(AutoFitCommand));
+            OnPropertyChanged(nameof(CanvasCamera));
         }
 
         private void ToggleSense()
@@ -188,7 +227,7 @@ namespace NeoWatch
         {
             if (!watchItem.SetShowingPrevious(!watchItem.IsShowingPrevious)) return;
 
-            if (watchItem.IsShowingPrevious && geoDrawer != null)
+            if (watchItem.IsShowingPrevious && geoDrawer != null && !IsGpuCanvasActive)
             {
                 geoDrawer.TransformGeometries(watchItem.PreviousDrawables);
             }
@@ -265,7 +304,7 @@ namespace NeoWatch
 
         private void TransformCanvasGeometries()
         {
-            foreach (var watchItem in WatchItems)
+            if (!IsGpuCanvasActive) foreach (var watchItem in WatchItems)
             {
                 if (!watchItem.IsVisible) continue;
                 geoDrawer.TransformGeometries(watchItem.Drawables);
@@ -274,6 +313,7 @@ namespace NeoWatch
             }
             geoDrawer.TransformGeometries(Axes);
             OnPropertyChanged(nameof(Axes));
+            OnPropertyChanged(nameof(CanvasCamera));
         }
 
         private void TransformPreviousIfShown(WatchItem watchItem)
@@ -339,18 +379,12 @@ namespace NeoWatch
 
         public void OnSizeChanged(object sender, SizeChangedEventArgs args)
         {
+            if (args.NewSize.Width <= 0 || args.NewSize.Height <= 0) return;
+            if (geoDrawer == null) { OnLoaded(sender, new RoutedEventArgs()); return; }
             geoDrawer.DrawableVisitor.CoordinateSystem.ReCalculate((float)args.NewSize.Width, (float)args.NewSize.Height);
-            foreach (var watchItem in WatchItems)
-            {
-                if (!watchItem.IsVisible) continue;
-                geoDrawer.TransformGeometries(watchItem.Drawables);
-                watchItem.Drawables.NotifyGeometriesChanged();
-                TransformPreviousIfShown(watchItem);
-            }
             Axes.Item1.Box = new Box(0, (float)args.NewSize.Width, 0, 0);
             Axes.Item2.Box = new Box(0, 0, 0, (float)args.NewSize.Height);
-            geoDrawer.TransformGeometries(Axes);
-            OnPropertyChanged(nameof(Axes));
+            TransformCanvasGeometries();
         }
 
         public void OnMouseDown(object sender, MouseButtonEventArgs e)
@@ -422,15 +456,7 @@ namespace NeoWatch
             float incrementalX = currentCanvasCursorPoint.X - lastCanvasClickedPoint.X;
             float incrementalY = currentCanvasCursorPoint.Y - lastCanvasClickedPoint.Y;
             geoDrawer.DrawableVisitor.CoordinateSystem.Offset = new Geometries.Point(incrementalX, incrementalY);
-            foreach (var watchItem in WatchItems)
-            {
-                if (!watchItem.IsVisible) continue;
-                geoDrawer.TransformGeometries(watchItem.Drawables);
-                watchItem.Drawables.NotifyGeometriesChanged();
-                TransformPreviousIfShown(watchItem);
-            }
-            geoDrawer.TransformGeometries(Axes);
-            OnPropertyChanged(nameof(Axes));
+            TransformCanvasGeometries();
             lastCanvasClickedPoint = currentCanvasCursorPoint;
         }
 
@@ -493,15 +519,7 @@ namespace NeoWatch
 
             geoDrawer.DrawableVisitor.CoordinateSystem.Offset = new Geometries.Point((float)cursorWorldPoint.X - newWorldPointX, (float)cursorWorldPoint.Y - newWorldPointY);
 
-            foreach (var watchItem in WatchItems)
-            {
-                if (!watchItem.IsVisible) continue;
-                geoDrawer.TransformGeometries(watchItem.Drawables);
-                watchItem.Drawables.NotifyGeometriesChanged();
-                TransformPreviousIfShown(watchItem);
-            }
-            geoDrawer.TransformGeometries(Axes);
-            OnPropertyChanged(nameof(Axes));
+            TransformCanvasGeometries();
             if (isMeasuring)
             {
                 geoDrawer.TransformGeometry(Ruler);
@@ -517,6 +535,7 @@ namespace NeoWatch
         private bool TryReloadChangedElements(WatchItem watchItem, ReloadPlan plan)
         {
             var previousDrawables = new List<IDrawable>(watchItem.Drawables);
+            var previousScene = IsGpuCanvasActive ? watchItem.Drawables.CaptureScene() : null;
 
             List<DrawableReplacement> replacements = Loader.ReloadElements(watchItem, plan.ChangedIndices, plan);
             if (replacements == null) return false;
@@ -530,11 +549,11 @@ namespace NeoWatch
                 appended.Add(addition.Drawable);
             }
 
-            foreach (var replacement in replacements)
+            if (!IsGpuCanvasActive) foreach (var replacement in replacements)
             {
                 geoDrawer.TransformGeometry(replacement.Drawable);
             }
-            foreach (var element in appended)
+            if (!IsGpuCanvasActive) foreach (var element in appended)
             {
                 geoDrawer.TransformGeometry(element);
             }
@@ -543,7 +562,7 @@ namespace NeoWatch
             // selection has to follow the index, because the object it pointed at is gone.
             int selectedIndex = watchItem.SelectedItem == null
                 ? -1
-                : watchItem.Drawables.IndexOf(watchItem.SelectedItem);
+                : watchItem.Drawables.IndexOfReference(watchItem.SelectedItem);
 
             watchItem.Drawables.ApplyPartialAndNotify(replacements, appended, plan.FinalCount);
 
@@ -563,17 +582,17 @@ namespace NeoWatch
             // Only now that it landed does the freshly read block become the new baseline.
             Loader.CommitSnapshot(watchItem, plan);
 
-            RememberPreviousIfChanged(watchItem, previousDrawables);
+            RememberPreviousIfChanged(watchItem, previousDrawables, previousScene);
             watchItem.Drawables.NotifyGeometriesChanged();
             return true;
         }
 
-        private static void RememberPreviousIfChanged(WatchItem watchItem, IList<IDrawable> previousDrawables)
+        private static void RememberPreviousIfChanged(WatchItem watchItem, IList<IDrawable> previousDrawables, SceneSnapshot previousScene = null)
         {
             if (previousDrawables == null || previousDrawables.Count == 0) return;
             if (DrawablesAreEquivalent(previousDrawables, watchItem.Drawables)) return;
 
-            watchItem.RememberPreviousDrawables(previousDrawables);
+            watchItem.RememberPreviousDrawables(previousDrawables, previousScene);
         }
 
         private static bool DrawablesAreEquivalent(IList<IDrawable> previous, IList<IDrawable> current)
@@ -623,6 +642,7 @@ namespace NeoWatch
                 List<IDrawable> previousDrawables = discardPrevious
                     ? null
                     : new List<IDrawable>(watchItem.Drawables);
+                var previousScene = !discardPrevious && IsGpuCanvasActive ? watchItem.Drawables.CaptureScene() : null;
 
                 // Clear the selection before the reset so that the ComboBox writing null back
                 // through its two-way binding finds nothing to change, and asks for no redraw.
@@ -653,7 +673,8 @@ namespace NeoWatch
 
                     // A stopped session may complete an awaited debugger call after DesignMode
                     // has already cleared the canvas. Never let that old result return to the UI.
-                    if (loadSessionVersion != debugSessionVersion) return;
+                    if (loadSessionVersion != debugSessionVersion || !ReferenceEquals(watchItem.CurrentLoadCts, cts)) return;
+                    cts.Token.ThrowIfCancellationRequested();
 
                     var feedback = result.Feedback;
 
@@ -665,11 +686,22 @@ namespace NeoWatch
                     if (result.Data != null && result.Data.Count > 0)
                     {
                         var drawables = result.Data;
-                        foreach (var drawable in drawables)
+                        SceneSnapshot preparedScene = null;
+                        if (IsGpuCanvasActive)
+                        {
+                            // These are newly materialized domain values, not live DTE expressions.
+                            // Nothing publishes or mutates them until this preparation finishes.
+                            preparedScene = await Task.Run(() => SceneSnapshot.Capture(drawables,
+                                cancellationToken: cts.Token), cts.Token);
+                            if (loadSessionVersion != debugSessionVersion || !ReferenceEquals(watchItem.CurrentLoadCts, cts)) return;
+                            cts.Token.ThrowIfCancellationRequested();
+                        }
+                        if (!IsGpuCanvasActive) foreach (var drawable in drawables)
                         {
                             geoDrawer.TransformGeometry(drawable);
                         }
                         watchItem.Drawables.AddAndNotify(drawables);
+                        watchItem.Drawables.ShareScene(preparedScene);
                         // Selection first, redraw once: both feed the same converters, so
                         // applying the selection quietly keeps this to a single pass per layer.
                         watchItem.SetSelectedItemQuietly(watchItem.Drawables[0]);
@@ -682,27 +714,28 @@ namespace NeoWatch
 
                     if (!feedback.HasError && result.Data != null)
                     {
-                        RememberPreviousIfChanged(watchItem, previousDrawables);
+                        RememberPreviousIfChanged(watchItem, previousDrawables, previousScene);
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    watchItem.Drawables.Error = new Feedback(FeedbackType.Cancelled).Detail;
+                    if (loadSessionVersion == debugSessionVersion && ReferenceEquals(watchItem.CurrentLoadCts, cts))
+                        watchItem.Drawables.Error = new Feedback(FeedbackType.Cancelled).Detail;
                 }
                 catch (NullReferenceException ex)
                 {
-                    watchItem.Drawables.Error = "Loader item caused: " + ex.Message;
+                    if (loadSessionVersion == debugSessionVersion && ReferenceEquals(watchItem.CurrentLoadCts, cts))
+                        watchItem.Drawables.Error = "Loader item caused: " + ex.Message;
                 }
                 finally
                 {
-                    // Stopped in the finally so the total covers the drawables actually reaching
-                    // the canvas, and still lands on cancel or error.
-                    watchItem.StopLoadClock();
-                    watchItem.IsBusy = false;
-                    watchItem.IsCancelling = false;
+                    // This clock covers loading and scene preparation, not WPF/DWM presentation.
                     DecrementLoading();
                     if (ReferenceEquals(watchItem.CurrentLoadCts, cts))
                     {
+                        watchItem.StopLoadClock();
+                        watchItem.IsBusy = false;
+                        watchItem.IsCancelling = false;
                         watchItem.CurrentLoadCts = null;
                     }
                     cts.Dispose();

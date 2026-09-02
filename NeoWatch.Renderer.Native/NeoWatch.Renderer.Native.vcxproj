@@ -1,0 +1,54 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B83CA3AB-2C9F-456A-94A9-A9793CB194CF}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '18.0'">v145</PlatformToolset>
+    <PlatformToolset Condition="'$(PlatformToolset)' == ''">v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(MSBuildThisFileDirectory)bin\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildThisFileDirectory)obj\$(Configuration)\</IntDir>
+    <TargetName>NeoWatch.Renderer.Native</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel><SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode><LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary><Optimization>MaxSpeed</Optimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>d3d11.lib;d3d9.lib;dxgi.lib;d2d1.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <FxCompile>
+      <ShaderModel>5.0</ShaderModel><EnableDebuggingInformation>false</EnableDebuggingInformation>
+      <AdditionalOptions>/O3 %(AdditionalOptions)</AdditionalOptions>
+      <HeaderFileOutput>$(IntDir)%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput>$(IntDir)%(Filename).cso</ObjectFileOutput>
+      <VariableName>%(Filename)Bytes</VariableName>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup><ClCompile Include="Renderer.cpp" /></ItemGroup>
+  <ItemGroup><None Include="Shaders\Canvas.hlsli" /></ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\GeometryVS.hlsl"><ShaderType>Vertex</ShaderType><EntryPointName>VS</EntryPointName></FxCompile>
+    <FxCompile Include="Shaders\GeometryPS.hlsl"><ShaderType>Pixel</ShaderType><EntryPointName>PS</EntryPointName></FxCompile>
+    <FxCompile Include="Shaders\CompositeVS.hlsl"><ShaderType>Vertex</ShaderType><EntryPointName>FullVS</EntryPointName></FxCompile>
+    <FxCompile Include="Shaders\CompositePS.hlsl"><ShaderType>Pixel</ShaderType><EntryPointName>CompositePS</EntryPointName></FxCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

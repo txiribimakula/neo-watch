@@ -1,6 +1,21 @@
 {
   "$schema": "https://aka.ms/unified-settings-experience/registration/schema",
   "properties": {
+    "neoWatch.general.enableGpuCanvas": {
+      "type": "boolean",
+      "title": "Enable GPU canvas (experimental)",
+      "description": "Uses a persistent Direct3D canvas. Falls back to WPF if the device or geometry is unsupported.",
+      "default": false,
+      "order": 5,
+      "migration": {
+        "pass": {
+          "input": {
+            "store": "VsUserSettingsRegistry",
+            "path": "DialogPage\\NeoWatch.BlueprintsOptionPage\\EnableGpuCanvas"
+          }
+        }
+      }
+    },
     "neoWatch.general.enableLinkedListMemoryLoader": {
       "type": "boolean",
       "title": "Enable memory blueprint loader",

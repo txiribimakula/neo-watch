@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework><LangVersion>7.3</LangVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NeoWatch.Drawer\NeoWatch.Drawing.csproj" />
+    <Reference Include="PresentationCore" /><Reference Include="WindowsBase" />
+  </ItemGroup>
+  <Target Name="BuildNativeCanvas" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true' and '$(OS)' == 'Windows_NT'">
+    <MSBuild Projects="..\NeoWatch.Renderer.Native\NeoWatch.Renderer.Native.vcxproj" Targets="Build"
+      Properties="Configuration=$(Configuration);Platform=x64" />
+  </Target>
+  <ItemGroup>
+    <Content Include="..\NeoWatch.Renderer.Native\bin\$(Configuration)\NeoWatch.Renderer.Native.dll"
+      Link="NeoWatch.Renderer.Native.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
