@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using NeoWatch.Drawing;
-using NeoWatch.Loading;
 using GeoPoint = NeoWatch.Geometries.Point;
 using GeoLineSegment = NeoWatch.Geometries.LineSegment;
 using GeoArcSegment = NeoWatch.Geometries.ArcSegment;
