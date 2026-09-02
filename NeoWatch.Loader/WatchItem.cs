@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using NeoWatch.Drawing;
+using NeoWatch.Drawing.Scene;
+using System.Runtime.CompilerServices;
 
 namespace NeoWatch.Loading
 {
@@ -170,8 +172,8 @@ namespace NeoWatch.Loading
         }
 
         private DrawableCollection previousDrawables;
-        private readonly List<IDrawable> changedCurrentDrawables = new List<IDrawable>();
-        private readonly List<IDrawable> changedPreviousDrawables = new List<IDrawable>();
+        private readonly HashSet<IDrawable> changedCurrentDrawables = new HashSet<IDrawable>(ReferenceComparer.Instance);
+        private readonly HashSet<IDrawable> changedPreviousDrawables = new HashSet<IDrawable>(ReferenceComparer.Instance);
 
         public DrawableCollection PreviousDrawables {
             get { return previousDrawables; }
@@ -206,12 +208,13 @@ namespace NeoWatch.Loading
             return discard;
         }
 
-        public void RememberPreviousDrawables(IList<IDrawable> previous)
+        public void RememberPreviousDrawables(IList<IDrawable> previous, SceneSnapshot previousScene = null)
         {
             FindChangedDrawables(previous, Drawables);
 
             var snapshot = new DrawableCollection();
             snapshot.AddAndNotify(new List<IDrawable>(previous));
+            snapshot.ShareScene(previousScene);
 
             isShowingPrevious = false;
             PreviousDrawables = snapshot;
@@ -235,7 +238,7 @@ namespace NeoWatch.Loading
             if (isShowingPrevious == value) return false;
 
             DrawableCollection source = DisplayedDrawables;
-            int selectedIndex = selectedItem == null ? -1 : source.IndexOf(selectedItem);
+            int selectedIndex = source.IndexOfReference(selectedItem);
 
             isShowingPrevious = value;
             DrawableCollection target = DisplayedDrawables;
@@ -261,8 +264,7 @@ namespace NeoWatch.Loading
 
         public bool IsDrawableChanged(IDrawable drawable)
         {
-            return ContainsReference(changedCurrentDrawables, drawable)
-                || ContainsReference(changedPreviousDrawables, drawable);
+            return changedCurrentDrawables.Contains(drawable) || changedPreviousDrawables.Contains(drawable);
         }
 
         private void FindChangedDrawables(IList<IDrawable> previous, IList<IDrawable> current)
@@ -289,14 +291,11 @@ namespace NeoWatch.Loading
             }
         }
 
-        private static bool ContainsReference(IList<IDrawable> drawables, IDrawable candidate)
+        private sealed class ReferenceComparer : IEqualityComparer<IDrawable>
         {
-            for (int index = 0; index < drawables.Count; index++)
-            {
-                if (ReferenceEquals(drawables[index], candidate)) return true;
-            }
-
-            return false;
+            public static readonly ReferenceComparer Instance = new ReferenceComparer();
+            public bool Equals(IDrawable x, IDrawable y) => ReferenceEquals(x, y);
+            public int GetHashCode(IDrawable item) => RuntimeHelpers.GetHashCode(item);
         }
 
         private IDrawable selectedItem;
@@ -340,11 +339,11 @@ namespace NeoWatch.Loading
             int selectedIndex = -1;
             if (selectedItem != null && drawables != null)
             {
-                selectedIndex = drawables.IndexOf(selectedItem);
+                selectedIndex = drawables.IndexOfReference(selectedItem);
             }
             if (selectedIndex < 0 && selectedItem != null && previousDrawables != null)
             {
-                selectedIndex = previousDrawables.IndexOf(selectedItem);
+                selectedIndex = previousDrawables.IndexOfReference(selectedItem);
             }
 
             if (drawables != null)

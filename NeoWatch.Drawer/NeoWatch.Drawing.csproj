@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Scene\ScenePrimitive.cs" />
+    <Compile Include="Scene\SceneSnapshot.cs" />
+    <Compile Include="Scene\SceneCamera.cs" />
     <Compile Include="Abstractions\IBox.cs" />
     <Compile Include="Abstractions\IBoxable.cs" />
     <Compile Include="Abstractions\IColor.cs" />
