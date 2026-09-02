@@ -39,6 +39,12 @@ namespace NeoWatch.Drawing
             TransformedGeometry = transformedSegment;
 
             var transformedSegmentLength = Math.Sqrt(Math.Pow(transformedSegment.FinalPoint.X - transformedSegment.InitialPoint.X, 2) + Math.Pow(transformedSegment.FinalPoint.Y - transformedSegment.InitialPoint.Y, 2));
+            if (transformedSegmentLength == 0)
+            {
+                TransformedCapGeometry = null;
+                OnPropertyChanged(nameof(TransformedCapGeometry));
+                return;
+            }
             var capRatio = 2 / transformedSegmentLength;
             var newCapSegmentPoint = new Point(
                 (float)((1 - capRatio) * transformedSegment.FinalPoint.X + capRatio * transformedSegment.InitialPoint.X),

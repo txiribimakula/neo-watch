@@ -35,7 +35,6 @@ namespace NeoWatch.Drawing
         public IBox Box { get; set; }
 
         public void TransformGeometry(IDrawableVisitor visitor) {
-            var transformedPoint = visitor.GetTransformedPoint(this);
             TransformedGeometry = visitor.GetTransformedPoint(this);
         }
 
