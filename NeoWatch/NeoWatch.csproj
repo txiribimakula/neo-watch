@@ -70,6 +70,7 @@
     <Compile Include="RelayCommand.cs" />
     <Compile Include="Debugger\DkmMemoryReader.cs" />
     <Compile Include="ViewModel.cs" />
+    <Compile Include="Views\GpuCanvas.cs" />
     <Compile Include="Views\NeoWatchWindow.xaml.cs">
       <DependentUpon>NeoWatchWindow.xaml</DependentUpon>
     </Compile>
@@ -102,6 +103,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NeoWatch.Rendering\NeoWatch.Rendering.csproj">
+      <Name>NeoWatch.Rendering</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NeoWatch.Common\NeoWatch.Common.csproj">
       <Project>{249E4004-4DF0-4C78-8B06-1FAD0FCF4DCA}</Project>
       <Name>NeoWatch.Common</Name>
@@ -139,6 +143,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\NeoWatch.Renderer.Native\bin\$(Configuration)\NeoWatch.Renderer.Native.dll">
+      <Link>NeoWatch.Renderer.Native.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="registration.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

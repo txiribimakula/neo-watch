@@ -13,6 +13,7 @@ namespace NeoWatch
     {
         private const string MemoryLoaderEnabledMoniker = "neoWatch.general.enableLinkedListMemoryLoader";
         private const string MemoryLoaderBlueprintsMoniker = "neoWatch.general.linkedListMemoryBlueprints";
+        private const string GpuCanvasMoniker = "neoWatch.general.enableGpuCanvas";
 
         [Guid("E3684F31-344E-42EA-9047-B620FDC7AC25")]
         private sealed class UnifiedSettingsService
@@ -72,7 +73,7 @@ namespace NeoWatch
                     unifiedSettingsReader = settingsManager.GetReader();
                     unifiedSettingsSubscription = unifiedSettingsReader.SubscribeToChanges(
                         OnUnifiedSettingsChanged,
-                        new[] { MemoryLoaderEnabledMoniker, MemoryLoaderBlueprintsMoniker });
+                        new[] { MemoryLoaderEnabledMoniker, MemoryLoaderBlueprintsMoniker, GpuCanvasMoniker });
                     ApplyUnifiedMemoryLoaderOptions();
                     return;
                 }
@@ -107,6 +108,7 @@ namespace NeoWatch
                 bool enabled = unifiedSettingsReader.GetValueOrThrow<bool>(MemoryLoaderEnabledMoniker);
                 string blueprints = unifiedSettingsReader.GetValueOrThrow<string>(MemoryLoaderBlueprintsMoniker);
                 viewModel.ConfigureLinkedListMemoryLoading(enabled, blueprints);
+                viewModel.ConfigureGpuCanvas(unifiedSettingsReader.GetValueOrThrow<bool>(GpuCanvasMoniker));
             }
             catch (Exception exception)
             {
@@ -121,6 +123,7 @@ namespace NeoWatch
             if (viewModel == null || optionsPage == null) return;
             viewModel.ConfigureLinkedListMemoryLoading(optionsPage.EnableLinkedListMemoryLoader,
                 optionsPage.LinkedListMemoryBlueprints);
+            viewModel.ConfigureGpuCanvas(optionsPage.EnableGpuCanvas);
         }
 
         protected override void Dispose(bool disposing)

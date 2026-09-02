@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net472</TargetFramework><LangVersion>7.3</LangVersion><PlatformTarget>x64</PlatformTarget><AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NeoWatch.Rendering\NeoWatch.Rendering.csproj" />
+    <ProjectReference Include="..\..\NeoWatch.Drawer\NeoWatch.Drawing.csproj" />
+    <Reference Include="PresentationFramework" /><Reference Include="PresentationCore" /><Reference Include="WindowsBase" />
+    <Compile Include="..\..\NeoWatch\Converters\DrawablesToGeometryConverter.cs" Link="Reference\DrawablesToGeometryConverter.cs" />
+  </ItemGroup>
+</Project>

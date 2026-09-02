@@ -150,6 +150,12 @@ Arc.SweepAngle=demoSweepAngle|Float64";
         [DefaultValue(false)]
         public bool EnableLinkedListMemoryLoader { get; set; }
 
+        [Category("Experimental canvas")]
+        [DisplayName("Enable GPU canvas")]
+        [Description("Uses a persistent Direct3D canvas. Falls back to WPF if the device or geometry is unsupported.")]
+        [DefaultValue(false)]
+        public bool EnableGpuCanvas { get; set; }
+
         [Category("Experimental memory loader")]
         [DisplayName("Blueprints")]
         [Description("INI blueprints. Member values use path|Float32, Float64, Int32, UInt32, Int64 or UInt64.")]
