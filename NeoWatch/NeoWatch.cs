@@ -5,14 +5,14 @@ using System;
 using System.Runtime.InteropServices;
 using NeoWatch.Debugging;
 using NeoWatch.Loading;
+using NeoWatch.Settings;
 
 namespace NeoWatch
 {
     [Guid("6FD34CCE-6A7A-4016-878E-6A639BD79D69")]
     class NeoWatch : ToolWindowPane
     {
-        private const string MemoryLoaderEnabledMoniker = "neoWatch.general.enableLinkedListMemoryLoader";
-        private const string MemoryLoaderBlueprintsMoniker = "neoWatch.general.linkedListMemoryBlueprints";
+        private const string MemoryLoaderEnabledMoniker = "neoWatch.blueprints.enableLinkedListMemoryLoader";
         private const string GpuCanvasMoniker = "neoWatch.general.enableGpuCanvas";
 
         [Guid("E3684F31-344E-42EA-9047-B620FDC7AC25")]
@@ -73,7 +73,8 @@ namespace NeoWatch
                     unifiedSettingsReader = settingsManager.GetReader();
                     unifiedSettingsSubscription = unifiedSettingsReader.SubscribeToChanges(
                         OnUnifiedSettingsChanged,
-                        new[] { MemoryLoaderEnabledMoniker, MemoryLoaderBlueprintsMoniker, GpuCanvasMoniker });
+                        new[] { MemoryLoaderEnabledMoniker, UnifiedBlueprintSettings.TextMoniker,
+                            GpuCanvasMoniker });
                     ApplyUnifiedMemoryLoaderOptions();
                     return;
                 }
@@ -106,7 +107,7 @@ namespace NeoWatch
             try
             {
                 bool enabled = unifiedSettingsReader.GetValueOrThrow<bool>(MemoryLoaderEnabledMoniker);
-                string blueprints = unifiedSettingsReader.GetValueOrThrow<string>(MemoryLoaderBlueprintsMoniker);
+                string blueprints = UnifiedBlueprintSettings.Read(unifiedSettingsReader);
                 viewModel.ConfigureLinkedListMemoryLoading(enabled, blueprints);
                 viewModel.ConfigureGpuCanvas(unifiedSettingsReader.GetValueOrThrow<bool>(GpuCanvasMoniker));
             }

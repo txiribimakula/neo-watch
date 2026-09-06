@@ -1,6 +1,7 @@
-using Microsoft.VisualStudio.Shell;
+﻿using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities.UnifiedSettings;
+using NeoWatch.Settings;
 using System;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
@@ -10,7 +11,6 @@ namespace NeoWatch
     internal static class EditBlueprintsCommand
     {
         public const int CommandId = 252;
-        private const string BlueprintsMoniker = "neoWatch.general.linkedListMemoryBlueprints";
 
         [Guid("E3684F31-344E-42EA-9047-B620FDC7AC25")]
         private sealed class UnifiedSettingsService { }
@@ -43,27 +43,13 @@ namespace NeoWatch
                 }
 
                 var reader = manager.GetReader();
-                string initial = reader.GetValueOrThrow<string>(BlueprintsMoniker);
+                string initial = UnifiedBlueprintSettings.Read(reader);
                 new BlueprintEditorWindow(initial, text =>
                 {
                     // A separate settings tab may have changed while this editor was open.
-                    if (reader.GetValueOrThrow<string>(BlueprintsMoniker) != initial) return ChangedElsewhere;
+                    if (UnifiedBlueprintSettings.Read(reader) != initial) return ChangedElsewhere;
                     if (text == initial) return null;
-                    var writer = manager.GetWriter("Neo Watch");
-                    var change = writer.EnqueueChange(BlueprintsMoniker, text);
-                    if (change.Outcome != SettingChangeOutcome.PendingCommit
-                        && change.Outcome != SettingChangeOutcome.PendingCommitWithoutValidation)
-                        return change.Message ?? "Visual Studio rejected the settings change.";
-                    var commit = writer.RequestCommit("Update memory blueprints");
-                    if (commit.Outcome == SettingCommitOutcome.PendingApproval)
-                    {
-                        (package.GetService(typeof(SVsStatusbar)) as IVsStatusbar)?.SetText(
-                            "Blueprint changes are waiting for approval in Visual Studio settings.");
-                        return null;
-                    }
-                    return commit.Outcome == SettingCommitOutcome.Success
-                        || commit.Outcome == SettingCommitOutcome.NoChangesQueued
-                        ? null : commit.Message ?? "Visual Studio could not save the blueprints.";
+                    return UnifiedBlueprintSettings.Write(manager.GetWriter("Neo Watch"), text);
                 }).ShowModal();
             }
             catch (Exception exception)

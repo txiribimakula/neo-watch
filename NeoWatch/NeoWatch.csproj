@@ -60,9 +60,15 @@
     <Compile Include="CopyBlueprintPromptCommand.cs" />
     <Compile Include="EditBlueprintsCommand.cs" />
     <Compile Include="Settings\BlueprintEditorModel.cs" />
+    <Compile Include="Settings\BlueprintSettingsList.cs" />
+    <Compile Include="Settings\UnifiedBlueprintSettings.cs" />
+    <Compile Include="Settings\BlueprintExternalSettings.cs" />
     <Compile Include="Settings\BlueprintsPropertyEditor.cs" />
     <Compile Include="Views\BlueprintEditorWindow.xaml.cs">
       <DependentUpon>BlueprintEditorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\BlueprintItemWindow.xaml.cs">
+      <DependentUpon>BlueprintItemWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="NeoWatchCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -138,6 +144,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\BlueprintEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\BlueprintItemWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
