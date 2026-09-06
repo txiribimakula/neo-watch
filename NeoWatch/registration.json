@@ -4,7 +4,6 @@
     "neoWatch.general.enableGpuCanvas": {
       "type": "boolean",
       "title": "Enable GPU canvas (experimental)",
-      "description": "Uses a persistent Direct3D canvas. Falls back to WPF if the device or geometry is unsupported.",
       "default": false,
       "order": 5,
       "migration": {
@@ -16,10 +15,9 @@
         }
       }
     },
-    "neoWatch.general.enableLinkedListMemoryLoader": {
+    "neoWatch.blueprints.enableLinkedListMemoryLoader": {
       "type": "boolean",
-      "title": "Enable memory blueprint loader",
-      "description": "Loads configured native linked lists and contiguous containers directly from process memory. Falls back to NatVis on any failure.",
+      "title": "Enable blueprints (experimental)",
       "default": false,
       "order": 10,
       "migration": {
@@ -31,15 +29,54 @@
         }
       }
     },
-    "neoWatch.general.linkedListMemoryBlueprints": {
+    "neoWatch.blueprints.externalSettings": {
+      "type": "external",
+      "title": "Blueprints",
+      "backingStoreDescription": "Blueprints are stored in your Visual Studio settings.",
+      "callback": {
+        "packageId": "2f2f2923-9433-4dcb-b3b6-373c61e85461",
+        "serviceId": "9E9B1C0E-4C4A-4E7C-9E5E-1D2C0B7A5F31"
+      },
+      "realtimeNotifications": true,
+      "order": 20,
+      "properties": {
+        "blueprints.list": {
+          "type": "array",
+          "title": "Blueprints",
+          "description": "One entry per container type. Use Edit on a row to change its blueprint.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "title": "Container type",
+                "description": "The type as the debugger shows it, not the variable name.",
+                "default": "",
+                "uniqueness": "caseInsensitive"
+              }
+            }
+          },
+          "itemsAreOrdered": false,
+          "allowItemEditing": false,
+          "allowAdditionsAndRemovals": true,
+          "initialFocusProperty": "type",
+          "order": 20
+        }
+      },
+      "categories": {
+        "blueprints": {
+          "title": "Blueprints"
+        }
+      }
+    },
+    "neoWatch.blueprints.linkedListMemoryBlueprints": {
       "type": "string",
       "format": "multiLine",
-      "title": "Memory blueprints",
-      "visibleWhen": "false",
+      "title": "Blueprints (text)",
       "description": "INI blueprints. Member values use path|Float32, Float64, Int32, UInt32, Int64 or UInt64.",
       "default": "# One section per native container type.\n[DemoSegmentLinkedList]\nCount=Count\nHead=Head\nNext=Next\nTag=demoSegment.type|Int32\nLine.Tag=0\nLine.InitialX=demoSegment.segment.line.demoInitialPoint.demoX|Float64\nLine.InitialY=demoSegment.segment.line.demoInitialPoint.demoY|Float64\nLine.FinalX=demoSegment.segment.line.demoFinalPoint.demoX|Float64\nLine.FinalY=demoSegment.segment.line.demoFinalPoint.demoY|Float64\nArc.Tag=1\nArc.CenterX=demoSegment.segment.arc.demoCenterPoint.demoX|Float64\nArc.CenterY=demoSegment.segment.arc.demoCenterPoint.demoY|Float64\nArc.Radius=demoSegment.segment.arc.demoRadius|Float64\nArc.InitialAngle=demoSegment.segment.arc.demoInitialAngle|Float64\nArc.SweepAngle=demoSegment.segment.arc.demoSweepAngle|Float64\n\n[DemoPointLinkedList]\nCount=Count\nHead=Head\nNext=Next\nPoint.X=x|Float32\nPoint.Y=y|Float32\n\n# MSVC std::vector<DemoPoint>, including f10Points and stressPoints.\n[std::vector<DemoPoint,std::allocator<DemoPoint>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nPoint.X=demoX|Float64\nPoint.Y=demoY|Float64\n\n# MSVC node storage: one point per vector element, without following Next.\n[std::vector<DemoListOfItself,std::allocator<DemoListOfItself>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nPoint.X=x|Float32\nPoint.Y=y|Float32\n\n# MSVC std::vector<DemoLineSegment>, including stressSegments.\n[std::vector<DemoLineSegment,std::allocator<DemoLineSegment>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nLine.InitialX=demoInitialPoint.demoX|Float64\nLine.InitialY=demoInitialPoint.demoY|Float64\nLine.FinalX=demoFinalPoint.demoX|Float64\nLine.FinalY=demoFinalPoint.demoY|Float64\n\n# MSVC std::vector<DemoArcSegment>, including stressArcs.\n[std::vector<DemoArcSegment,std::allocator<DemoArcSegment>>]\nStorage=Contiguous\nHead=_Mypair._Myval2._Myfirst\nEnd=_Mypair._Myval2._Mylast\nCapacity=_Mypair._Myval2._Myend\nArc.CenterX=demoCenterPoint.demoX|Float64\nArc.CenterY=demoCenterPoint.demoY|Float64\nArc.Radius=demoRadius|Float64\nArc.InitialAngle=demoInitialAngle|Float64\nArc.SweepAngle=demoSweepAngle|Float64",
-      "order": 20,
-      "enableWhen": "${config:neoWatch.general.enableLinkedListMemoryLoader} == 'true'",
+      "order": 30,
+      "enableWhen": "${config:neoWatch.blueprints.enableLinkedListMemoryLoader} == 'true'",
       "migration": {
         "pass": {
           "input": {
@@ -47,25 +84,23 @@
             "path": "DialogPage\\NeoWatch.BlueprintsOptionPage\\LinkedListMemoryBlueprints"
           }
         }
-      }
+      },
+      "visibleWhen": "false"
     }
   },
   "categories": {
     "neoWatch": {
-      "title": "Neo Watch",
-      "description": "Debugger visualization settings."
+      "title": "Neo Watch"
     },
     "neoWatch.general": {
       "title": "General",
-      "description": "Blueprints map your C++ container and geometry members to points, lines or arcs.",
+      "order": 10,
+      "legacyOptionPageId": "E77FB104-A860-4B35-A46D-BE33E3616FD4"
+    },
+    "neoWatch.blueprints": {
+      "title": "Blueprints",
+      "order": 20,
       "commands": [
-        {
-          "vsct": {
-            "text": "Edit blueprints",
-            "set": "AB6200EA-5C89-4F3C-AEEB-1374F1F578FB",
-            "id": 252
-          }
-        },
         {
           "vsct": {
             "text": "Copy AI prompt",
@@ -73,8 +108,7 @@
             "id": 253
           }
         }
-      ],
-      "legacyOptionPageId": "E77FB104-A860-4B35-A46D-BE33E3616FD4"
+      ]
     }
   }
 }

@@ -34,6 +34,7 @@ namespace NeoWatch
     [ProvideSettingsManifest]
     [ProvideOptionPage(typeof(BlueprintsOptionPage), "Neo Watch", "General", 0, 0, true,
         IsInUnifiedSettings = true)]
+    [ProvideService(typeof(Settings.BlueprintExternalSettings), IsAsyncQueryable = true)]
     public sealed class NeoWatchPackage : AsyncPackage
     {
         /// <summary>
@@ -55,6 +56,9 @@ namespace NeoWatch
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            AddService(typeof(Settings.BlueprintExternalSettings),
+                (container, creationToken, serviceType) =>
+                    Task.FromResult<object>(new Settings.BlueprintExternalSettings(this)), true);
             NeoWatchCommand.Initialize(this);
             AddNeoWatchCommand.Initialize(this);
             CopyBlueprintPromptCommand.Initialize(this);
@@ -144,19 +148,19 @@ Arc.Radius=demoRadius|Float64
 Arc.InitialAngle=demoInitialAngle|Float64
 Arc.SweepAngle=demoSweepAngle|Float64";
 
-        [Category("Experimental memory loader")]
-        [DisplayName("Enabled")]
+        [Category("Blueprints")]
+        [DisplayName("Enable blueprints (experimental)")]
         [Description("Loads configured native linked lists and contiguous containers directly from process memory. Falls back to NatVis on any failure.")]
         [DefaultValue(false)]
         public bool EnableLinkedListMemoryLoader { get; set; }
 
-        [Category("Experimental canvas")]
-        [DisplayName("Enable GPU canvas")]
+        [Category("General")]
+        [DisplayName("Enable GPU canvas (experimental)")]
         [Description("Uses a persistent Direct3D canvas. Falls back to WPF if the device or geometry is unsupported.")]
         [DefaultValue(false)]
         public bool EnableGpuCanvas { get; set; }
 
-        [Category("Experimental memory loader")]
+        [Category("Blueprints")]
         [DisplayName("Blueprints")]
         [Description("INI blueprints. Member values use path|Float32, Float64, Int32, UInt32, Int64 or UInt64.")]
         [DefaultValue(DefaultLinkedListMemoryBlueprints)]

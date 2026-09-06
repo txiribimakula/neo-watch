@@ -21,7 +21,7 @@ Table of supported types with their default patterns:
 
 ## Memory Blueprints (Experimental)
 
-Enable **Tools > Options > Neo Watch > General > Enable memory blueprint loader**
+Enable **Tools > Options > Neo Watch > Blueprints > Enable blueprints (experimental)**
 to read supported native containers directly from memory. The bundled MSVC demo
 blueprints cover `f10Points`, `stressPoints`, `stressSegments`, `stressArcs`,
 `mixedChain`, `chainNodes` and `chainNodeStorage`. Blueprints match container types,
@@ -30,7 +30,8 @@ not variable names. Existing saved settings are not overwritten by updated defau
 For your own types, use **Copy AI prompt** in that settings page (or **Tools >
 Copy Neo Watch Blueprint Prompt** on older Visual Studio versions). Paste the prompt
 into your AI and add the exact debugger type, C++ declarations and compiler details.
-Append the resulting INI section to **Memory blueprints**, preserving the others.
+In that settings page, **Add** a row with the container type and press **Edit** on it to
+paste the rest of the section.
 Copying only puts a generic prompt on the clipboard; it does not send code anywhere.
 Verify a small sample against native Watch/NatVis: structural checks cannot detect
 a semantically wrong mapping such as swapped X/Y fields or radians used as degrees.

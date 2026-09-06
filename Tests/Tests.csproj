@@ -56,8 +56,12 @@
     <Compile Include="ContiguousMemoryLoaderTests.cs" />
     <Compile Include="DemoMemoryBlueprintTests.cs" />
     <Compile Include="BlueprintEditorTests.cs" />
+    <Compile Include="BlueprintSettingsListTests.cs" />
     <Compile Include="..\NeoWatch\Settings\BlueprintEditorModel.cs">
       <Link>Settings\BlueprintEditorModel.cs</Link>
+    </Compile>
+    <Compile Include="..\NeoWatch\Settings\BlueprintSettingsList.cs">
+      <Link>Settings\BlueprintSettingsList.cs</Link>
     </Compile>
     <Compile Include="Mocks\DebuggerMock.cs" />
     <Compile Include="Mocks\ExpressionMock.cs" />

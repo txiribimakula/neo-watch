@@ -31,7 +31,7 @@ namespace Tests
             using (var reader = new StreamReader(stream)) settings = reader.ReadToEnd();
             var manifest = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(settings);
             var properties = (Dictionary<string, object>)manifest["properties"];
-            var setting = (Dictionary<string, object>)properties["neoWatch.general.linkedListMemoryBlueprints"];
+            var setting = (Dictionary<string, object>)properties["neoWatch.blueprints.linkedListMemoryBlueprints"];
             string blueprints = (string)setting["default"];
             string type = "std::vector<" + elementType + ",std::allocator<" + elementType + "> >";
             Assert.AreEqual(1, LinkedListMemoryBlueprintParser.Parse(blueprints).Count(b => b.Matches(type)));

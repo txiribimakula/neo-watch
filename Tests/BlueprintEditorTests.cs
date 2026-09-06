@@ -19,7 +19,7 @@ namespace Tests
             using (var reader = new StreamReader(stream)) json = reader.ReadToEnd();
             var manifest = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(json);
             var properties = (Dictionary<string, object>)manifest["properties"];
-            var setting = (Dictionary<string, object>)properties["neoWatch.general.linkedListMemoryBlueprints"];
+            var setting = (Dictionary<string, object>)properties["neoWatch.blueprints.linkedListMemoryBlueprints"];
             string original = (string)setting["default"];
             var editor = new BlueprintEditorModel(original);
 

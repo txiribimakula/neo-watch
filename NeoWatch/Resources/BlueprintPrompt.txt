@@ -1,26 +1,28 @@
-Help me create one new blueprint for Neo Watch, a Visual Studio extension that draws C++ points, lines and arcs while debugging.
+Neo Watch is a Visual Studio extension that draws C++ points, lines and arcs while debugging. A blueprint is one INI section telling it how to read a container straight from memory. Use this to write a blueprint for a new type: ask for whatever is missing or ambiguous, and never invent types, members or enum values.
 
-Information I need to provide:
-- Exact container type shown in the debugger, not the variable name: [fill in]
-- C++ declarations of the container, its nodes/elements and geometry members, including any unions and enums: [paste here]
-- Compiler and standard library versions, and target architecture (32 or 64 bit): [fill in]
-- Which members describe the geometry, their units, and how the active union member is identified, if applicable: [fill in]
+What a blueprint needs to know
+- The container type exactly as the debugger shows it, not the variable name.
+- The C++ declarations of the container, its node or element type, and the geometry members, including unions and enums.
+- Compiler, standard library and target architecture (32 or 64 bit).
+- Which members hold the geometry, their units, and how the active union member is identified.
 
-Ask for missing or ambiguous information before generating the blueprint. Do not invent types, members or enum values. If my type cannot be represented, explain what prevents it.
+Section format
+- One blueprint per container type, written as [std::vector<Pnt,std::allocator<Pnt>>] followed by key=value lines. No wildcards.
+- Lines starting with # or ; are comments.
+- Linked list (the default): Count and Head are member paths in the container, Next in the node. Head points at the first geometry node, Count excludes sentinels, and all three must be raw pointers. The loader follows Next exactly Count times; there is no Previous and no custom stop condition.
+- Contiguous: add Storage=Contiguous, then Head, End and Capacity as raw pointers to the first element, one past the last, and one past the allocation. Each element is one geometry, in storage order. Confirm those member names against the standard library in use.
+- Geometry values are Field=member.path|ScalarType, relative to the node or element, for example Point.X=position.x|Float64.
+- Paths read stored members only: no calculations, function calls, casts or byte offsets.
+- ScalarType is Float32, Float64, Int32, UInt32, Int64 or UInt64, matching the stored width and signedness. Other widths are unsupported.
 
-Blueprint format:
-- Return one INI section headed [ExactContainerType], followed by key=value lines. No wildcards.
-- For linked lists, use Storage=LinkedList, Count and Head as member paths in the container, and Next as a member path in each node. Head must point to the first geometry node; Count excludes any sentinel node. Head and Next must be raw pointers. The loader follows Next for exactly Count distinct nodes; it does not use Previous or custom stopping expressions.
-- For contiguous storage, use Storage=Contiguous and Head, End, Capacity as member paths in the container. They must be raw pointers to the first element, just past the last element, and just past the allocated storage. Each element supplies one geometry, in storage order. Confirm these members for my standard library; do not assume a particular implementation.
-- Geometry values use Field=member.path|ScalarType, relative to the node or element. Example: Point.X=position.x|Float64. Use stored members, not calculations, function calls, casts or byte offsets.
-- Scalar types: Float32 for float, Float64 for double, or Int32, UInt32, Int64, UInt64 matching the actual integer width and signedness. Other widths are unsupported.
-
-Required fields for each supported 2D geometry:
+Geometry fields
 - Point: Point.X, Point.Y
 - Line: Line.InitialX, Line.InitialY, Line.FinalX, Line.FinalY
 - Arc: Arc.CenterX, Arc.CenterY, Arc.Radius, Arc.InitialAngle, Arc.SweepAngle
+- Angles are stored in degrees, and radius and coordinates share one unit. Nothing is converted.
 
-Angles must be stored in degrees; coordinates and radius must use compatible units. The blueprint cannot convert units.
-For mixed geometry, add Tag=member.path|ScalarType and Point.Tag, Line.Tag or Arc.Tag with the distinct integer values selecting the active union member. Only one variant per geometry kind is supported. Contiguous storage does not accept enum-typed tag fields, even if their underlying type is an integer.
+Several geometry kinds in one container
+- Add Tag=member.path|ScalarType, plus Point.Tag, Line.Tag or Arc.Tag with the integer that selects each variant.
+- Only one variant per kind. Contiguous storage rejects enum-typed tags, even when the underlying type is an integer.
 
-Once the information is complete, return only the new INI section, ready to paste into an entry in Edit blueprints. Do not modify existing blueprints or project code.
+The answer is a single INI section. Under Tools > Options > Neo Watch > Blueprints it becomes one row: Add the container type, then Edit that row and paste the remaining lines. It changes no other blueprint and no project code. If the type cannot be expressed this way, say what prevents it.
